@@ -262,6 +262,11 @@
   .kcard.bday{border-color:#ffd23f;box-shadow:0 0 40px rgba(255,210,63,.6),0 8px 0 #9c7d10}
   .kcard.bday .ring{background:conic-gradient(#ffd23f,#ff6fb5,#5aa9ff,#2ecc71,#ffd23f) !important}
   .crown{position:absolute;top:10px;left:50%;transform:translateX(-50%) rotate(-8deg);font-size:clamp(40px,6vw,64px);animation:bounce 1.6s infinite}
+  .grip{display:inline-flex;align-items:center;justify-content:center;width:34px;height:40px;margin:-6px 0;font-size:24px;color:var(--muted);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:8px;flex:none}
+  .grip:active{cursor:grabbing;background:rgba(255,255,255,.08)}
+  .dragging{opacity:.9;outline:3px solid var(--warn);outline-offset:-3px;background:#2f3670 !important;border-radius:12px}
+  tr.dragging td{background:#2f3670}
+  .sorting{user-select:none;-webkit-user-select:none}
   .swatches{display:flex;gap:10px;flex-wrap:wrap}
   .sw{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.25);cursor:pointer}
   .sw.sel{border-color:#fff;box-shadow:0 0 0 3px #2ecc71}
@@ -371,7 +376,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · special days';
+  var BOARD_VERSION='11 Nov 2026 · drag to reorder';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -1147,6 +1152,47 @@
     inner.appendChild(el('div',{style:'height:12px'}));
     if(sQuestView==='days')setQuestDays(inner);else setQuestList(inner);
   }
+  // Drag to reorder (works with fingers and a mouse). Items need data-id; dragging starts from the ⠿ handle.
+  function reorderPeriod(per,ids){
+    var slots=[],items=[];
+    cfg.steps.forEach(function(s,i){if(stepPeriod(s)===per){slots.push(i);}});
+    ids.forEach(function(id){var st=cfg.steps.filter(function(x){return x.id===id;})[0];if(st)items.push(st);});
+    if(items.length!==slots.length)return;
+    var copy=cfg.steps.slice();slots.forEach(function(pos,i){copy[pos]=items[i];});cfg.steps=copy;sv();
+  }
+  function makeSortable(container,itemSel,onDone){
+    var drag=null;
+    function items(){return [].slice.call(container.querySelectorAll(itemSel));}
+    container.addEventListener('pointerdown',function(e){
+      var h=e.target.closest('.grip');if(!h||!container.contains(h))return;
+      var it=h.closest(itemSel);if(!it)return;
+      e.preventDefault();e.stopPropagation();
+      try{h.setPointerCapture(e.pointerId);}catch(_){}
+      drag={it:it,h:h,id:e.pointerId,moved:false};it.classList.add('dragging');container.classList.add('sorting');
+    });
+    container.addEventListener('pointermove',function(e){
+      if(!drag||e.pointerId!==drag.id)return;e.preventDefault();
+      var list=items(),y=e.clientY;
+      for(var i=0;i<list.length;i++){
+        var o=list[i];if(o===drag.it)continue;
+        var r=o.getBoundingClientRect(),mid=r.top+r.height/2,dr=drag.it.getBoundingClientRect();
+        if(y<mid&&dr.top>r.top){o.parentNode.insertBefore(drag.it,o);drag.moved=true;break;}
+        if(y>mid&&dr.top<r.top){o.parentNode.insertBefore(drag.it,o.nextSibling);drag.moved=true;break;}
+      }
+      // keep the list scrolling while dragging near the edges
+      var sb=document.getElementById('sBody'),sr=sb.getBoundingClientRect();
+      if(y<sr.top+60)sb.scrollTop-=12;else if(y>sr.bottom-60)sb.scrollTop+=12;
+    });
+    function end(e){
+      if(!drag||(e&&e.pointerId!==drag.id))return;
+      drag.it.classList.remove('dragging');container.classList.remove('sorting');
+      var moved=drag.moved;drag=null;
+      if(moved)onDone(items().map(function(x){return x.getAttribute('data-id');}));
+    }
+    container.addEventListener('pointerup',end);container.addEventListener('pointercancel',end);
+    container.addEventListener('click',function(e){if(e.target.closest('.grip'))e.preventDefault();},true);
+  }
+  function grip(){return el('span',{'class':'grip',title:'Drag to reorder','aria-label':'Drag to reorder'},'⠿');}
   function setQuestDays(inner){
     var dayCard=sCard();
     var order=[1,2,3,4,5,6,0],td=new Date().getDay();
@@ -1158,9 +1204,11 @@
     cfg.kids.forEach(function(kd){var th=el('th');th.appendChild(el('div',{'class':'qav'},kd.emoji));th.appendChild(el('div',{'class':'qnm'},kd.name));thead.appendChild(th);});
     tbl.appendChild(thead);
     [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(per){
-      var gr=el('tr',{'class':'qgroup'});gr.appendChild(el('td',{colspan:String(nKids()+1)},per[1]));tbl.appendChild(gr);
+      var gh=el('tbody');var gr=el('tr',{'class':'qgroup'});gr.appendChild(el('td',{colspan:String(nKids()+1)},per[1]));gh.appendChild(gr);tbl.appendChild(gh);
+      var tb=el('tbody');tbl.appendChild(tb);
+      makeSortable(tb,'tr',function(ids){reorderPeriod(per[0],ids);});
       cfg.steps.filter(function(s){return stepPeriod(s)===per[0];}).forEach(function(s){
-        var tr=el('tr');var tdl=el('td',{'class':'ql'});tdl.appendChild(iconEl(s.emoji,'qic'));tdl.appendChild(el('span',null,s.label));tr.appendChild(tdl);
+        var tr=el('tr',{'data-id':s.id});var tdl=el('td',{'class':'ql'});tdl.appendChild(grip());tdl.appendChild(iconEl(s.emoji,'qic'));tdl.appendChild(el('span',null,s.label));tr.appendChild(tdl);
         cfg.kids.forEach(function(kd,k){
           var on=day.kids[k].indexOf(s.id)>-1;
           var b=el('button',{'class':'qpill'+(on?' on':''),'aria-label':kd.name+': '+s.label},on?'✓':'');
@@ -1168,9 +1216,10 @@
             var now=a.indexOf(s.id)>-1;b.classList.toggle('on',now);b.textContent=now?'✓':'';});
           var tdc=el('td');tdc.appendChild(b);tr.appendChild(tdc);
         });
-        tbl.appendChild(tr);
+        tb.appendChild(tr);
       });
     });
+    dayCard.appendChild(el('p',{'class':'hint',style:'margin-top:8px'},'Drag ⠿ to change the order quests appear on the board.'));
     var wrap=el('div',{'class':'qwrap'});wrap.appendChild(tbl);dayCard.appendChild(wrap);
     var copy=el('div',{'class':'row',style:'margin-top:12px'});
     copy.appendChild(el('span',{'class':'muted'},'Copy '+DAYS[sDay]+' to:'));
@@ -1195,11 +1244,13 @@
     row.appendChild(sBtn('Add','primary',function(){if(!nl.value.trim())return;cfg.steps.push({id:'s'+Date.now(),emoji:ne.value||'⭐',label:nl.value.trim(),period:per});sv();renderSettings();}));
     addc.appendChild(row);inner.appendChild(addc);
     [['am','🌅 Morning quests'],['pm','☀️ Afternoon quests']].forEach(function(pp){
-      var c=sCard(pp[1],'Tap a quest to edit it. The order here is the order on the board.');
+      var c=sCard(pp[1],'Tap a quest to edit it. Drag ⠿ to change the order on the board.');
       var list=cfg.steps.filter(function(s){return stepPeriod(s)===pp[0];});
+      var box=el('div',{'class':'sortbox'});c.appendChild(box);
+      makeSortable(box,'details.item',function(ids){reorderPeriod(pp[0],ids);});
       list.forEach(function(s,li){
-        var d=el('details',{'class':'item'}),sm=el('summary');
-        sm.appendChild(iconEl(s.emoji,'iic'));sm.appendChild(el('span',{'class':'iname'},s.label));
+        var d=el('details',{'class':'item','data-id':s.id}),sm=el('summary');
+        sm.appendChild(grip());sm.appendChild(iconEl(s.emoji,'iic'));sm.appendChild(el('span',{'class':'iname'},s.label));
         sm.appendChild(el('span',{'class':'tag'},'🗣️ '+pastPhrase(s)));
         d.appendChild(sm);var b=el('div',{'class':'body'});
         var e1=el('input',{type:'text','class':'emo',value:s.emoji,maxlength:'4'});e1.addEventListener('input',function(){s.emoji=e1.value;sv();});
@@ -1210,17 +1261,13 @@
         sy.addEventListener('input',function(){s.say=sy.value.replace(/,?\s*(superstar|champ|legend|great job|well done|nice work)!?$/i,'');sv();});
         b.appendChild(sField('What the voice says','Leave blank to use the suggestion. "Superstar!" etc. is added for you.',[sy,sBtn('▶','',function(){var v=cfg.voice;cfg.voice=true;say(praiseLine(s));cfg.voice=v;})]));
         var acts=el('div',{'class':'row',style:'margin-top:8px'});
-        function move(dir){var all=cfg.steps,i=all.indexOf(s),j=i;do{j+=dir;}while(j>=0&&j<all.length&&stepPeriod(all[j])!==stepPeriod(s));
-          if(j<0||j>=all.length)return;all[i]=all[j];all[j]=s;sv();renderSettings();}
-        if(li>0)acts.appendChild(sBtn('↑ Move up','',function(){move(-1);}));
-        if(li<list.length-1)acts.appendChild(sBtn('↓ Move down','',function(){move(1);}));
         acts.appendChild(el('span',{style:'flex:1'}));
         acts.appendChild(sConfirm('Delete quest','Tap again to delete','linkbtn',function(){
           cfg.steps.splice(cfg.steps.indexOf(s),1);
           for(var dd=0;dd<7;dd++)for(var k=0;k<nKids();k++){var a=cfg.days[dd].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
           sv();renderSettings();
         }));
-        b.appendChild(acts);d.appendChild(b);c.appendChild(d);
+        b.appendChild(acts);d.appendChild(b);box.appendChild(d);
       });
       inner.appendChild(c);
     });
