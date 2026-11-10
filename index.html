@@ -102,6 +102,15 @@
   .mile-small{font-size:clamp(24px,3.6vw,44px);font-weight:800;margin-top:12px;text-align:center;padding:0 20px}
   @keyframes mileIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 
+  /* upcoming events strip */
+  .events{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .evchip{display:flex;align-items:center;gap:10px;background:var(--bg2);border:3px solid #444b8a;border-radius:18px;padding:4px 14px 4px 8px;color:#fff;font-family:inherit;cursor:pointer}
+  .evchip.today{border-color:#ffd23f;box-shadow:0 0 18px rgba(255,210,63,.5)}
+  .evemo{font-size:clamp(28px,3.6vw,40px);line-height:1}
+  .evtxt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1}
+  .evname{font-size:clamp(13px,1.6vw,17px);font-weight:700;color:var(--muted)}
+  .evdays{font-size:clamp(18px,2.4vw,26px);font-weight:800}
+
   /* morning / afternoon tabs */
   .ptabs{display:flex;gap:10px;justify-content:center}
   .ptab{font-family:inherit;font-weight:800;font-size:clamp(14px,1.8vw,20px);padding:4px 18px;border-radius:99px;border:none;background:var(--bg2);color:var(--muted);cursor:pointer}
@@ -221,6 +230,7 @@
     <div class="uv-text"><div class="uv-title" id="uvTitle">Sun check…</div><div class="uv-sub" id="uvSub"></div></div>
     <div class="uv-strip" id="uvStrip"></div>
   </div>
+  <div class="events" id="events"></div>
   <div class="ptabs" id="ptabs"></div>
   <main id="lanes"></main>
 </div>
@@ -245,7 +255,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · clothes, backup, new quests';
+  var BOARD_VERSION='10 Nov 2026 · upcoming events';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -502,6 +512,7 @@
     document.getElementById('wx').style.display=showBars?'':'none';
     document.getElementById('uv').style.display='none'; // UV detail is grown-up info: it lives in the small print and drives sunscreen/hat
     renderTabs();
+    renderEvents(showBars);
     if(view>=nKids())view=-1;
     lanesEl.className=nKids()>3?'many':'';
     if(split){for(var k=0;k<nKids();k++)lanesEl.appendChild(renderLane(k,false));}
@@ -842,6 +853,82 @@
     kc.appendChild(el('p',{'class':'hint'},'A new child starts with the same quests as the first child. Change them under Daily quests.'));
     sBody.appendChild(kc);
 
+    // Upcoming events
+    var ec=el('div',{'class':'card'});ec.appendChild(el('h3',null,'📅 Upcoming events'));
+    ec.appendChild(el('p',{'class':'hint',style:'margin-bottom:8px'},'Shown on the home screen as a countdown in "sleeps". Each event appears once it is within its "days ahead" number. Tap a countdown on the board to hear it.'));
+    var lr0=el('div',{'class':'row'});lr0.appendChild(el('span',{style:'font-size:18px'},'Default days ahead for your events:'));
+    var dl=el('input',{type:'number',min:'0',max:'366',value:String(cfg.eventLead),style:'width:90px'});
+    dl.addEventListener('change',function(){var v=parseInt(dl.value,10);if(!isNaN(v)&&v>=0){cfg.eventLead=v;save('qb_cfg',cfg);}});
+    lr0.appendChild(dl);ec.appendChild(lr0);
+
+    // public holidays
+    var hr=el('div',{'class':'row',style:'margin-top:10px'});
+    var hcb=el('input',{type:'checkbox',id:'holOn'});hcb.checked=!!cfg.holidays.on;
+    var hl=el('label',{'class':'chk','for':'holOn'});hl.appendChild(hcb);hl.appendChild(document.createTextNode('🇦🇺 Public holidays for'));
+    var hs=el('select');['ACT','NSW','NT','QLD','SA','TAS','VIC','WA'].forEach(function(st){var o=el('option',{value:st},st);if(st===cfg.holidays.state)o.selected=true;hs.appendChild(o);});
+    var hlead=el('input',{type:'number',min:'0',max:'366',value:String(cfg.holidays.lead),style:'width:80px'});
+    hcb.addEventListener('change',function(){cfg.holidays.on=hcb.checked;save('qb_cfg',cfg);fetchHolidays();});
+    hs.addEventListener('change',function(){cfg.holidays.state=hs.value;save('qb_cfg',cfg);fetchHolidays();});
+    hlead.addEventListener('change',function(){var v=parseInt(hlead.value,10);if(!isNaN(v)&&v>=0){cfg.holidays.lead=v;save('qb_cfg',cfg);}});
+    hr.appendChild(hl);hr.appendChild(hs);hr.appendChild(el('span',{style:'font-size:17px'},'days ahead:'));hr.appendChild(hlead);
+    ec.appendChild(hr);
+    ec.appendChild(el('p',{'class':'hint'},'Updated automatically each week, including state-only days like Melbourne Cup and the Grand Final Friday. If the update can\'t load, the national holidays still show.'));
+
+    // celebrations
+    ec.appendChild(el('div',{'class':'pergrp',style:'margin-top:12px'},'Celebrations'));
+    SPECIALS.forEach(function(x){
+      var sp=cfg.specials[x[0]]||(cfg.specials[x[0]]={on:true,lead:x[3]});
+      var r=el('div',{'class':'row'});
+      var cb=el('input',{type:'checkbox',id:'sp_'+x[0]});cb.checked=!!sp.on;
+      var lb=el('label',{'class':'chk','for':'sp_'+x[0],style:'min-width:200px'});lb.appendChild(cb);lb.appendChild(document.createTextNode(x[1]+' '+x[2]));
+      var ld=el('input',{type:'number',min:'0',max:'366',value:String(sp.lead),style:'width:80px'});
+      cb.addEventListener('change',function(){sp.on=cb.checked;save('qb_cfg',cfg);});
+      ld.addEventListener('change',function(){var v=parseInt(ld.value,10);if(!isNaN(v)&&v>=0){sp.lead=v;save('qb_cfg',cfg);}});
+      r.appendChild(lb);r.appendChild(el('span',{style:'font-size:17px'},'days ahead:'));r.appendChild(ld);ec.appendChild(r);
+    });
+
+    // own events
+    ec.appendChild(el('div',{'class':'pergrp',style:'margin-top:12px'},'Your events (birthdays, parties, playdates, holidays…)'));
+    var t0=today0();
+    cfg.events.forEach(function(ev,idx){
+      var r=el('div',{'class':'row evrow'});
+      var em=el('input',{type:'text','class':'emo',value:ev.emoji||'',maxlength:'4',style:'width:60px;text-align:center'});
+      em.addEventListener('input',function(){ev.emoji=em.value;save('qb_cfg',cfg);});
+      var nm=el('input',{type:'text',value:ev.name||'',placeholder:'What is it?',style:'flex:1;min-width:140px'});
+      nm.addEventListener('input',function(){ev.name=nm.value;save('qb_cfg',cfg);});
+      var dt=el('input',{type:'date',value:ev.date||''});
+      dt.addEventListener('change',function(){ev.date=dt.value;save('qb_cfg',cfg);});
+      var rp=el('select');
+      [['none','Once'],['yearly','Every year'],['birthday','Birthday (every year, shows age)']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if((ev.repeat||'none')===p[0])o.selected=true;rp.appendChild(o);});
+      var en=el('input',{type:'date',value:ev.end||'',title:'Last day (optional, for things like holidays)'});
+      en.addEventListener('change',function(){ev.end=en.value;save('qb_cfg',cfg);});
+      var enWrap=el('span',{style:'display:'+((ev.repeat||'none')==='none'?'inline-flex':'none')+';gap:6px;align-items:center'});
+      enWrap.appendChild(el('span',{style:'font-size:16px;color:var(--muted)'},'until'));enWrap.appendChild(en);
+      rp.addEventListener('change',function(){ev.repeat=rp.value;if(rp.value==='birthday'&&!ev.emoji){ev.emoji='🎂';em.value='🎂';}enWrap.style.display=rp.value==='none'?'inline-flex':'none';save('qb_cfg',cfg);});
+      var ld=el('input',{type:'number',min:'0',max:'366',value:ev.lead!=null&&ev.lead!==''?String(ev.lead):'',placeholder:String(cfg.eventLead),title:'Days ahead to start the countdown',style:'width:70px'});
+      ld.addEventListener('change',function(){ev.lead=ld.value===''?'':parseInt(ld.value,10);save('qb_cfg',cfg);});
+      var del=el('button',{'class':'btn danger'},'✕');
+      del.addEventListener('click',function(){cfg.events.splice(idx,1);save('qb_cfg',cfg);renderSettings();});
+      r.appendChild(em);r.appendChild(nm);r.appendChild(dt);r.appendChild(enWrap);r.appendChild(rp);
+      r.appendChild(el('span',{style:'font-size:16px;color:var(--muted)'},'days ahead'));r.appendChild(ld);r.appendChild(del);
+      var past=(ev.repeat||'none')==='none'&&ev.date&&daysBetween(t0,parseD(ev.end||ev.date))<0;
+      if(past)r.style.opacity='.45';
+      ec.appendChild(r);
+    });
+    var ar=el('div',{'class':'row',style:'margin-top:8px'});
+    [['🎂','Birthday','birthday'],['🎈','Party','none'],['🧸','Playdate','none'],['🏖️','Holiday','none'],['⭐','Other','none']].forEach(function(p){
+      var b=el('button',{'class':'btn'},'+ '+p[0]+' '+p[1]);
+      b.addEventListener('click',function(){
+        cfg.events.push({id:'e'+Date.now(),emoji:p[0],name:p[2]==='birthday'?'\'s birthday':(p[1]==='Other'?'':p[1]),date:'',end:'',repeat:p[2],lead:''});
+        save('qb_cfg',cfg);renderSettings();
+        var rows=sBody.querySelectorAll('.evrow');var last=rows[rows.length-1];if(last){var inp=last.querySelector('input[type=text]:not(.emo)');try{inp.focus();if(p[2]==='birthday')inp.setSelectionRange(0,0);}catch(e){}}
+      });
+      ar.appendChild(b);
+    });
+    ec.appendChild(ar);
+    ec.appendChild(el('p',{'class':'hint'},'For a birthday, pick the actual birth date (with the year) and the board shows how old they will be. Past one-off events fade out and stop showing on the board.'));
+    sBody.appendChild(ec);
+
     // Reading & star jar
     var rcd=el('div',{'class':'card'});rcd.appendChild(el('h3',null,'📚 Reading & ⭐ Star jar'));
     rcd.appendChild(el('p',{'class':'hint',style:'margin-bottom:8px'},'Set where each child is up to. Ticking 📖 Reading adds a day (once per day) and it is announced, with a big celebration every 50 days. A star goes in the jar when every morning and afternoon quest is done.'));
@@ -1082,6 +1169,131 @@
     sBody.appendChild(oc);
   }
 
+  // ---------- upcoming events ----------
+  if(!cfg.events)cfg.events=[];
+  if(cfg.eventLead==null)cfg.eventLead=30;
+  if(!cfg.holidays)cfg.holidays={on:true,state:'VIC',lead:14};
+  var SPECIALS=[ // built-in celebrations: id, emoji, name, default days-ahead
+    ['christmas','🎄','Christmas',30],['newyear','🎆','New Year\'s Eve',14],['easter','🐣','Easter',21],
+    ['halloween','🎃','Halloween',14],['mothers','💐','Mother\'s Day',14],['fathers','👔','Father\'s Day',14]];
+  if(!cfg.specials){cfg.specials={};SPECIALS.forEach(function(x){cfg.specials[x[0]]={on:true,lead:x[3]};});}
+  function ymd(d){return dateKey(d);}
+  function parseD(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+  function today0(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());}
+  function daysBetween(a,b){return Math.round((b-a)/864e5);}
+  function easterSunday(y){ // Anonymous Gregorian algorithm
+    var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+        h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),
+        mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+    return new Date(y,mo-1,da);
+  }
+  function nthSunday(y,month,n){var d=new Date(y,month,1);var add=(7-d.getDay())%7;return new Date(y,month,1+add+7*(n-1));}
+  function specialDate(id,y){
+    if(id==='christmas')return new Date(y,11,25);
+    if(id==='newyear')return new Date(y,11,31);
+    if(id==='easter')return easterSunday(y);
+    if(id==='halloween')return new Date(y,9,31);
+    if(id==='mothers')return nthSunday(y,4,2);   // 2nd Sunday in May (Australia)
+    if(id==='fathers')return nthSunday(y,8,1);   // 1st Sunday in September (Australia)
+  }
+  // Public holidays: Nager.Date (free, no key), cached per state and year. Falls back to national holidays worked out here.
+  var holCache=load('qb_hol',{});
+  function fallbackHolidays(y){
+    var e=easterSunday(y),gf=new Date(y,e.getMonth(),e.getDate()-2),em=new Date(y,e.getMonth(),e.getDate()+1);
+    return [[new Date(y,0,1),'New Year\'s Day'],[new Date(y,0,26),'Australia Day'],[gf,'Good Friday'],[em,'Easter Monday'],
+      [new Date(y,3,25),'Anzac Day'],[new Date(y,11,25),'Christmas Day'],[new Date(y,11,26),'Boxing Day']].map(function(x){return {date:ymd(x[0]),name:x[1]};});
+  }
+  function holidaysFor(y){
+    var key=cfg.holidays.state+'-'+y;
+    return (holCache[key]&&holCache[key].list)||fallbackHolidays(y);
+  }
+  function fetchHolidays(){
+    if(!cfg.holidays.on)return;
+    var y=today0().getFullYear();
+    [y,y+1].forEach(function(yr){
+      var key=cfg.holidays.state+'-'+yr;
+      if(holCache[key]&&Date.now()-holCache[key].at<7*864e5)return; // refresh weekly
+      try{
+        fetch('https://date.nager.at/api/v3/PublicHolidays/'+yr+'/AU').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(list){
+          var st='AU-'+cfg.holidays.state;
+          var mine=list.filter(function(h){return (h.global||(h.counties||[]).indexOf(st)>-1)&&(h.types||['Public']).indexOf('Public')>-1;})
+            .map(function(h){return {date:h.date,name:h.name};});
+          holCache[key]={at:Date.now(),list:mine};save('qb_hol',holCache);render();
+        }).catch(function(){});
+      }catch(e){}
+    });
+  }
+  function holEmoji(n){
+    n=n.toLowerCase();
+    if(/christmas/.test(n))return '🎄';if(/boxing/.test(n))return '🎁';if(/new year/.test(n))return '🎆';if(/australia day/.test(n))return '🇦🇺';
+    if(/anzac/.test(n))return '🎖️';if(/easter|good friday/.test(n))return '🐣';if(/labour/.test(n))return '🛠️';if(/king|queen/.test(n))return '👑';
+    if(/cup/.test(n))return '🏇';if(/grand final|football/.test(n))return '🏉';return '📅';
+  }
+  function upcoming(){
+    var t=today0(),y=t.getFullYear(),out=[],specialDays={};
+    function add(emoji,name,start,end,lead,speakName,extra){
+      var d=daysBetween(t,start),endD=end?daysBetween(t,end):d;
+      if(endD<0)return false;
+      if(d>lead&&d>0)return true;
+      out.push({emoji:emoji,name:name,days:Math.max(d,0),on:d<=0&&endD>=0&&end&&endD>0,speak:speakName||name,extra:extra||''});
+      return true;
+    }
+    // built-in celebrations
+    SPECIALS.forEach(function(x){
+      var sp=cfg.specials[x[0]];if(!sp||!sp.on)return;
+      var dt=specialDate(x[0],y);if(daysBetween(t,dt)<0)dt=specialDate(x[0],y+1);
+      specialDays[ymd(dt)]=1;
+      add(x[1],x[2],dt,null,sp.lead,x[2]);
+    });
+    // public holidays for the chosen state
+    if(cfg.holidays.on){
+      holidaysFor(y).concat(holidaysFor(y+1)).forEach(function(h){
+        if(specialDays[h.date])return;
+        var dt=parseD(h.date),d=daysBetween(t,dt);if(d<0||d>cfg.holidays.lead)return;
+        out.push({emoji:holEmoji(h.name),name:h.name,days:d,on:false,speak:h.name+' public holiday'});
+      });
+    }
+    // the family's own events
+    cfg.events.forEach(function(ev){
+      if(!ev.date)return;
+      var lead=ev.lead!=null&&ev.lead!==''?+ev.lead:cfg.eventLead;
+      var st=parseD(ev.date),en=ev.end?parseD(ev.end):null;
+      if(ev.repeat==='yearly'||ev.repeat==='birthday'){
+        var occ=new Date(y,st.getMonth(),st.getDate());if(daysBetween(t,occ)<0)occ=new Date(y+1,st.getMonth(),st.getDate());
+        var nm=ev.name,sp=ev.name;
+        if(ev.repeat==='birthday'){var age=occ.getFullYear()-st.getFullYear();if(age>0&&age<120){nm=ev.name+' ('+age+')';sp=ev.name+'! Turning '+age;}}
+        add(ev.emoji||'🎂',nm,occ,null,lead,sp);
+      } else add(ev.emoji||'📅',ev.name,st,en,lead,ev.name);
+    });
+    out.sort(function(a,b){return a.days-b.days;});
+    return out;
+  }
+  function sleepsText(e){
+    if(e.on)return 'On now!';
+    if(e.days===0)return 'Today! 🎉';
+    if(e.days===1)return 'Tomorrow!';
+    return e.days+' sleeps';
+  }
+  function renderEvents(show){
+    var box=document.getElementById('events');box.innerHTML='';
+    var list=show?upcoming().slice(0,4):[];
+    box.style.display=list.length?'':'none';
+    list.forEach(function(e){
+      var c=el('button',{'class':'evchip'+(e.days===0||e.on?' today':'')});
+      c.appendChild(el('span',{'class':'evemo'},e.emoji));
+      var tx=el('span',{'class':'evtxt'});tx.appendChild(el('span',{'class':'evname'},e.name));tx.appendChild(el('span',{'class':'evdays'},sleepsText(e)));
+      c.appendChild(tx);
+      c.addEventListener('click',function(){
+        keepAwake();
+        if(e.on)say(e.speak+' is on now!');
+        else if(e.days===0)say('Today is '+e.speak+'! Hooray!');
+        else if(e.days===1)say(e.speak+' is tomorrow! Just one more sleep!');
+        else say(e.days+' more sleeps until '+e.speak+'!');
+      });
+      box.appendChild(c);
+    });
+  }
+
   // ---------- weather & what to wear ----------
   if(!cfg.loc)cfg.loc={name:'Frankston',lat:-38.14,lon:145.12};
   var wx=load('qb_wx',null);
@@ -1286,6 +1498,7 @@
   render();
   renderWx();
   fetchWx();
+  fetchHolidays();setInterval(fetchHolidays,6*3600000);
 })();
 </script>
 </body>
