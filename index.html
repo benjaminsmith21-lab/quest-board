@@ -242,6 +242,15 @@
     .s-saved{display:none}
   }
 
+  /* time clock overlay */
+  #clockOv{position:fixed;inset:0;z-index:70;background:rgba(10,12,40,.85);display:none;align-items:center;justify-content:center}
+  #clockOv.show{display:flex;animation:mileIn .4s cubic-bezier(.3,1.6,.6,1)}
+  .clockbox{display:flex;flex-direction:column;align-items:center;gap:8px}
+  #clockSvg svg{width:min(62vmin,420px);height:min(62vmin,420px);filter:drop-shadow(0 10px 30px rgba(0,0,0,.4))}
+  .clockdig{font-size:clamp(30px,5vw,54px);font-weight:800}
+  .clockleave{font-size:clamp(22px,3.4vw,38px);font-weight:800;color:#ffd23f}
+  #countdown,#dt{cursor:pointer}
+
   /* grown-up gate */
   #gate{position:fixed;inset:0;background:rgba(5,7,25,.85);z-index:90;display:none;align-items:center;justify-content:center}
   #gate.open{display:flex}
@@ -301,6 +310,7 @@
     <button class="iconbtn" id="fsBtn" title="Full screen">⛶</button>
     <button class="iconbtn" id="gearBtn" title="Settings">⚙️</button>
   </header>
+  <div id="clockOv"><div class="clockbox"><div id="clockSvg"></div><div class="clockdig" id="clockDig"></div><div class="clockleave" id="clockLeave"></div></div></div>
   <div class="wx" id="wx" title="Tap to hear today's clothes">
     <div class="wx-badge" id="wxBadge"><span id="wxIcon">🌤️</span><span id="wxTemp">--°</span></div>
     <div class="wx-text"><div class="wx-title" id="wxTitle">Checking the weather…</div><div class="wx-sub" id="wxSub"></div></div>
@@ -311,9 +321,8 @@
     <div class="uv-text"><div class="uv-title" id="uvTitle">Sun check…</div><div class="uv-sub" id="uvSub"></div></div>
     <div class="uv-strip" id="uvStrip"></div>
   </div>
-  <div class="events" id="events"></div>
-  <div class="ptabs" id="ptabs"></div>
   <main id="lanes"></main>
+  <div class="events" id="events"></div>
 </div>
 
 <div id="gate">
@@ -336,7 +345,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · tidy settings';
+  var BOARD_VERSION='11 Nov 2026 · tap for the time';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -651,7 +660,6 @@
     var showBars=split||view===-1;
     document.getElementById('wx').style.display=showBars?'':'none';
     document.getElementById('uv').style.display='none'; // UV detail is grown-up info: it lives in the small print and drives sunscreen/hat
-    renderTabs();
     renderEvents(showBars);
     if(view>=nKids())view=-1;
     lanesEl.className=nKids()>3?'many':'';
@@ -889,6 +897,9 @@
       road.style.display='';
       fill.style.width=pct+'%';
       mover.style.left='calc('+pct+'% * 0.86)';
+      var fig=cfg.runner.fig==='kids'?cfg.kids.map(function(x){return x.emoji;}).join(''):cfg.runner.fig;
+      if(mover.textContent!==fig)mover.textContent=fig;
+      mover.style.transform='translateY(-50%)'+(cfg.runner.flip?' scaleX(-1)':'');
     }
     var hdr=document.querySelector('header');
     lbl.classList.remove('big');hdr.classList.remove('centred');
@@ -905,10 +916,83 @@
   var lastDay=today();
   setInterval(function(){
     var ap=autoPeriod();
-    if(today()!==lastDay){lastDay=today();render();}
+    if(today()!==lastDay){lastDay=today();render();renderWx();fetchWx();}
     else if(ap!==lastAuto){render();}
     else renderHeader();
   },15000);
+
+  // ---------- "What time is it?" clock (tap the countdown or the time) ----------
+  var NUMW=['twelve','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
+  function hourWord(h){return NUMW[(h%12)||12];}
+  function clockPhrase(h,m){ // m is a multiple of 5; "quarter past seven", "twenty to eight"
+    var MW={5:'five',10:'ten',20:'twenty',25:'twenty-five'};
+    if(m===0)return hourWord(h)+' o\'clock';
+    if(m===15)return 'quarter past '+hourWord(h);
+    if(m===30)return 'half past '+hourWord(h);
+    if(m===45)return 'quarter to '+hourWord(h+1);
+    if(m<30)return MW[m]+' past '+hourWord(h);
+    return MW[60-m]+' to '+hourWord(h+1);
+  }
+  function round5(h,m){var t=Math.round((h*60+m)/5)*5;return [Math.floor(t/60)%24,t%60];}
+  function durPhrase(mins){
+    var h=Math.floor(mins/60),m=mins%60,p=[];
+    if(h)p.push(h===1?'one hour':h+' hours');
+    if(m)p.push(m===1?'one minute':m+' minutes');
+    return p.join(' and ')||'no time';
+  }
+  function leaveInfo(){
+    var now=new Date(),leave=cfg.days[now.getDay()].leave;if(!leave)return null;
+    var pp=leave.split(':'),lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+pp[0],+pp[1]);
+    return {h:+pp[0],m:+pp[1],mins:Math.ceil((lt-now)/60000)};
+  }
+  function timeSpeech(){
+    var n=new Date(),r=round5(n.getHours(),n.getMinutes()),out='It\'s '+clockPhrase(r[0],r[1])+'.';
+    var L=leaveInfo();
+    if(L&&L.mins>0&&L.mins<=180){
+      var lp=L.m%5===0?clockPhrase(L.h,L.m):(hourWord(L.h)+' '+L.m);
+      out+=' We have to leave at '+lp+'.';
+      if(L.mins<=5)out+=' That\'s in just '+durPhrase(L.mins)+', so it\'s nearly time to go!';
+      else out+=' That\'s in '+durPhrase(L.mins)+'.';
+    } else if(L&&L.mins<=0&&L.mins>-60)out+=' It\'s time to go! Shoes on and into the car!';
+    return out;
+  }
+  function clockSVG(){
+    var n=new Date(),hh=n.getHours(),mm=n.getMinutes(),ss=n.getSeconds(),R=100,C=110,sv='';
+    function pt(angleDeg,rad){var a=(angleDeg-90)*Math.PI/180;return [C+rad*Math.cos(a),C+rad*Math.sin(a)];}
+    sv+='<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">';
+    sv+='<circle cx="110" cy="110" r="104" fill="#ffffff" stroke="#2f3670" stroke-width="8"/>';
+    // time left until leaving, shown as a red wedge (like a Time Timer) when it is within the hour
+    var L=leaveInfo();
+    if(L&&L.mins>0&&L.mins<=60){
+      var a1=(mm+ss/60)*6,a2=a1+L.mins*6,p1=pt(a1,R-6),p2=pt(a2,R-6),large=(a2-a1)>180?1:0;
+      sv+='<path d="M110 110 L'+p1[0]+' '+p1[1]+' A'+(R-6)+' '+(R-6)+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' Z" fill="#ff6b6b" opacity=".55"/>';
+      var cp=pt(a2,R+2);sv+='<text x="'+cp[0]+'" y="'+cp[1]+'" font-size="22" text-anchor="middle" dominant-baseline="central">🚗</text>';
+    }
+    for(var i=0;i<60;i++){var o=pt(i*6,R-2),q=pt(i*6,i%5===0?R-12:R-7);sv+='<line x1="'+o[0]+'" y1="'+o[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#1b1f3b" stroke-width="'+(i%5===0?3:1.2)+'"/>';}
+    for(var k=1;k<=12;k++){var t=pt(k*30,R-27);sv+='<text x="'+t[0]+'" y="'+t[1]+'" font-size="20" font-weight="800" font-family="Baloo 2,sans-serif" fill="#1b1f3b" text-anchor="middle" dominant-baseline="central">'+k+'</text>';}
+    var ha=((hh%12)+mm/60)*30,ma=(mm+ss/60)*6,hp=pt(ha,52),mp=pt(ma,80);
+    sv+='<line x1="110" y1="110" x2="'+hp[0]+'" y2="'+hp[1]+'" stroke="#1b1f3b" stroke-width="9" stroke-linecap="round"/>';
+    sv+='<line x1="110" y1="110" x2="'+mp[0]+'" y2="'+mp[1]+'" stroke="#2f7cff" stroke-width="6" stroke-linecap="round"/>';
+    sv+='<circle cx="110" cy="110" r="7" fill="#1b1f3b"/></svg>';
+    return sv;
+  }
+  var clockT=null;
+  function showClock(){
+    keepAwake();
+    var ov=document.getElementById('clockOv'),n=new Date(),h=n.getHours();
+    document.getElementById('clockSvg').innerHTML=clockSVG();
+    document.getElementById('clockDig').textContent=((h%12)||12)+':'+pad(n.getMinutes())+(h<12?' am':' pm');
+    var L=leaveInfo(),lv=document.getElementById('clockLeave');
+    if(L&&L.mins>0&&L.mins<=180)lv.textContent='🚗 Leave at '+((L.h%12)||12)+':'+pad(L.m)+' · '+(L.mins>=60?Math.floor(L.mins/60)+' hr '+(L.mins%60)+' min':L.mins+' min');
+    else if(L&&L.mins<=0&&L.mins>-60)lv.textContent='🚗 Time to go!';
+    else lv.textContent='';
+    ov.classList.add('show');
+    say(timeSpeech());
+    clearTimeout(clockT);clockT=setTimeout(function(){ov.classList.remove('show');},9000);
+  }
+  document.getElementById('clockOv').addEventListener('click',function(){this.classList.remove('show');});
+  document.getElementById('countdown').addEventListener('click',showClock);
+  document.getElementById('dt').addEventListener('click',showClock);
 
   // ---------- fullscreen ----------
   document.getElementById('fsBtn').addEventListener('click',function(){
@@ -1073,6 +1157,8 @@
     var at=el('input',{type:'time',value:cfg.arvoStart||'12:00'});
     at.addEventListener('change',function(){if(at.value){cfg.arvoStart=at.value;selPeriod=null;sv();}});
     tcard.appendChild(sField('Afternoon starts at','The board switches from Morning to Afternoon quests at this time, every day.',[at]));
+    tcard.appendChild(sField('Runner on the leaving countdown','Who runs to the car.',[sSeg([['🏃','🏃 Person'],['🏃‍♀️','🏃‍♀️ Girl'],['🏃‍♂️','🏃‍♂️ Boy'],['kids','Our characters']],cfg.runner.fig,function(v){cfg.runner.fig=v;sv();})]));
+    tcard.appendChild(sField('Flip the runner','Turn on if they look like they\'re running away from the car.',[sSwitch(cfg.runner.flip,function(v){cfg.runner.flip=v;sv();})]));
     inner.appendChild(tcard);
   }
   function setQuestList(inner){
@@ -1291,6 +1377,7 @@
   }
 
   // ---------- upcoming events ----------
+  if(!cfg.runner)cfg.runner={fig:'🏃',flip:false};
   if(!cfg.events)cfg.events=[];
   if(cfg.eventLead==null)cfg.eventLead=30;
   if(!cfg.holidays)cfg.holidays={on:true,state:'VIC',lead:14};
@@ -1571,20 +1658,28 @@
     if(uvPeakAhead()>=uvLimit())parts.push('The sun will be strong today, so wear sunscreen and try and play in the shade. Don\'t forget your hat!');
     return parts.join(' ');
   }
+  function wxFreshNow(){return wx&&wx.date===today()&&Date.now()-(wx.at||0)<45*60000;}
   function speakWx(){
     keepAwake();
-    if(!wx||wx.date!==today()){say('Sorry, I can\'t see the weather right now.');return;}
-    say(weatherSpeech());
+    if(wxFreshNow()){say(weatherSpeech());return;}
+    // old or missing forecast (e.g. the tablet was on overnight): fetch first, then speak
+    fetchWx().then(function(ok){
+      if(ok||(wx&&wx.date===today()))say(weatherSpeech());
+      else say('Sorry, I can\'t check the weather right now. Is the internet on?');
+    });
   }
   document.getElementById('wx').addEventListener('click',speakWx);
   var wxErr='';
-  function fetchWx(){
+  var wxBusy=null;
+  function fetchWx(){ // returns a promise: true when fresh weather arrived
+    if(wxBusy)return wxBusy;
     var L=cfg.loc;
     var url='https://api.open-meteo.com/v1/forecast?latitude='+L.lat+'&longitude='+L.lon+
       '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,weather_code,wind_speed_10m_max,wind_gusts_10m_max'+
       '&hourly=uv_index,weather_code,precipitation_probability&timezone=auto&forecast_days=2';
+    wxBusy=new Promise(function(done){
     try{
-      fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){
+      fetch(url,{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){
         var d=j.daily;
         wx={date:today(),now:j.current.temperature_2m,code:d.weather_code[0],max:d.temperature_2m_max[0],min:d.temperature_2m_min[0],
             rain:d.precipitation_probability_max[0]||0,uv:d.uv_index_max[0]||0,at:Date.now(),
@@ -1610,11 +1705,19 @@
           else wx.code=cnt.sun>=cnt.part&&cnt.sun>=cnt.cloud?0:(cnt.part>=cnt.cloud?2:3);
         }
         if(dayRain>=0)wx.rain=dayRain;
-        wxErr='';save('qb_wx',wx);render();renderWx();
-      }).catch(function(){wxErr='Open this board from its own web address to get live weather';renderWx();});
-    }catch(e){wxErr='Weather blocked here';renderWx();}
+        wxErr='';save('qb_wx',wx);render();renderWx();done(true);
+      }).catch(function(){wxErr='Couldn\'t reach the weather service';renderWx();done(false);});
+    }catch(e){wxErr='Weather blocked here';renderWx();done(false);}
+    });
+    wxBusy.then(function(){wxBusy=null;});
+    return wxBusy;
   }
-  setInterval(fetchWx,30*60000);
+  // Keep the forecast fresh even when the tablet is left on for days (timers can pause while the screen sleeps)
+  function wxCheck(){if(!wxFreshNow())fetchWx();}
+  setInterval(wxCheck,60000);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')wxCheck();});
+  window.addEventListener('focus',wxCheck);
+  window.addEventListener('online',function(){fetchWx();});
 
   render();
   renderWx();
