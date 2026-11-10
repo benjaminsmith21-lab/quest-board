@@ -55,6 +55,11 @@
   @keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
   @media (orientation:portrait){main{flex-direction:column}}
 
+  /* morning / arvo tabs */
+  .ptabs{display:flex;gap:10px;justify-content:center}
+  .ptab{font-family:inherit;font-weight:800;font-size:clamp(18px,2.6vw,28px);padding:6px 24px;border-radius:99px;border:none;background:var(--bg2);color:var(--muted);cursor:pointer}
+  .ptab.sel{background:#fff;color:#1b1f3b}
+
   /* home cards */
   .kcard{flex:1;min-width:0;border:5px solid var(--c);border-radius:30px;background:var(--bg2);color:#fff;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;box-shadow:0 8px 0 var(--cd);transition:transform .12s;padding:12px}
   .kcard:active{transform:translateY(4px);box-shadow:0 4px 0 var(--cd)}
@@ -134,6 +139,7 @@
   .steprow input.emo{width:64px;text-align:center}
   .steprow input.lbl{flex:1}
   .hint{color:var(--muted);font-size:16px;margin:4px 0 0}
+  .pergrp{font-weight:800;color:var(--warn);margin:8px 0 2px;font-size:17px}
   .locresults{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:6px}
   .locbtn{font-size:17px;text-align:left}
 </style>
@@ -162,6 +168,7 @@
     <div class="uv-text"><div class="uv-title" id="uvTitle">Sun check…</div><div class="uv-sub" id="uvSub"></div></div>
     <div class="uv-strip" id="uvStrip"></div>
   </div>
+  <div class="ptabs" id="ptabs"></div>
   <main id="lanes"></main>
 </div>
 
@@ -204,7 +211,8 @@
       {id:'library',emoji:'📚',label:'Library bag'},
       {id:'sport',emoji:'🧢',label:'Sports uniform'},
       {id:'bed',emoji:'🛏️',label:'Make bed'},
-      {id:'tidy',emoji:'🧸',label:'Tidy one thing'}
+      {id:'tidy',emoji:'🧸',label:'Tidy one thing'},
+      {id:'reading',emoji:'📖',label:'Reading',period:'pm'}
     ];
     var wk0=['toilet','dress','breakfast','teeth','hair','sunscreen','bag','shoes'];
     var wk1=['toilet','dress','breakfast','teeth','hair','sunscreen','shoes'];
@@ -213,9 +221,9 @@
     var days={};
     for(var d=0;d<7;d++){
       var weekend=(d===0||d===6);
-      days[d]={leave:weekend?'':'08:15',kids:[(weekend?we0:wk0).slice(),(weekend?we1:wk1).slice()]};
+      days[d]={leave:weekend?'':'08:15',kids:[(weekend?we0:wk0).concat(['reading']),(weekend?we1:wk1).concat(['reading'])]};
     }
-    return {kids:[{name:'Big Kid',emoji:'🦊'},{name:'Little Kid',emoji:'🐢'}],steps:steps,days:days,voice:true};
+    return {kids:[{name:'Big Kid',emoji:'🦊'},{name:'Little Kid',emoji:'🐢'}],steps:steps,days:days,voice:true,arvoStart:'12:00',v:2};
   }
 
   // ---------- storage ----------
@@ -223,6 +231,21 @@
   function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 
   var cfg=load('qb_cfg',null)||defaults();
+  // v2: afternoon ("arvo") quests, with daily Reading for both kids
+  if(!cfg.v||cfg.v<2){
+    if(!stepByIdRaw('reading'))cfg.steps.push({id:'reading',emoji:'📖',label:'Reading',period:'pm'});
+    for(var dd=0;dd<7;dd++)for(var kk=0;kk<2;kk++){var arr0=cfg.days[dd].kids[kk];if(arr0.indexOf('reading')<0)arr0.push('reading');}
+    if(!cfg.arvoStart)cfg.arvoStart='12:00';
+    cfg.v=2;try{localStorage.setItem('qb_cfg',JSON.stringify(cfg));}catch(e){}
+  }
+  function stepByIdRaw(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
+  function stepPeriod(s){return s.period==='pm'?'pm':'am';}
+  function autoPeriod(){
+    var p=(cfg.arvoStart||'12:00').split(':'),n=new Date();
+    return (n.getHours()*60+n.getMinutes())>=(+p[0]*60+ +p[1])?'pm':'am';
+  }
+  var selPeriod=null,lastAuto=autoPeriod();
+  function curPeriod(){var a=autoPeriod();if(a!==lastAuto){lastAuto=a;selPeriod=null;}return selPeriod||a;}
   var prog=load('qb_prog',null);
   var streaks=load('qb_streaks',[{count:0,last:''},{count:0,last:''}]);
 
@@ -230,17 +253,19 @@
   function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
   function today(){return dateKey(new Date());}
   function ensureProg(){
-    if(!prog||prog.date!==today()){prog={date:today(),done:[[],[]],celebrated:[false,false]};save('qb_prog',prog);}
+    if(!prog||prog.date!==today()){prog={date:today(),done:[[],[]],celebrated:{am:[false,false],pm:[false,false]}};save('qb_prog',prog);}
+    if(Array.isArray(prog.celebrated))prog.celebrated={am:prog.celebrated,pm:[false,false]};
   }
   ensureProg();
 
   function stepById(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
-  function todaysSteps(k){
+  function todaysSteps(k,period){
+    period=period||curPeriod();
     var dc=cfg.days[new Date().getDay()];
-    var ids=(dc.kids[k]||[]).slice();
-    // auto sunscreen from the UV forecast (falls back to the day's setting if no forecast)
+    var ids=(dc.kids[k]||[]).filter(function(id){var s=stepByIdRaw(id);return s&&stepPeriod(s)===period;});
+    // auto sunscreen from the UV forecast (falls back to the day's setting if no forecast) - mornings only
     var need=sunscreenNeeded();
-    if(cfg.autoSun!==false&&need!==null&&ids.length){
+    if(period==='am'&&cfg.autoSun!==false&&need!==null&&ids.length){
       var i=ids.indexOf('sunscreen');
       if(need&&i<0)ids.push('sunscreen');
       if(!need&&i>-1)ids.splice(i,1);
@@ -298,10 +323,22 @@
     var showBars=split||view===-1;
     document.getElementById('wx').style.display=showBars?'':'none';
     document.getElementById('uv').style.display=showBars?'':'none';
+    renderTabs();
     if(split){for(var k=0;k<2;k++)lanesEl.appendChild(renderLane(k,false));}
     else if(view===-1){for(var j=0;j<2;j++)lanesEl.appendChild(renderCard(j));}
     else lanesEl.appendChild(renderLane(view,true));
     renderHeader();
+  }
+  function renderTabs(){
+    var t=document.getElementById('ptabs');t.innerHTML='';
+    var cp=curPeriod();
+    [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(p){
+      var left=0,total=0;
+      for(var k=0;k<2;k++){var st=todaysSteps(k,p[0]);total+=st.length;left+=st.filter(function(s){return prog.done[k].indexOf(s.id)<0;}).length;}
+      var b=el('button',{'class':'ptab'+(cp===p[0]?' sel':'')},p[1]+(total?(left?'':' ✅'):''));
+      b.addEventListener('click',function(){selPeriod=p[0];bumpIdle();render();});
+      t.appendChild(b);
+    });
   }
   function renderCard(k){
     var kid=cfg.kids[k],steps=todaysSteps(k),done=prog.done[k];
@@ -381,11 +418,12 @@
     if(i>-1){done.splice(i,1);undoSound();}
     else{
       done.push(s.id);
-      var steps=todaysSteps(k);
+      var per=curPeriod();
+      var steps=todaysSteps(k,per);
       var left=steps.filter(function(x){return done.indexOf(x.id)<0;}).length;
       if(left===0){
-        fanfare();say('Hooray '+cfg.kids[k].name+'! All done! You are a superstar!');
-        if(!prog.celebrated[k]){prog.celebrated[k]=true;bumpStreak(k);}
+        fanfare();say('Hooray '+cfg.kids[k].name+'! All done'+(per==='pm'?' for the afternoon':'')+'! You are a superstar!');
+        if(!prog.celebrated[per][k]){prog.celebrated[per][k]=true;if(per==='am')bumpStreak(k);}
         confetti(k);
         if(!isSplit()){clearTimeout(idleT);idleT=setTimeout(goHome,6000);}
       } else {
@@ -455,7 +493,10 @@
   }
   var lastDay=today();
   setInterval(function(){
-    if(today()!==lastDay){lastDay=today();render();}else renderHeader();
+    var ap=autoPeriod();
+    if(today()!==lastDay){lastDay=today();render();}
+    else if(ap!==lastAuto){render();}
+    else renderHeader();
   },15000);
 
   // ---------- fullscreen ----------
@@ -530,11 +571,18 @@
     noRush.addEventListener('change',function(){day.leave=noRush.checked?'':(t.value||'08:15');t.disabled=noRush.checked;save('qb_cfg',cfg);});
     var nl=el('label',{'class':'chk','for':'norush'});nl.appendChild(noRush);nl.appendChild(document.createTextNode('No countdown (relaxed day)'));
     lr.appendChild(t);lr.appendChild(nl);dc.appendChild(lr);
+    var ar2=el('div',{'class':'row'});
+    ar2.appendChild(el('span',{style:'font-size:18px'},'Arvo quests start at (every day):'));
+    var at=el('input',{type:'time',value:cfg.arvoStart||'12:00'});
+    at.addEventListener('change',function(){if(at.value){cfg.arvoStart=at.value;selPeriod=null;save('qb_cfg',cfg);}});
+    ar2.appendChild(at);dc.appendChild(ar2);
 
     var cols=el('div',{'class':'kidcols'});
     cfg.kids.forEach(function(kid,k){
       var col=el('div',{'class':'kidcol'});col.appendChild(el('h4',null,kid.emoji+' '+kid.name));
-      cfg.steps.forEach(function(s){
+      [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(per){
+      col.appendChild(el('div',{'class':'pergrp'},per[1]));
+      cfg.steps.filter(function(s){return stepPeriod(s)===per[0];}).forEach(function(s){
         var lab=el('label',{'class':'chk'});
         var cb=el('input',{type:'checkbox'});cb.checked=day.kids[k].indexOf(s.id)>-1;
         cb.addEventListener('change',function(){
@@ -543,6 +591,7 @@
           save('qb_cfg',cfg);
         });
         lab.appendChild(cb);lab.appendChild(document.createTextNode(s.emoji+' '+s.label));col.appendChild(lab);
+      });
       });
       cols.appendChild(col);
     });
@@ -573,18 +622,23 @@
         for(var d=0;d<7;d++)for(var k=0;k<2;k++){var a=cfg.days[d].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
         save('qb_cfg',cfg);renderSettings();
       });
-      r.appendChild(e1);r.appendChild(l1);r.appendChild(up);r.appendChild(del);sc.appendChild(r);
+      var ps=el('select');
+      [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if(stepPeriod(s)===p[0])o.selected=true;ps.appendChild(o);});
+      ps.addEventListener('change',function(){s.period=ps.value;save('qb_cfg',cfg);renderSettings();});
+      r.appendChild(e1);r.appendChild(l1);r.appendChild(ps);r.appendChild(up);r.appendChild(del);sc.appendChild(r);
     });
     var add=el('div',{'class':'row'});
     var ne=el('input',{type:'text','class':'emo',placeholder:'🍎',maxlength:'4',style:'width:64px;text-align:center'});
     var nlb=el('input',{type:'text',placeholder:'New quest (e.g. Fruit for kinder)',maxlength:'28',style:'flex:1'});
+    var nps=el('select');
+    [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(p){nps.appendChild(el('option',{value:p[0]},p[1]));});
     var ab=el('button',{'class':'btn primary'},'Add');
     ab.addEventListener('click',function(){
       if(!nlb.value.trim())return;
-      cfg.steps.push({id:'s'+Date.now(),emoji:ne.value||'⭐',label:nlb.value.trim()});
+      cfg.steps.push({id:'s'+Date.now(),emoji:ne.value||'⭐',label:nlb.value.trim(),period:nps.value});
       save('qb_cfg',cfg);renderSettings();
     });
-    add.appendChild(ne);add.appendChild(nlb);add.appendChild(ab);sc.appendChild(add);
+    add.appendChild(ne);add.appendChild(nlb);add.appendChild(nps);add.appendChild(ab);sc.appendChild(add);
     sc.appendChild(el('p',{'class':'hint'},'New quests start switched off: tick them on for each day above.'));
     sBody.appendChild(sc);
 
@@ -677,7 +731,7 @@
     oc.appendChild(el('p',{'class':'hint'},'Voices come from the tablet itself. For better ones: Android Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia), then pick a voice there.'));
     var br=el('div',{'class':'row',style:'margin-top:16px'});
     var rt=el('button',{'class':'btn'},'Clear today\'s ticks');
-    rt.addEventListener('click',function(){prog={date:today(),done:[[],[]],celebrated:[false,false]};save('qb_prog',prog);rt.textContent='Cleared ✓';});
+    rt.addEventListener('click',function(){prog={date:today(),done:[[],[]],celebrated:{am:[false,false],pm:[false,false]}};save('qb_prog',prog);rt.textContent='Cleared ✓';});
     var rs=el('button',{'class':'btn'},'Reset streaks');
     rs.addEventListener('click',function(){streaks=[{count:0,last:''},{count:0,last:''}];save('qb_streaks',streaks);rs.textContent='Reset ✓';});
     var rd=el('button',{'class':'btn danger'},'Restore default quests');
