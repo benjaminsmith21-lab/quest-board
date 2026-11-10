@@ -19,8 +19,12 @@
   .day{font-size:clamp(20px,3.2vw,34px);font-weight:800;line-height:1}
   .clock{font-size:clamp(16px,2.4vw,26px);color:var(--muted);font-weight:700}
   .countdown{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
-  .cd-label{font-size:clamp(16px,2.4vw,28px);font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cd-track{height:14px;border-radius:99px;background:#0e1130;overflow:hidden}
+  .cd-label{font-size:clamp(13px,1.6vw,17px);font-weight:700;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cd-label.big{font-size:clamp(20px,3vw,34px);font-weight:800;color:#fff}
+  .road{position:relative;height:clamp(40px,5.5vw,58px);border-radius:99px;background:#0e1130;overflow:visible}
+  .road-fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#3b4a9e,#7d6bff);transition:width 1s linear}
+  .mover{position:absolute;top:50%;transform:translateY(-50%);font-size:clamp(28px,4vw,44px);line-height:1;transition:left 1s linear}
+  .car{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:clamp(30px,4.2vw,46px);line-height:1}
   .cd-fill{height:100%;width:100%;border-radius:99px;background:var(--good);transition:width 1s linear,background .5s}
   .iconbtn{width:52px;height:52px;border-radius:16px;border:none;background:var(--bg2);color:#fff;font-size:26px;position:relative;flex:none;cursor:pointer}
   .iconbtn svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
@@ -55,9 +59,32 @@
   @keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
   @media (orientation:portrait){main{flex-direction:column}}
 
+  /* hold to undo */
+  .tile.done{touch-action:none}
+  .tile .hold{position:absolute;left:0;bottom:0;height:8px;width:0;background:#fff;border-radius:0 0 20px 20px;opacity:.9}
+  .tile.holding .hold{width:100%;transition:width 1.5s linear}
+  .tile.hinted::after{content:'Hold to undo';position:absolute;top:6px;left:50%;transform:translateX(-50%);background:#0e1130;color:#fff;font-size:13px;font-weight:700;padding:2px 8px;border-radius:8px;white-space:nowrap;z-index:2}
+
+  /* one at a time (Now & Next) */
+  .nn{flex:1;display:flex;gap:16px;min-height:0;align-items:stretch}
+  .tile.nn-now{flex:2.2;border-radius:30px;box-shadow:0 8px 0 #1a1f45;animation:nudge 2.4s ease-in-out infinite}
+  .lane.solo .tile.nn-now .em{font-size:clamp(90px,15vw,180px)}
+  .lane.solo .tile.nn-now .lb{font-size:clamp(26px,3.8vw,46px)}
+  @keyframes nudge{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+  .nn-next{flex:1;background:#0e1130;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.75;padding:8px}
+  .nn-next .nn-cap{font-size:clamp(18px,2.6vw,30px);font-weight:800;color:var(--muted)}
+  .nn-next .em{font-size:clamp(54px,8vw,96px);line-height:1.1}
+  .nn-next .lb{font-size:clamp(15px,2vw,22px);font-weight:700;text-align:center}
+  .nn-done{flex:1;display:flex;align-items:center;justify-content:center;font-size:clamp(100px,18vw,200px)}
+  .nn-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .tile.mini{width:clamp(54px,7vw,76px);height:clamp(54px,7vw,76px);border-radius:16px;box-shadow:0 4px 0 #1a1f45;padding:0}
+  .lane.solo .tile.mini .em{font-size:clamp(26px,3.6vw,40px)}
+  .lane.solo .tile.mini .tick{font-size:clamp(26px,3.6vw,40px)}
+  .tile.mini.hinted::after{font-size:11px;top:-22px}
+
   /* morning / arvo tabs */
   .ptabs{display:flex;gap:10px;justify-content:center}
-  .ptab{font-family:inherit;font-weight:800;font-size:clamp(18px,2.6vw,28px);padding:6px 24px;border-radius:99px;border:none;background:var(--bg2);color:var(--muted);cursor:pointer}
+  .ptab{font-family:inherit;font-weight:800;font-size:clamp(14px,1.8vw,20px);padding:4px 18px;border-radius:99px;border:none;background:var(--bg2);color:var(--muted);cursor:pointer}
   .ptab.sel{background:#fff;color:#1b1f3b}
 
   /* home cards */
@@ -83,13 +110,13 @@
   /* weather */
   .wx{display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:20px;padding:8px 14px;border:4px solid var(--wc,#444b8a);cursor:pointer}
   .wx-badge{display:flex;align-items:center;gap:6px;background:var(--wc,#444b8a);color:#111;border-radius:16px;padding:4px 14px;font-weight:800;font-size:clamp(24px,3.6vw,40px);flex:none}
-  .wx-text{flex:1;min-width:0}
-  .wx-title{font-size:clamp(20px,3vw,34px);font-weight:800;line-height:1.05;color:var(--wc,#fff)}
-  .wx-sub{font-size:clamp(14px,1.8vw,20px);color:var(--muted);font-weight:700}
-  .wx-wear{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-  .wear{display:flex;flex-direction:column;align-items:center;background:#0e1130;border-radius:14px;padding:4px 10px;min-width:70px}
-  .wear .e{font-size:clamp(28px,4vw,46px);line-height:1.1}
-  .wear .t{font-size:clamp(11px,1.3vw,15px);font-weight:700;color:var(--muted)}
+  .wx-text{flex:none;min-width:0;max-width:30%}
+  .wx-title{font-size:clamp(18px,2.6vw,30px);font-weight:800;line-height:1.05;color:var(--wc,#fff)}
+  .wx-sub{font-size:clamp(11px,1.3vw,14px);color:var(--muted);font-weight:600;margin-top:2px}
+  .wx-wear{flex:1;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .wear{display:flex;flex-direction:column;align-items:center;background:#0e1130;border-radius:16px;padding:6px 12px;min-width:84px}
+  .wear .e{font-size:clamp(40px,6vw,64px);line-height:1.1}
+  .wear .t{font-size:clamp(12px,1.5vw,17px);font-weight:700;color:#fff}
   .wx.off{opacity:.6}
 
   /* UV */
@@ -152,8 +179,8 @@
       <div class="clock" id="clock">7:30</div>
     </div>
     <div class="countdown" id="countdown">
+      <div class="road" id="road"><div class="road-fill" id="cdFill"></div><div class="mover" id="mover">🏃</div><div class="car">🚗</div></div>
       <div class="cd-label" id="cdLabel"></div>
-      <div class="cd-track"><div class="cd-fill" id="cdFill"></div></div>
     </div>
     <button class="iconbtn" id="fsBtn" title="Full screen">⛶</button>
     <button class="iconbtn" id="gearBtn" title="Settings">⚙️</button>
@@ -237,6 +264,11 @@
     for(var dd=0;dd<7;dd++)for(var kk=0;kk<2;kk++){var arr0=cfg.days[dd].kids[kk];if(arr0.indexOf('reading')<0)arr0.push('reading');}
     if(!cfg.arvoStart)cfg.arvoStart='12:00';
     cfg.v=2;try{localStorage.setItem('qb_cfg',JSON.stringify(cfg));}catch(e){}
+  }
+  // v3: per-kid board style. Little one gets "one at a time" by default.
+  if(cfg.v<3){
+    cfg.kids[0].mode=cfg.kids[0].mode||'grid';cfg.kids[1].mode=cfg.kids[1].mode||'nownext';
+    cfg.v=3;try{localStorage.setItem('qb_cfg',JSON.stringify(cfg));}catch(e){}
   }
   function stepByIdRaw(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
   function stepPeriod(s){return s.period==='pm'?'pm':'am';}
@@ -322,7 +354,7 @@
     var split=isSplit();if(split)view=-1;
     var showBars=split||view===-1;
     document.getElementById('wx').style.display=showBars?'':'none';
-    document.getElementById('uv').style.display=showBars?'':'none';
+    document.getElementById('uv').style.display='none'; // UV detail is grown-up info: it lives in the small print and drives sunscreen/hat
     renderTabs();
     if(split){for(var k=0;k<2;k++)lanesEl.appendChild(renderLane(k,false));}
     else if(view===-1){for(var j=0;j<2;j++)lanesEl.appendChild(renderCard(j));}
@@ -365,9 +397,31 @@
     if(!wx||wx.date!==today())return null;
     var o=outfit(wx);
     var chip=el('div',{'class':'ochip'});chip.style.background=o.band.colour;
-    chip.textContent=o.wear.map(function(x){return x[0];}).join(' ')+(sunscreenNeeded()?' 🧴':'');
+    chip.textContent=o.wear.map(function(x){return x[0];}).join(' ');
     chip.title=o.band.name;
     return chip;
+  }
+  // A quest tile. Tap to tick. Ticked tiles need a 1.5s hold to undo, so little fingers can't untick by accident.
+  function makeTile(k,s,isDone,extra){
+    var b=el('button',{'class':'tile'+(isDone?' done':'')+(extra?' '+extra:'')});
+    b.appendChild(el('div',{'class':'em'},s.emoji));
+    if(extra!=='mini')b.appendChild(el('div',{'class':'lb'},s.label));
+    b.appendChild(el('div',{'class':'tick'},'✅'));
+    b.appendChild(el('div',{'class':'hold'}));
+    if(!isDone){b.addEventListener('click',function(){toggle(k,s);});return b;}
+    var t=null;
+    b.addEventListener('pointerdown',function(e){
+      try{b.setPointerCapture(e.pointerId);}catch(_){}
+      b.classList.add('holding');
+      t=setTimeout(function(){t=null;b.classList.remove('holding');toggle(k,s);},1500);
+    });
+    b.addEventListener('pointerup',function(){
+      if(t){clearTimeout(t);t=null;b.classList.remove('holding');
+        b.classList.add('hinted');setTimeout(function(){b.classList.remove('hinted');},1600);}
+    });
+    b.addEventListener('pointercancel',function(){if(t){clearTimeout(t);t=null;b.classList.remove('holding');}});
+    b.addEventListener('contextmenu',function(e){e.preventDefault();});
+    return b;
   }
   function renderLane(k,solo){
     var kid=cfg.kids[k],steps=todaysSteps(k),done=prog.done[k];
@@ -392,19 +446,29 @@
     var pf=document.createElement('div');pf.className='prog-fill';pf.style.width=(steps.length?count/steps.length*100:0)+'%';
     p.appendChild(pf);lane.appendChild(p);
 
-    var tiles=document.createElement('div');tiles.className='tiles';
-    if(!steps.length){var e=document.createElement('div');e.className='empty';e.textContent='No quests today 🎉';tiles.appendChild(e);}
-    steps.forEach(function(s){
-      var b=document.createElement('button');
-      b.className='tile'+(done.indexOf(s.id)>-1?' done':'');
-      var em=document.createElement('div');em.className='em';em.textContent=s.emoji;
-      var lb=document.createElement('div');lb.className='lb';lb.textContent=s.label;
-      var tk=document.createElement('div');tk.className='tick';tk.textContent='✅';
-      b.appendChild(em);b.appendChild(lb);b.appendChild(tk);
-      b.addEventListener('click',function(){toggle(k,s);});
-      tiles.appendChild(b);
-    });
-    lane.appendChild(tiles);
+    var undone=steps.filter(function(s){return done.indexOf(s.id)<0;});
+    if(solo&&kid.mode==='nownext'&&steps.length){
+      // One at a time: a huge "now" step, a smaller "next", and a strip of little tiles
+      var nn=el('div',{'class':'nn'});
+      if(undone.length){
+        var now=undone[0],nxt=undone[1];
+        var nb=makeTile(k,now,false,'nn-now');nn.appendChild(nb);
+        var nx=el('div',{'class':'nn-next'});
+        nx.appendChild(el('div',{'class':'nn-cap'},nxt?'Next':'Last one!'));
+        nx.appendChild(el('div',{'class':'em'},nxt?nxt.emoji:'⭐'));
+        if(nxt)nx.appendChild(el('div',{'class':'lb'},nxt.label));
+        nn.appendChild(nx);
+      } else nn.appendChild(el('div',{'class':'nn-done'},'🎉'));
+      lane.appendChild(nn);
+      var row=el('div',{'class':'nn-row'});
+      steps.forEach(function(s){row.appendChild(makeTile(k,s,done.indexOf(s.id)>-1,'mini'));});
+      lane.appendChild(row);
+    } else {
+      var tiles=document.createElement('div');tiles.className='tiles';
+      if(!steps.length){var e=document.createElement('div');e.className='empty';e.textContent='No quests today 🎉';tiles.appendChild(e);}
+      steps.forEach(function(s){tiles.appendChild(makeTile(k,s,done.indexOf(s.id)>-1,''));});
+      lane.appendChild(tiles);
+    }
 
     var ban=document.createElement('div');ban.className='banner';ban.textContent='⭐ All done, '+kid.name+'! ⭐';
     lane.appendChild(ban);
@@ -429,7 +493,7 @@
       } else {
         blip();
         var praise=PRAISE[Math.floor(Math.random()*PRAISE.length)];
-        say(s.label+'. '+praise+' '+left+(left===1?' more to go.':' more to go.'));
+        say(s.label+'! '+praise+' '+left+' more!');
       }
     }
     save('qb_prog',prog);
@@ -472,23 +536,27 @@
     var h=now.getHours(),m=now.getMinutes();
     document.getElementById('clock').textContent=((h%12)||12)+':'+pad(m)+(h<12?' am':' pm');
     var leave=cfg.days[now.getDay()].leave;
-    var cd=document.getElementById('countdown'),lbl=document.getElementById('cdLabel'),fill=document.getElementById('cdFill');
-    if(!leave){cd.style.visibility='visible';lbl.textContent='🌈 Relaxed day — no rush!';fill.style.width='100%';fill.style.background='#7d6bff';return;}
+    var lbl=document.getElementById('cdLabel'),fill=document.getElementById('cdFill');
+    var road=document.getElementById('road'),mover=document.getElementById('mover');
+    function fmt(hm){var p=hm.split(':'),hh=+p[0];return ((hh%12)||12)+':'+p[1]+(hh<12?' am':' pm');}
+    function setRoad(pct){ // 0 = start of the road, 100 = at the car
+      road.style.display='';
+      fill.style.width=pct+'%';
+      mover.style.left='calc('+pct+'% * 0.86)';
+    }
+    lbl.classList.remove('big');
+    if(!leave){road.style.display='none';lbl.classList.add('big');lbl.textContent='🌈 Relaxed day';return;}
     var parts=leave.split(':');
     var lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+parts[0],+parts[1]);
     var mins=Math.ceil((lt-now)/60000);
-    var window_=60; // bar covers last 60 min
-    var pct=Math.max(0,Math.min(100,mins/window_*100));
-    fill.style.width=pct+'%';
-    fill.style.background=mins>15?'var(--good)':mins>5?'var(--warn)':'var(--bad)';
-    if(mins>90){lbl.textContent='🌅 Good morning!';fill.style.width='100%';}
-    else if(mins>0)lbl.textContent='🚗 Leave in '+mins+' min';
-    else if(mins>-90)lbl.textContent='🚗 Time to go!';
+    var window_=60; // the runner travels to the car over the last 60 minutes
+    if(mins>window_){setRoad(0);lbl.textContent='Leave at '+fmt(leave);}
+    else if(mins>0){setRoad((window_-mins)/window_*100);lbl.textContent='Leave at '+fmt(leave)+' · '+mins+' min';}
+    else if(mins>-90){setRoad(100);lbl.classList.add('big');lbl.textContent='Time to go! 🚗';}
     else{
+      road.style.display='none';
       var td=(now.getDay()+1)%7,tl=cfg.days[td].leave,dn=SHORT[td];
-      if(tl){var tp=tl.split(':'),th=+tp[0];lbl.textContent='🌙 Tomorrow ('+dn+'): leave at '+((th%12)||12)+':'+tp[1]+(th<12?' am':' pm');}
-      else lbl.textContent='🌙 Tomorrow ('+dn+'): relaxed day 🌈';
-      fill.style.width='100%';fill.style.background='#7d6bff';
+      lbl.textContent=tl?'🌙 Tomorrow ('+dn+'): leave at '+fmt(tl):'🌙 Tomorrow ('+dn+'): relaxed day 🌈';
     }
   }
   var lastDay=today();
@@ -548,7 +616,12 @@
       sel.addEventListener('change',function(){kid.emoji=sel.value;save('qb_cfg',cfg);});
       var inp=el('input',{type:'text',value:kid.name,maxlength:'16'});
       inp.addEventListener('input',function(){kid.name=inp.value||('Kid '+(k+1));save('qb_cfg',cfg);});
-      r.appendChild(sel);r.appendChild(inp);kc.appendChild(r);
+      var ms=el('select');
+      [['nownext','One at a time (best for little ones)'],['grid','All quests at once']].forEach(function(p){
+        var o=el('option',{value:p[0]},p[1]);if((kid.mode||'grid')===p[0])o.selected=true;ms.appendChild(o);
+      });
+      ms.addEventListener('change',function(){kid.mode=ms.value;save('qb_cfg',cfg);});
+      r.appendChild(sel);r.appendChild(inp);r.appendChild(ms);kc.appendChild(r);
     });
     sBody.appendChild(kc);
 
@@ -752,8 +825,8 @@
     {min:27,name:'Hot day',colour:'#ff5e5e',word:'red',wear:[['🩳','Shorts'],['👕','T-shirt']]},
     {min:22,name:'Warm day',colour:'#ff9f43',word:'orange',wear:[['🩳','Shorts'],['👕','T-shirt']]},
     {min:17,name:'Nice day',colour:'#f6d743',word:'yellow',wear:[['👖','Pants or shorts'],['👕','T-shirt']]},
-    {min:12,name:'Cool day',colour:'#4fa3ff',word:'blue',wear:[['👖','Long pants'],['🧶','Jumper']]},
-    {min:-99,name:'Cold day',colour:'#a77bff',word:'purple',wear:[['👖','Long pants'],['🧶','Jumper'],['🧥','Jacket'],['🧢','Beanie']]}
+    {min:12,name:'Cool day',colour:'#4fa3ff',word:'blue',wear:[['👖','Long pants'],['🧥','Jumper']]},
+    {min:-99,name:'Cold day',colour:'#a77bff',word:'purple',wear:[['👖','Long pants'],['🧥','Warm jacket'],['🧣','Scarf']]}
   ];
   function wxIcon(code){
     if(code===0)return '☀️';if(code<=2)return '🌤️';if(code===3)return '☁️';
@@ -765,9 +838,9 @@
     var band=BANDS.filter(function(b){return w.max>=b.min;})[0];
     var wear=band.wear.map(function(x){return x.slice();});
     var extras=[];
-    if(w.min<=10&&band.min>=17)extras.push(['🧶','Jumper for the morning']);
+    if(w.min<=10&&band.min>=17)extras.push(['🧥','Jumper']);
     if(w.rain>=40)extras.push(['☔','Raincoat']);
-    if(uvPeakAhead()>=uvLimit()&&band.min>=12)extras.push(['👒','Sun hat']);
+    if(uvPeakAhead()>=uvLimit()){extras.push(['👒','Hat']);extras.push(['🧴','Sunscreen']);}
     return {band:band,wear:wear.concat(extras)};
   }
   // ----- UV helpers -----
@@ -858,10 +931,13 @@
     var o=outfit(wx);
     box.style.setProperty('--wc',o.band.colour);
     document.getElementById('wxIcon').textContent=wxIcon(wx.code);
-    document.getElementById('wxTemp').textContent=Math.round(wx.max)+'°';
-    document.getElementById('wxTitle').textContent=o.band.name+' — wear '+o.band.word+'-day clothes';
-    var sub=(cfg.loc.name?cfg.loc.name.split(',')[0]+' · ':'')+'Now '+Math.round(wx.now)+'° · low '+Math.round(wx.min)+'° · top '+Math.round(wx.max)+'°';
+    document.getElementById('wxTemp').textContent='';
+    document.getElementById('wxTitle').textContent='Wear today';
+    // small print for grown-ups only
+    var sub=(cfg.loc.name?cfg.loc.name.split(',')[0]+' · ':'')+Math.round(wx.min)+'°→'+Math.round(wx.max)+'°';
     if(wx.rain>=20)sub+=' · rain '+wx.rain+'%';
+    var pk=uvPeakAhead();if(pk>=1)sub+=' · UV '+Math.round(pk);
+    var pt=protectionTimes();if(pt)sub+=' ('+fmtH(pt.from)+'–'+fmtH(pt.to)+')';
     document.getElementById('wxSub').textContent=sub;
     var wr=document.getElementById('wxWear');wr.innerHTML='';
     o.wear.forEach(function(x){
@@ -874,7 +950,7 @@
     var o=outfit(wx);
     var items=o.wear.map(function(x){return x[1].toLowerCase();});
     var last=items.pop();
-    say('Today is a '+o.band.word+' day. It will get to '+Math.round(wx.max)+' degrees. Wear '+(items.length?items.join(', ')+' and ':'')+last+'.');
+    say('Today, wear '+(items.length?items.join(', ')+' and ':'')+last+'.');
   }
   document.getElementById('wx').addEventListener('click',speakWx);
   var wxErr='';
