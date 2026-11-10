@@ -279,6 +279,12 @@
   .clockdig{font-size:clamp(30px,5vw,54px);font-weight:800}
   .clockleave{font-size:clamp(22px,3.4vw,38px);font-weight:800;color:#ffd23f}
   #countdown,#dt{cursor:pointer}
+  #ckM.flash{animation:handFlash .5s ease-in-out infinite alternate}
+  @keyframes handFlash{from{stroke:#2f7cff;stroke-width:6}to{stroke:#ffb400;stroke-width:9}}
+  #ckDest.pop{animation:destPop .6s cubic-bezier(.3,1.8,.6,1)}
+  @keyframes destPop{0%{opacity:0}60%{opacity:1}100%{opacity:1}}
+  .clockleave{opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s;min-height:1.3em}
+  .clockleave.in{opacity:1;transform:none}
 
   /* grown-up gate */
   #gate{position:fixed;inset:0;background:rgba(5,7,25,.85);z-index:90;display:none;align-items:center;justify-content:center}
@@ -376,7 +382,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · make lunch';
+  var BOARD_VERSION='11 Nov 2026 · animated clock';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -642,37 +648,42 @@
       AI.sess=sess;AI.voice=want;AI.state='ready';AI.cache={};AI.order=[];aiStatus();
     }).catch(function(e){AI.state='error';AI.failedAt=Date.now();AI.err=String((e&&e.message)||e).slice(0,120);aiStatus();});
   }
-  function aiPlay(url,text,tok){
+  function aiPlay(url,text,tok,done){
     if(tok!==AI.token)return;
     try{if(AI.audio)AI.audio.pause();}catch(e){}
     var a=new Audio(url);a.playbackRate=Math.max(0.7,Math.min(1.3,(cfg.rate||0.95)+0.05));
-    AI.audio=a;a.play().catch(function(){deviceSay(text);});
+    if(done)a.onended=done;
+    AI.audio=a;a.play().catch(function(){deviceSay(text,done);});
   }
-  function aiSay(text){
+  function aiSay(text,done){
     var tok=++AI.token;
     try{speechSynthesis.cancel();}catch(e){}
-    if(AI.cache[text]){aiPlay(AI.cache[text],text,tok);return;}
+    if(AI.cache[text]){aiPlay(AI.cache[text],text,tok,done);return;}
     AI.sess.predict(text).then(function(wav){
       var url=URL.createObjectURL(wav);AI.cache[text]=url;AI.order.push(text);
       if(AI.order.length>80){var old=AI.order.shift();try{URL.revokeObjectURL(AI.cache[old]);}catch(e){}delete AI.cache[old];}
-      aiPlay(url,text,tok);
-    }).catch(function(){if(tok===AI.token)deviceSay(text);});
+      aiPlay(url,text,tok,done);
+    }).catch(function(){if(tok===AI.token)deviceSay(text,done);});
   }
-  function say(text){
-    if(!cfg.voice)return;
+  // say(text[, done]): done() runs once speaking finishes (or after a sensible guess if the device never reports it)
+  function say(text,done){
+    var fired=false,cb=done?function(){if(!fired){fired=true;done();}}:null;
+    if(cb)setTimeout(cb,1500+text.split(' ').length*420); // safety net
+    if(!cfg.voice){if(cb)setTimeout(cb,600);return;}
     if(cfg.ai&&cfg.ai.on){
-      if(AI.state==='ready'){aiSay(text);return;}
+      if(AI.state==='ready'){aiSay(text,cb);return;}
       aiLoad();
     }
-    deviceSay(text);
+    deviceSay(text,cb);
   }
   // start fetching the natural voice after the first tap, so it is ready for the next one
   document.addEventListener('pointerdown',function first(){document.removeEventListener('pointerdown',first);if(cfg.ai&&cfg.ai.on)aiLoad();},{once:true});
-  function deviceSay(text){
-    if(!window.speechSynthesis)return;
+  function deviceSay(text,done){
+    if(!window.speechSynthesis){if(done)done();return;}
     try{
       speechSynthesis.cancel();
       var u=new SpeechSynthesisUtterance(text);
+      if(done){u.onend=done;u.onerror=done;}
       u.rate=cfg.rate||0.95;u.pitch=cfg.pitch||1.25;u.lang='en-AU';
       if(cfg.voiceName){var vs=speechSynthesis.getVoices()||[];for(var i=0;i<vs.length;i++)if(vs[i].name===cfg.voiceName){u.voice=vs[i];u.lang=vs[i].lang;break;}}
       speechSynthesis.speak(u);
@@ -990,52 +1001,99 @@
     var pp=leave.split(':'),lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+pp[0],+pp[1]);
     return {h:+pp[0],m:+pp[1],mins:Math.ceil((lt-now)/60000)};
   }
-  function timeSpeech(){
-    var n=new Date(),r=round5(n.getHours(),n.getMinutes()),out='It\'s '+clockPhrase(r[0],r[1])+'.';
+  function timeSpeechParts(){ // [what time it is now, what happens next]
+    var n=new Date(),r=round5(n.getHours(),n.getMinutes()),now='It\'s '+clockPhrase(r[0],r[1])+'.',next='';
     var L=leaveInfo();
     if(L&&L.mins>0&&L.mins<=180){
       var lp=L.m%5===0?clockPhrase(L.h,L.m):(hourWord(L.h)+' '+L.m);
-      out+=' We have to leave at '+lp+'.';
-      if(L.mins<=5)out+=' That\'s in just '+durPhrase(L.mins)+', so it\'s nearly time to go!';
-      else out+=' That\'s in '+durPhrase(L.mins)+'.';
-    } else if(L&&L.mins<=0&&L.mins>-60)out+=' It\'s time to go! Shoes on and '+destPhrase()+'!';
-    return out;
+      next='We have to leave at '+lp+'.';
+      if(L.mins<=5)next+=' That\'s in just '+durPhrase(L.mins)+', so it\'s nearly time to go!';
+      else next+=' That\'s in '+durPhrase(L.mins)+'.';
+    } else if(L&&L.mins<=0&&L.mins>-60)next='It\'s time to go! Shoes on and '+destPhrase()+'!';
+    return [now,next];
   }
+  function timeSpeech(){var p=timeSpeechParts();return (p[0]+' '+p[1]).trim();}
+  var CK={C:110,R:100};
+  function ckPt(angleDeg,rad){var a=(angleDeg-90)*Math.PI/180;return [CK.C+rad*Math.cos(a),CK.C+rad*Math.sin(a)];}
+  function wedgePath(a1,a2){
+    if(a2-a1<0.5)return '';
+    var r=CK.R-6,p1=ckPt(a1,r),p2=ckPt(a2,r),large=(a2-a1)>180?1:0;
+    return 'M110 110 L'+p1[0]+' '+p1[1]+' A'+r+' '+r+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' Z';
+  }
+  function handTo(id,angle,len){var e=document.getElementById(id);if(!e)return;var p=ckPt(angle,len);e.setAttribute('x2',p[0]);e.setAttribute('y2',p[1]);}
   function clockSVG(){
-    var n=new Date(),hh=n.getHours(),mm=n.getMinutes(),ss=n.getSeconds(),R=100,C=110,sv='';
-    function pt(angleDeg,rad){var a=(angleDeg-90)*Math.PI/180;return [C+rad*Math.cos(a),C+rad*Math.sin(a)];}
+    var n=new Date(),hh=n.getHours(),mm=n.getMinutes(),ss=n.getSeconds(),R=CK.R,sv='';
+    var col=cfg.leave.wedge||'#ff6b6b';
     sv+='<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">';
     sv+='<circle cx="110" cy="110" r="104" fill="'+(cfg.leave.face||'#ffffff')+'" stroke="#2f3670" stroke-width="8"/>';
-    // time left until leaving, shown as a red wedge (like a Time Timer) when it is within the hour
-    var L=leaveInfo();
-    if(cfg.leave.showWedge!==false&&L&&L.mins>0&&L.mins<=60){
-      var a1=(mm+ss/60)*6,a2=a1+L.mins*6,p1=pt(a1,R-6),p2=pt(a2,R-6),large=(a2-a1)>180?1:0;
-      sv+='<path d="M110 110 L'+p1[0]+' '+p1[1]+' A'+(R-6)+' '+(R-6)+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' Z" fill="'+(cfg.leave.wedge||'#ff6b6b')+'" opacity=".6"/>';
-      var cp=pt(a2,R+2);sv+='<text x="'+cp[0]+'" y="'+cp[1]+'" font-size="22" text-anchor="middle" dominant-baseline="central">'+cfg.leave.dest+'</text>';
-    }
-    for(var i=0;i<60;i++){var o=pt(i*6,R-2),q=pt(i*6,i%5===0?R-12:R-7);sv+='<line x1="'+o[0]+'" y1="'+o[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#1b1f3b" stroke-width="'+(i%5===0?3:1.2)+'"/>';}
-    for(var k=1;k<=12;k++){var t=pt(k*30,R-27);sv+='<text x="'+t[0]+'" y="'+t[1]+'" font-size="20" font-weight="800" font-family="Baloo 2,sans-serif" fill="#1b1f3b" text-anchor="middle" dominant-baseline="central">'+k+'</text>';}
-    var ha=((hh%12)+mm/60)*30,ma=(mm+ss/60)*6,hp=pt(ha,52),mp=pt(ma,80);
-    sv+='<line x1="110" y1="110" x2="'+hp[0]+'" y2="'+hp[1]+'" stroke="#1b1f3b" stroke-width="9" stroke-linecap="round"/>';
-    sv+='<line x1="110" y1="110" x2="'+mp[0]+'" y2="'+mp[1]+'" stroke="#2f7cff" stroke-width="6" stroke-linecap="round"/>';
-    sv+='<circle cx="110" cy="110" r="7" fill="#1b1f3b"/></svg>';
+    sv+='<path id="ckWedge" d="" fill="'+col+'" opacity=".55"/>';
+    for(var i=0;i<60;i++){var o=ckPt(i*6,R-2),q=ckPt(i*6,i%5===0?R-12:R-7);sv+='<line x1="'+o[0]+'" y1="'+o[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#1b1f3b" stroke-width="'+(i%5===0?3:1.2)+'"/>';}
+    for(var k=1;k<=12;k++){var t=ckPt(k*30,R-27);sv+='<text x="'+t[0]+'" y="'+t[1]+'" font-size="20" font-weight="800" font-family="Baloo 2,sans-serif" fill="#1b1f3b" text-anchor="middle" dominant-baseline="central">'+k+'</text>';}
+    // "leaving time" ghost hands (hidden until the sweep)
+    sv+='<line id="ckGH" x1="110" y1="110" x2="110" y2="110" stroke="'+col+'" stroke-width="9" stroke-linecap="round" opacity="0"/>';
+    sv+='<line id="ckGM" x1="110" y1="110" x2="110" y2="110" stroke="'+col+'" stroke-width="6" stroke-linecap="round" opacity="0"/>';
+    // real hands: short dark hour hand, long blue minute hand
+    var ha=((hh%12)+mm/60)*30,ma=(mm+ss/60)*6,hp=ckPt(ha,52),mp=ckPt(ma,80);
+    sv+='<line id="ckH" x1="110" y1="110" x2="'+hp[0]+'" y2="'+hp[1]+'" stroke="#1b1f3b" stroke-width="9" stroke-linecap="round"/>';
+    sv+='<line id="ckM" x1="110" y1="110" x2="'+mp[0]+'" y2="'+mp[1]+'" stroke="#2f7cff" stroke-width="6" stroke-linecap="round"/>';
+    sv+='<circle cx="110" cy="110" r="7" fill="#1b1f3b"/>';
+    sv+='<text id="ckDest" x="0" y="0" font-size="24" text-anchor="middle" dominant-baseline="central" opacity="0">'+cfg.leave.dest+'</text>';
+    sv+='</svg>';
     return sv;
   }
-  var clockT=null;
+  var clockT=null,clockRun=0;
+  function closeClock(){clockRun++;clearTimeout(clockT);document.getElementById('clockOv').classList.remove('show');}
+  function sweepToLeave(L,run,after){
+    // the leaving-time hands start on top of the real hands and travel clockwise to the leaving time
+    var n=new Date(),m0=(n.getMinutes()+n.getSeconds()/60)*6,h0=((n.getHours()%12)+n.getMinutes()/60)*30;
+    var exact=Math.max(0,(new Date(n.getFullYear(),n.getMonth(),n.getDate(),L.h,L.m)-n)/60000);
+    var m1=m0+exact*6,h1=h0+exact*0.5;
+    var gm=document.getElementById('ckGM'),gh=document.getElementById('ckGH'),wg=document.getElementById('ckWedge'),ds=document.getElementById('ckDest');
+    var showW=cfg.leave.showWedge!==false&&exact<=60;
+    var dur=Math.min(4200,1600+exact*35),t0=null; // simple: about 2–4 seconds
+    gm.setAttribute('opacity','.95');gh.setAttribute('opacity','.6');
+    function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+    function frame(ts){
+      if(run!==clockRun)return;
+      if(t0==null)t0=ts;var t=Math.min(1,(ts-t0)/dur),e=ease(t);
+      var ma=m0+(m1-m0)*e,ha=h0+(h1-h0)*e;
+      handTo('ckGM',ma,80);handTo('ckGH',ha,52);
+      if(showW)wg.setAttribute('d',wedgePath(m0,ma));
+      if(t<1)requestAnimationFrame(frame);
+      else{var p=ckPt(m1,CK.R+2);ds.setAttribute('x',p[0]);ds.setAttribute('y',p[1]);ds.setAttribute('opacity','1');ds.classList.add('pop');if(after)after();}
+    }
+    requestAnimationFrame(frame);
+  }
   function showClock(){
     keepAwake();
+    var run=++clockRun;
     var ov=document.getElementById('clockOv'),n=new Date(),h=n.getHours();
     document.getElementById('clockSvg').innerHTML=clockSVG();
     var dg=document.getElementById('clockDig');dg.textContent=((h%12)||12)+':'+pad(n.getMinutes())+(h<12?' am':' pm');dg.style.display=cfg.leave.digital===false?'none':'';
     var L=leaveInfo(),lv=document.getElementById('clockLeave');
-    if(L&&L.mins>0&&L.mins<=180)lv.textContent=cfg.leave.dest+' Leave at '+((L.h%12)||12)+':'+pad(L.m)+' · '+(L.mins>=60?Math.floor(L.mins/60)+' hr '+(L.mins%60)+' min':L.mins+' min');
-    else if(L&&L.mins<=0&&L.mins>-60)lv.textContent=cfg.leave.dest+' Time to go!';
-    else lv.textContent='';
+    var upcomingLeave=L&&L.mins>0&&L.mins<=180;
+    lv.textContent='';lv.classList.remove('in');
+    var leaveText=upcomingLeave?cfg.leave.dest+' Leave at '+((L.h%12)||12)+':'+pad(L.m)+' · '+(L.mins>=60?Math.floor(L.mins/60)+' hr '+(L.mins%60)+' min':L.mins+' min')
+      :(L&&L.mins<=0&&L.mins>-60?cfg.leave.dest+' Time to go!':'');
     ov.classList.add('show');
-    if(cfg.leave.speak!==false)say(timeSpeech());
-    clearTimeout(clockT);clockT=setTimeout(function(){ov.classList.remove('show');},(cfg.leave.secs||9)*1000);
+    clearTimeout(clockT);
+    // step 1: the minute hand flashes while the time is read out
+    var mh=document.getElementById('ckM');mh.classList.add('flash');
+    var parts=timeSpeechParts(),speak=cfg.leave.speak!==false;
+    function finish(){clearTimeout(clockT);clockT=setTimeout(function(){if(run===clockRun)ov.classList.remove('show');},(cfg.leave.secs||9)*1000);}
+    function step2(){
+      if(run!==clockRun)return;
+      mh.classList.remove('flash');
+      if(leaveText){lv.textContent=leaveText;lv.classList.add('in');}
+      if(upcomingLeave){
+        // step 2: say when we leave while the hands travel round to that time
+        if(speak&&parts[1])say(parts[1]);
+        sweepToLeave(L,run,finish);
+      } else {if(speak&&parts[1])say(parts[1]);finish();}
+    }
+    if(speak)say(parts[0],step2);else setTimeout(step2,1800);
   }
-  document.getElementById('clockOv').addEventListener('click',function(){this.classList.remove('show');});
+  document.getElementById('clockOv').addEventListener('click',closeClock);
   document.getElementById('countdown').addEventListener('click',showClock);
   document.getElementById('dt').addEventListener('click',showClock);
 
