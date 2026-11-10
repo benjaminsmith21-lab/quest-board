@@ -233,6 +233,7 @@
 
 <script>
 (function(){
+  var BOARD_VERSION='10 Nov 2026 · star jar + reading';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -910,6 +911,7 @@
     });
     br.appendChild(rt);br.appendChild(rd);oc.appendChild(br);
     oc.appendChild(el('p',{'class':'hint'},'Settings, reading days and stars are saved on this device only. Other families using the same link keep their own.'));
+    oc.appendChild(el('p',{'class':'hint'},'Board version: '+BOARD_VERSION));
     sBody.appendChild(oc);
   }
 
