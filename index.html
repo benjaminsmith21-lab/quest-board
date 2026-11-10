@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Morning Quest Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1b1f3b; --bg2:#262b52; --ink:#fff; --muted:#aab0e0;
+    --k0:#ff9f43; --k0d:#a85d14; --k1:#2ecc9a; --k1d:#167a5b;
+    --good:#2ecc71; --warn:#f6c343; --bad:#ff5e5e;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{margin:0;height:100%;background:radial-gradient(circle at 20% 0%,#2f3670 0%,var(--bg) 60%);color:var(--ink);font-family:'Baloo 2',system-ui,sans-serif;overflow:hidden}
+  #app{display:flex;flex-direction:column;height:100%;padding:10px 14px 14px;gap:10px}
+  header{display:flex;align-items:center;gap:14px}
+  .day{font-size:clamp(20px,3.2vw,34px);font-weight:800;line-height:1}
+  .clock{font-size:clamp(16px,2.4vw,26px);color:var(--muted);font-weight:700}
+  .countdown{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+  .cd-label{font-size:clamp(16px,2.4vw,28px);font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cd-track{height:14px;border-radius:99px;background:#0e1130;overflow:hidden}
+  .cd-fill{height:100%;width:100%;border-radius:99px;background:var(--good);transition:width 1s linear,background .5s}
+  .iconbtn{width:52px;height:52px;border-radius:16px;border:none;background:var(--bg2);color:#fff;font-size:26px;position:relative;flex:none;cursor:pointer}
+  .iconbtn svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+  .iconbtn svg.ring circle{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:151;stroke-dashoffset:151}
+  .iconbtn.holding svg.ring circle{transition:stroke-dashoffset 1.5s linear;stroke-dashoffset:0}
+  main{flex:1;display:flex;gap:14px;min-height:0}
+  .lane{flex:1;display:flex;flex-direction:column;background:var(--bg2);border-radius:24px;padding:12px;gap:10px;min-width:0;border:4px solid transparent;position:relative;overflow:hidden}
+  .lane.k0{--c:var(--k0);--cd:var(--k0d)} .lane.k1{--c:var(--k1);--cd:var(--k1d)}
+  .lane.complete{border-color:var(--c);box-shadow:0 0 30px var(--c)}
+  .lane-head{display:flex;align-items:center;gap:10px}
+  .avatar{font-size:clamp(36px,5.5vw,60px);line-height:1;transition:transform .3s}
+  .lane.complete .avatar{animation:bounce 1s infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px) rotate(-8deg)}}
+  .name{font-size:clamp(22px,3.4vw,38px);font-weight:800;line-height:1;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .streak{font-size:clamp(16px,2.2vw,24px);font-weight:800;background:#0e1130;padding:4px 12px;border-radius:99px;white-space:nowrap}
+  .prog{height:18px;border-radius:99px;background:#0e1130;overflow:hidden}
+  .prog-fill{height:100%;background:var(--c);border-radius:99px;transition:width .4s cubic-bezier(.3,1.6,.6,1)}
+  .tiles{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(96px,13vw,150px),1fr));grid-auto-rows:minmax(90px,1fr);gap:10px;overflow-y:auto;align-content:start}
+  .tile{border:none;border-radius:20px;background:#363d75;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;font-family:inherit;position:relative;cursor:pointer;transition:transform .12s,background .2s;box-shadow:0 5px 0 #1a1f45}
+  .tile:active{transform:translateY(3px);box-shadow:0 2px 0 #1a1f45}
+  .tile .em{font-size:clamp(34px,5vw,56px);line-height:1.1}
+  .tile .lb{font-size:clamp(13px,1.6vw,19px);font-weight:700;line-height:1.1;text-align:center;margin-top:4px}
+  .tile.done{background:var(--c);box-shadow:0 5px 0 var(--cd)}
+  .tile.done .em{opacity:.35}
+  .tile .tick{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:clamp(44px,6vw,70px)}
+  .tile.done .tick{display:flex;animation:pop .35s cubic-bezier(.3,1.8,.6,1)}
+  @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+  .empty{color:var(--muted);text-align:center;margin:auto;font-size:22px}
+  .banner{position:absolute;left:0;right:0;bottom:0;background:var(--c);color:#111;text-align:center;font-weight:800;font-size:clamp(20px,3vw,32px);padding:8px;transform:translateY(100%);transition:transform .4s}
+  .lane.complete .banner{transform:none}
+  .confetti{position:fixed;top:-60px;font-size:34px;pointer-events:none;z-index:50;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+  @media (orientation:portrait){main{flex-direction:column}}
+
+  /* home cards */
+  .kcard{flex:1;min-width:0;border:5px solid var(--c);border-radius:30px;background:var(--bg2);color:#fff;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;box-shadow:0 8px 0 var(--cd);transition:transform .12s;padding:12px}
+  .kcard:active{transform:translateY(4px);box-shadow:0 4px 0 var(--cd)}
+  .kcard.k0{--c:var(--k0);--cd:var(--k0d)} .kcard.k1{--c:var(--k1);--cd:var(--k1d)}
+  .kcard.complete{box-shadow:0 0 34px var(--c),0 8px 0 var(--cd)}
+  .ring{width:clamp(120px,20vw,230px);aspect-ratio:1/1;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .4s}
+  .ring-inner{width:80%;height:80%;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:clamp(60px,10vw,120px);line-height:1}
+  .kcard.complete .ring-inner{animation:bounce 1s infinite}
+  .kname{font-size:clamp(28px,4.6vw,54px);font-weight:800;line-height:1}
+  .kcount{font-size:clamp(16px,2.2vw,24px);color:var(--muted);font-weight:700}
+  .knext{background:#0e1130;border-radius:16px;padding:6px 18px;font-size:clamp(18px,2.8vw,32px);font-weight:800;text-align:center}
+  .kstreak{position:absolute;top:12px;right:14px;font-size:clamp(16px,2.2vw,24px);font-weight:800;background:#0e1130;padding:4px 12px;border-radius:99px}
+  /* one kid's page */
+  .homebtn{width:clamp(54px,7vw,72px);height:clamp(54px,7vw,72px);border-radius:18px;border:none;background:#0e1130;color:#fff;font-size:clamp(28px,4vw,40px);cursor:pointer;flex:none}
+  .ochip{border-radius:14px;padding:4px 12px;font-size:clamp(22px,3.2vw,36px);flex:none;white-space:nowrap}
+  .lane.solo .tiles{grid-template-columns:repeat(auto-fill,minmax(clamp(130px,18vw,220px),1fr));grid-auto-rows:minmax(120px,1fr);gap:14px}
+  .lane.solo .tile .em{font-size:clamp(48px,7vw,80px)}
+  .lane.solo .tile .lb{font-size:clamp(16px,2.1vw,24px)}
+  .lane.solo .prog{height:24px}
+
+  /* weather */
+  .wx{display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:20px;padding:8px 14px;border:4px solid var(--wc,#444b8a);cursor:pointer}
+  .wx-badge{display:flex;align-items:center;gap:6px;background:var(--wc,#444b8a);color:#111;border-radius:16px;padding:4px 14px;font-weight:800;font-size:clamp(24px,3.6vw,40px);flex:none}
+  .wx-text{flex:1;min-width:0}
+  .wx-title{font-size:clamp(20px,3vw,34px);font-weight:800;line-height:1.05;color:var(--wc,#fff)}
+  .wx-sub{font-size:clamp(14px,1.8vw,20px);color:var(--muted);font-weight:700}
+  .wx-wear{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .wear{display:flex;flex-direction:column;align-items:center;background:#0e1130;border-radius:14px;padding:4px 10px;min-width:70px}
+  .wear .e{font-size:clamp(28px,4vw,46px);line-height:1.1}
+  .wear .t{font-size:clamp(11px,1.3vw,15px);font-weight:700;color:var(--muted)}
+  .wx.off{opacity:.6}
+
+  /* UV */
+  .uv{display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:20px;padding:8px 14px;border:4px solid var(--uc,#444b8a);cursor:pointer}
+  .uv-light{width:clamp(40px,5.5vw,62px);height:clamp(40px,5.5vw,62px);border-radius:50%;background:var(--uc,#444b8a);box-shadow:0 0 22px var(--uc,transparent);flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(18px,2.6vw,28px);color:#111}
+  .uv-text{flex:1;min-width:0}
+  .uv-title{font-size:clamp(18px,2.6vw,30px);font-weight:800;line-height:1.05;color:var(--uc,#fff)}
+  .uv-sub{font-size:clamp(13px,1.7vw,19px);color:var(--muted);font-weight:700}
+  .uv-strip{display:flex;gap:3px;align-items:flex-end;flex:none}
+  .uvh{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .uvh .b{width:clamp(16px,2.2vw,28px);height:clamp(22px,3vw,34px);border-radius:6px}
+  .uvh .l{font-size:clamp(10px,1.2vw,13px);color:var(--muted);font-weight:700}
+  .uvh.now .b{outline:3px solid #fff;outline-offset:1px}
+  .uv.off{opacity:.6}
+
+  /* grown-up gate */
+  #gate{position:fixed;inset:0;background:rgba(5,7,25,.85);z-index:90;display:none;align-items:center;justify-content:center}
+  #gate.open{display:flex}
+  .gate-box{background:var(--bg2);border-radius:22px;padding:22px 26px;text-align:center;width:min(92vw,420px)}
+  .gate-box h2{margin:0 0 6px;font-size:26px}
+  .gate-q{font-size:30px;font-weight:800;margin:6px 0 12px}
+  #gateInput{font-family:inherit;font-size:30px;width:140px;text-align:center;padding:8px;border-radius:12px;border:2px solid #444b8a;background:#0e1130;color:#fff;user-select:text;-webkit-user-select:text}
+  .gate-msg{color:var(--bad);font-weight:700;min-height:26px;margin-top:6px}
+
+  /* settings */
+  #settings{position:fixed;inset:0;background:#12153a;z-index:100;display:none;flex-direction:column}
+  #settings.open{display:flex}
+  .s-head{display:flex;align-items:center;padding:12px 16px;gap:12px;background:var(--bg2)}
+  .s-head h2{margin:0;flex:1;font-size:26px}
+  .s-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:22px;user-select:text;-webkit-user-select:text}
+  .s-body h3{margin:0 0 8px;font-size:21px;color:var(--warn)}
+  .card{background:var(--bg2);border-radius:16px;padding:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  input[type=text],input[type=time],select{font-family:inherit;font-size:18px;padding:8px 10px;border-radius:10px;border:2px solid #444b8a;background:#0e1130;color:#fff}
+  input[type=text]{min-width:0}
+  .btn{font-family:inherit;font-size:18px;font-weight:700;padding:9px 16px;border-radius:12px;border:none;background:#444b8a;color:#fff;cursor:pointer}
+  .btn.primary{background:var(--good);color:#06301a}
+  .btn.danger{background:var(--bad)}
+  .daytabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .daytabs button{font-family:inherit;font-size:18px;font-weight:800;padding:8px 14px;border-radius:12px;border:none;background:#0e1130;color:#fff;cursor:pointer}
+  .daytabs button.sel{background:var(--warn);color:#2a2000}
+  .kidcols{display:flex;gap:14px;flex-wrap:wrap}
+  .kidcol{flex:1;min-width:220px;background:#0e1130;border-radius:12px;padding:10px}
+  .kidcol h4{margin:0 0 6px;font-size:19px}
+  .chk{display:flex;align-items:center;gap:8px;font-size:18px;padding:3px 0;cursor:pointer}
+  .chk input{width:24px;height:24px}
+  .steprow input.emo{width:64px;text-align:center}
+  .steprow input.lbl{flex:1}
+  .hint{color:var(--muted);font-size:16px;margin:4px 0 0}
+  .locresults{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:6px}
+  .locbtn{font-size:17px;text-align:left}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <div class="day" id="dayName">Monday</div>
+      <div class="clock" id="clock">7:30</div>
+    </div>
+    <div class="countdown" id="countdown">
+      <div class="cd-label" id="cdLabel"></div>
+      <div class="cd-track"><div class="cd-fill" id="cdFill"></div></div>
+    </div>
+    <button class="iconbtn" id="fsBtn" title="Full screen">⛶</button>
+    <button class="iconbtn" id="gearBtn" title="Settings">⚙️</button>
+  </header>
+  <div class="wx" id="wx" title="Tap to hear today's clothes">
+    <div class="wx-badge" id="wxBadge"><span id="wxIcon">🌤️</span><span id="wxTemp">--°</span></div>
+    <div class="wx-text"><div class="wx-title" id="wxTitle">Checking the weather…</div><div class="wx-sub" id="wxSub"></div></div>
+    <div class="wx-wear" id="wxWear"></div>
+  </div>
+  <div class="uv" id="uv" title="Tap to hear about the sun">
+    <div class="uv-light" id="uvLight"></div>
+    <div class="uv-text"><div class="uv-title" id="uvTitle">Sun check…</div><div class="uv-sub" id="uvSub"></div></div>
+    <div class="uv-strip" id="uvStrip"></div>
+  </div>
+  <main id="lanes"></main>
+</div>
+
+<div id="gate">
+  <div class="gate-box">
+    <h2>🔒 Grown-ups only</h2>
+    <div id="gateQ" class="gate-q"></div>
+    <input id="gateInput" type="number" inputmode="numeric" pattern="[0-9]*">
+    <div id="gateMsg" class="gate-msg"></div>
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <button class="btn" id="gateCancel">Cancel</button>
+      <button class="btn primary" id="gateOk">Open settings</button>
+    </div>
+  </div>
+</div>
+
+<div id="settings">
+  <div class="s-head"><h2>⚙️ Parent settings</h2><button class="btn primary" id="closeSettings">Done</button></div>
+  <div class="s-body" id="sBody"></div>
+</div>
+
+<script>
+(function(){
+  var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
+  var PRAISE=['Great job!','Awesome!','You did it!','Super star!','Nice one!','Brilliant!'];
+
+  function defaults(){
+    var steps=[
+      {id:'toilet',emoji:'🚽',label:'Toilet & wash hands'},
+      {id:'dress',emoji:'👕',label:'Get dressed'},
+      {id:'breakfast',emoji:'🥣',label:'Eat breakfast'},
+      {id:'teeth',emoji:'🪥',label:'Brush teeth'},
+      {id:'hair',emoji:'💇',label:'Brush hair'},
+      {id:'sunscreen',emoji:'🧴',label:'Sunscreen'},
+      {id:'bag',emoji:'🎒',label:'Pack bag'},
+      {id:'shoes',emoji:'👟',label:'Shoes & hat'},
+      {id:'swim',emoji:'🏊',label:'Swim bag'},
+      {id:'library',emoji:'📚',label:'Library bag'},
+      {id:'sport',emoji:'🧢',label:'Sports uniform'},
+      {id:'bed',emoji:'🛏️',label:'Make bed'},
+      {id:'tidy',emoji:'🧸',label:'Tidy one thing'}
+    ];
+    var wk0=['toilet','dress','breakfast','teeth','hair','sunscreen','bag','shoes'];
+    var wk1=['toilet','dress','breakfast','teeth','hair','sunscreen','shoes'];
+    var we0=['toilet','dress','breakfast','teeth','bed','tidy'];
+    var we1=['toilet','dress','breakfast','teeth','tidy'];
+    var days={};
+    for(var d=0;d<7;d++){
+      var weekend=(d===0||d===6);
+      days[d]={leave:weekend?'':'08:15',kids:[(weekend?we0:wk0).slice(),(weekend?we1:wk1).slice()]};
+    }
+    return {kids:[{name:'Big Kid',emoji:'🦊'},{name:'Little Kid',emoji:'🐢'}],steps:steps,days:days,voice:true};
+  }
+
+  // ---------- storage ----------
+  function load(key,fallback){try{var v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
+  function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+
+  var cfg=load('qb_cfg',null)||defaults();
+  var prog=load('qb_prog',null);
+  var streaks=load('qb_streaks',[{count:0,last:''},{count:0,last:''}]);
+
+  function pad(n){return (n<10?'0':'')+n;}
+  function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function today(){return dateKey(new Date());}
+  function ensureProg(){
+    if(!prog||prog.date!==today()){prog={date:today(),done:[[],[]],celebrated:[false,false]};save('qb_prog',prog);}
+  }
+  ensureProg();
+
+  function stepById(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
+  function todaysSteps(k){
+    var dc=cfg.days[new Date().getDay()];
+    var ids=(dc.kids[k]||[]).slice();
+    // auto sunscreen from the UV forecast (falls back to the day's setting if no forecast)
+    var need=sunscreenNeeded();
+    if(cfg.autoSun!==false&&need!==null&&ids.length){
+      var i=ids.indexOf('sunscreen');
+      if(need&&i<0)ids.push('sunscreen');
+      if(!need&&i>-1)ids.splice(i,1);
+    }
+    // keep library order
+    return cfg.steps.filter(function(s){return ids.indexOf(s.id)>-1;});
+  }
+
+  // ---------- audio ----------
+  var actx=null;
+  function ctx(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}return actx;}
+  function tone(freq,start,dur,type){
+    var c=ctx();if(!c)return;
+    var o=c.createOscillator(),g=c.createGain();
+    o.type=type||'triangle';o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,c.currentTime+start);
+    g.gain.exponentialRampToValueAtTime(0.3,c.currentTime+start+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+start+dur);
+    o.connect(g);g.connect(c.destination);o.start(c.currentTime+start);o.stop(c.currentTime+start+dur+0.05);
+  }
+  function blip(){tone(660,0,0.12);tone(990,0.08,0.18);}
+  function undoSound(){tone(400,0,0.15,'sine');tone(300,0.1,0.2,'sine');}
+  function fanfare(){[523,659,784,1047,784,1047].forEach(function(f,i){tone(f,i*0.12,0.25,'square');});}
+  function say(text){
+    if(!cfg.voice||!window.speechSynthesis)return;
+    try{
+      speechSynthesis.cancel();
+      var u=new SpeechSynthesisUtterance(text);
+      u.rate=cfg.rate||0.95;u.pitch=cfg.pitch||1.25;u.lang='en-AU';
+      if(cfg.voiceName){var vs=speechSynthesis.getVoices()||[];for(var i=0;i<vs.length;i++)if(vs[i].name===cfg.voiceName){u.voice=vs[i];u.lang=vs[i].lang;break;}}
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  // ---------- wake lock ----------
+  var wl=null;
+  function keepAwake(){
+    if(wl||!('wakeLock' in navigator))return;
+    try{navigator.wakeLock.request('screen').then(function(l){wl=l;l.addEventListener('release',function(){wl=null;});}).catch(function(){});}catch(e){}
+  }
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){wl=null;keepAwake();}});
+
+  // ---------- render board ----------
+  var lanesEl=document.getElementById('lanes');
+  var view=-1; // -1 = home screen, 0/1 = that kid's page
+  var idleT=null;
+  function isSplit(){return cfg.layout==='split';}
+  function goHome(){clearTimeout(idleT);if(view!==-1){view=-1;render();}}
+  function bumpIdle(){clearTimeout(idleT);if(!isSplit()&&view!==-1)idleT=setTimeout(goHome,20000);}
+  function openKid(k){keepAwake();view=k;render();bumpIdle();}
+  function render(){
+    ensureProg();
+    lanesEl.innerHTML='';
+    var split=isSplit();if(split)view=-1;
+    var showBars=split||view===-1;
+    document.getElementById('wx').style.display=showBars?'':'none';
+    document.getElementById('uv').style.display=showBars?'':'none';
+    if(split){for(var k=0;k<2;k++)lanesEl.appendChild(renderLane(k,false));}
+    else if(view===-1){for(var j=0;j<2;j++)lanesEl.appendChild(renderCard(j));}
+    else lanesEl.appendChild(renderLane(view,true));
+    renderHeader();
+  }
+  function renderCard(k){
+    var kid=cfg.kids[k],steps=todaysSteps(k),done=prog.done[k];
+    var count=steps.filter(function(s){return done.indexOf(s.id)>-1;}).length;
+    var complete=steps.length&&count===steps.length;
+    var c=el('button',{'class':'kcard k'+k+(complete?' complete':'')});
+    var st=el('div',{'class':'kstreak'},'🔥 '+(streaks[k].count||0));c.appendChild(st);
+    var ring=el('div',{'class':'ring'});
+    ring.style.background='conic-gradient(var(--c) '+(steps.length?count/steps.length*360:0)+'deg, #0e1130 0deg)';
+    ring.appendChild(el('div',{'class':'ring-inner'},kid.emoji));
+    c.appendChild(ring);
+    c.appendChild(el('div',{'class':'kname'},kid.name));
+    if(!steps.length)c.appendChild(el('div',{'class':'knext'},'No quests today 🎉'));
+    else if(complete)c.appendChild(el('div',{'class':'knext'},'⭐ All done! ⭐'));
+    else{
+      var next=steps.filter(function(s){return done.indexOf(s.id)<0;})[0];
+      c.appendChild(el('div',{'class':'kcount'},count+' of '+steps.length+' done'));
+      c.appendChild(el('div',{'class':'knext'},'Next: '+next.emoji+' '+next.label));
+    }
+    c.addEventListener('click',function(){openKid(k);});
+    return c;
+  }
+  function outfitChip(){
+    if(!wx||wx.date!==today())return null;
+    var o=outfit(wx);
+    var chip=el('div',{'class':'ochip'});chip.style.background=o.band.colour;
+    chip.textContent=o.wear.map(function(x){return x[0];}).join(' ')+(sunscreenNeeded()?' 🧴':'');
+    chip.title=o.band.name;
+    return chip;
+  }
+  function renderLane(k,solo){
+    var kid=cfg.kids[k],steps=todaysSteps(k),done=prog.done[k];
+    var lane=document.createElement('section');
+    lane.className='lane k'+k+(solo?' solo':'');
+    var head=document.createElement('div');head.className='lane-head';
+    if(solo){
+      var back=el('button',{'class':'homebtn',title:'Home'},'🏠');
+      back.addEventListener('click',goHome);head.appendChild(back);
+    }
+    var av=document.createElement('div');av.className='avatar';av.textContent=kid.emoji;
+    var nm=document.createElement('div');nm.className='name';nm.textContent=kid.name;
+    var st=document.createElement('div');st.className='streak';st.textContent='🔥 '+(streaks[k].count||0);
+    st.title='Days in a row';
+    head.appendChild(av);head.appendChild(nm);
+    if(solo){var oc=outfitChip();if(oc)head.appendChild(oc);}
+    head.appendChild(st);
+    lane.appendChild(head);
+
+    var count=steps.filter(function(s){return done.indexOf(s.id)>-1;}).length;
+    var p=document.createElement('div');p.className='prog';
+    var pf=document.createElement('div');pf.className='prog-fill';pf.style.width=(steps.length?count/steps.length*100:0)+'%';
+    p.appendChild(pf);lane.appendChild(p);
+
+    var tiles=document.createElement('div');tiles.className='tiles';
+    if(!steps.length){var e=document.createElement('div');e.className='empty';e.textContent='No quests today 🎉';tiles.appendChild(e);}
+    steps.forEach(function(s){
+      var b=document.createElement('button');
+      b.className='tile'+(done.indexOf(s.id)>-1?' done':'');
+      var em=document.createElement('div');em.className='em';em.textContent=s.emoji;
+      var lb=document.createElement('div');lb.className='lb';lb.textContent=s.label;
+      var tk=document.createElement('div');tk.className='tick';tk.textContent='✅';
+      b.appendChild(em);b.appendChild(lb);b.appendChild(tk);
+      b.addEventListener('click',function(){toggle(k,s);});
+      tiles.appendChild(b);
+    });
+    lane.appendChild(tiles);
+
+    var ban=document.createElement('div');ban.className='banner';ban.textContent='⭐ All done, '+kid.name+'! ⭐';
+    lane.appendChild(ban);
+    if(steps.length&&count===steps.length)lane.classList.add('complete');
+    return lane;
+  }
+
+  function toggle(k,s){
+    keepAwake();bumpIdle();
+    var done=prog.done[k],i=done.indexOf(s.id);
+    if(i>-1){done.splice(i,1);undoSound();}
+    else{
+      done.push(s.id);
+      var steps=todaysSteps(k);
+      var left=steps.filter(function(x){return done.indexOf(x.id)<0;}).length;
+      if(left===0){
+        fanfare();say('Hooray '+cfg.kids[k].name+'! All done! You are a superstar!');
+        if(!prog.celebrated[k]){prog.celebrated[k]=true;bumpStreak(k);}
+        confetti(k);
+        if(!isSplit()){clearTimeout(idleT);idleT=setTimeout(goHome,6000);}
+      } else {
+        blip();
+        var praise=PRAISE[Math.floor(Math.random()*PRAISE.length)];
+        say(s.label+'. '+praise+' '+left+(left===1?' more to go.':' more to go.'));
+      }
+    }
+    save('qb_prog',prog);
+    render();
+  }
+
+  function bumpStreak(k){
+    // previous day that had quests for this kid
+    var d=new Date();var prev='';
+    for(var i=1;i<=7;i++){
+      var t=new Date(d.getFullYear(),d.getMonth(),d.getDate()-i);
+      if((cfg.days[t.getDay()].kids[k]||[]).length){prev=dateKey(t);break;}
+    }
+    var s=streaks[k];
+    if(s.last===today())return;
+    s.count=(s.last&&s.last===prev)?(s.count||0)+1:1;
+    s.last=today();
+    save('qb_streaks',streaks);
+  }
+
+  function confetti(k){
+    var bits=['🎉','⭐','🎊','✨','🌟',cfg.kids[k].emoji];
+    var w=window.innerWidth,half=w/2;
+    for(var i=0;i<36;i++){
+      var c=document.createElement('div');c.className='confetti';
+      c.textContent=bits[i%bits.length];
+      var x=(isSplit()&&window.innerWidth>window.innerHeight)?(k*half+Math.random()*half):(Math.random()*w);
+      c.style.left=x+'px';
+      c.style.animationDuration=(2+Math.random()*2)+'s';
+      c.style.animationDelay=(Math.random()*0.8)+'s';
+      document.body.appendChild(c);
+      (function(el){setTimeout(function(){el.remove();},5000);})(c);
+    }
+  }
+
+  // ---------- header / countdown ----------
+  function renderHeader(){
+    var now=new Date();
+    document.getElementById('dayName').textContent=DAYS[now.getDay()];
+    var h=now.getHours(),m=now.getMinutes();
+    document.getElementById('clock').textContent=((h%12)||12)+':'+pad(m)+(h<12?' am':' pm');
+    var leave=cfg.days[now.getDay()].leave;
+    var cd=document.getElementById('countdown'),lbl=document.getElementById('cdLabel'),fill=document.getElementById('cdFill');
+    if(!leave){cd.style.visibility='visible';lbl.textContent='🌈 Relaxed day — no rush!';fill.style.width='100%';fill.style.background='#7d6bff';return;}
+    var parts=leave.split(':');
+    var lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+parts[0],+parts[1]);
+    var mins=Math.ceil((lt-now)/60000);
+    var window_=60; // bar covers last 60 min
+    var pct=Math.max(0,Math.min(100,mins/window_*100));
+    fill.style.width=pct+'%';
+    fill.style.background=mins>15?'var(--good)':mins>5?'var(--warn)':'var(--bad)';
+    if(mins>90){lbl.textContent='🌅 Good morning!';fill.style.width='100%';}
+    else if(mins>0)lbl.textContent='🚗 Leave in '+mins+' min';
+    else if(mins>-90)lbl.textContent='🚗 Time to go!';
+    else lbl.textContent='👋 See you tomorrow!';
+  }
+  var lastDay=today();
+  setInterval(function(){
+    if(today()!==lastDay){lastDay=today();render();}else renderHeader();
+  },15000);
+
+  // ---------- fullscreen ----------
+  document.getElementById('fsBtn').addEventListener('click',function(){
+    keepAwake();
+    try{
+      var el=document.documentElement;
+      if(document.fullscreenElement){document.exitFullscreen();}
+      else if(el.requestFullscreen){var p=el.requestFullscreen();if(p&&p.catch)p.catch(function(){});}
+    }catch(e){}
+  });
+
+  // ---------- grown-up gate for settings ----------
+  var gear=document.getElementById('gearBtn'),gate=document.getElementById('gate');
+  var gA=0,gB=0,gInput=document.getElementById('gateInput'),gQ=document.getElementById('gateQ'),gMsg=document.getElementById('gateMsg');
+  gear.addEventListener('click',function(){
+    gA=6+Math.floor(Math.random()*4);gB=6+Math.floor(Math.random()*4);
+    gQ.textContent='What is '+gA+' × '+gB+'?';
+    gInput.value='';gMsg.textContent='';
+    gate.classList.add('open');
+    setTimeout(function(){try{gInput.focus();}catch(e){}},50);
+  });
+  function checkGate(){
+    if(parseInt(gInput.value,10)===gA*gB){gate.classList.remove('open');openSettings();}
+    else{gMsg.textContent='Not quite — try again';gInput.value='';}
+  }
+  document.getElementById('gateOk').addEventListener('click',checkGate);
+  gInput.addEventListener('keydown',function(e){if(e.key==='Enter')checkGate();});
+  document.getElementById('gateCancel').addEventListener('click',function(){gate.classList.remove('open');});
+
+  // ---------- settings ----------
+  var sDay=new Date().getDay();
+  var sBody=document.getElementById('sBody');
+  function openSettings(){sDay=new Date().getDay();renderSettings();document.getElementById('settings').classList.add('open');}
+  document.getElementById('closeSettings').addEventListener('click',function(){
+    save('qb_cfg',cfg);document.getElementById('settings').classList.remove('open');render();
+  });
+  function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)for(var a in attrs)e.setAttribute(a,attrs[a]);if(text!=null)e.textContent=text;return e;}
+
+  function renderSettings(){
+    sBody.innerHTML='';
+
+    // Kids
+    var kc=el('div',{'class':'card'});kc.appendChild(el('h3',null,'👧👦 Kids'));
+    cfg.kids.forEach(function(kid,k){
+      var r=el('div',{'class':'row'});
+      var sel=el('select');
+      AVATARS.forEach(function(a){var o=el('option',{value:a},a);if(a===kid.emoji)o.selected=true;sel.appendChild(o);});
+      sel.addEventListener('change',function(){kid.emoji=sel.value;save('qb_cfg',cfg);});
+      var inp=el('input',{type:'text',value:kid.name,maxlength:'16'});
+      inp.addEventListener('input',function(){kid.name=inp.value||('Kid '+(k+1));save('qb_cfg',cfg);});
+      r.appendChild(sel);r.appendChild(inp);kc.appendChild(r);
+    });
+    sBody.appendChild(kc);
+
+    // Days
+    var dc=el('div',{'class':'card'});dc.appendChild(el('h3',null,'📅 Daily quests'));
+    var tabs=el('div',{'class':'daytabs'});
+    [1,2,3,4,5,6,0].forEach(function(d){
+      var b=el('button',{'class':d===sDay?'sel':''},SHORT[d]);
+      b.addEventListener('click',function(){sDay=d;renderSettings();});
+      tabs.appendChild(b);
+    });
+    dc.appendChild(tabs);
+    var day=cfg.days[sDay];
+    var lr=el('div',{'class':'row'});
+    lr.appendChild(el('span',{style:'font-size:18px'},'Leave time:'));
+    var t=el('input',{type:'time',value:day.leave||'08:15'});
+    var noRush=el('input',{type:'checkbox',id:'norush'});noRush.checked=!day.leave;
+    t.disabled=!day.leave;
+    t.addEventListener('change',function(){day.leave=t.value;save('qb_cfg',cfg);});
+    noRush.addEventListener('change',function(){day.leave=noRush.checked?'':(t.value||'08:15');t.disabled=noRush.checked;save('qb_cfg',cfg);});
+    var nl=el('label',{'class':'chk','for':'norush'});nl.appendChild(noRush);nl.appendChild(document.createTextNode('No countdown (relaxed day)'));
+    lr.appendChild(t);lr.appendChild(nl);dc.appendChild(lr);
+
+    var cols=el('div',{'class':'kidcols'});
+    cfg.kids.forEach(function(kid,k){
+      var col=el('div',{'class':'kidcol'});col.appendChild(el('h4',null,kid.emoji+' '+kid.name));
+      cfg.steps.forEach(function(s){
+        var lab=el('label',{'class':'chk'});
+        var cb=el('input',{type:'checkbox'});cb.checked=day.kids[k].indexOf(s.id)>-1;
+        cb.addEventListener('change',function(){
+          var arr=day.kids[k],i=arr.indexOf(s.id);
+          if(cb.checked&&i<0)arr.push(s.id);if(!cb.checked&&i>-1)arr.splice(i,1);
+          save('qb_cfg',cfg);
+        });
+        lab.appendChild(cb);lab.appendChild(document.createTextNode(s.emoji+' '+s.label));col.appendChild(lab);
+      });
+      cols.appendChild(col);
+    });
+    dc.appendChild(cols);
+    var cr=el('div',{'class':'row',style:'margin-top:10px'});
+    var copyWk=el('button',{'class':'btn'},'Copy '+SHORT[sDay]+' to all weekdays');
+    copyWk.addEventListener('click',function(){
+      [1,2,3,4,5].forEach(function(d){if(d!==sDay)cfg.days[d]=JSON.parse(JSON.stringify(cfg.days[sDay]));});
+      save('qb_cfg',cfg);copyWk.textContent='Copied ✓';
+    });
+    cr.appendChild(copyWk);dc.appendChild(cr);
+    sBody.appendChild(dc);
+
+    // Steps library
+    var sc=el('div',{'class':'card'});sc.appendChild(el('h3',null,'🧩 Quest list'));
+    sc.appendChild(el('p',{'class':'hint'},'Edit the emoji and words. The order here is the order on the board.'));
+    cfg.steps.forEach(function(s,idx){
+      var r=el('div',{'class':'row steprow'});
+      var e1=el('input',{type:'text','class':'emo',value:s.emoji,maxlength:'4'});
+      e1.addEventListener('input',function(){s.emoji=e1.value;save('qb_cfg',cfg);});
+      var l1=el('input',{type:'text','class':'lbl',value:s.label,maxlength:'28'});
+      l1.addEventListener('input',function(){s.label=l1.value;save('qb_cfg',cfg);});
+      var up=el('button',{'class':'btn'},'↑');
+      up.addEventListener('click',function(){if(idx>0){var tmp=cfg.steps[idx-1];cfg.steps[idx-1]=s;cfg.steps[idx]=tmp;save('qb_cfg',cfg);renderSettings();}});
+      var del=el('button',{'class':'btn danger'},'✕');
+      del.addEventListener('click',function(){
+        cfg.steps.splice(idx,1);
+        for(var d=0;d<7;d++)for(var k=0;k<2;k++){var a=cfg.days[d].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
+        save('qb_cfg',cfg);renderSettings();
+      });
+      r.appendChild(e1);r.appendChild(l1);r.appendChild(up);r.appendChild(del);sc.appendChild(r);
+    });
+    var add=el('div',{'class':'row'});
+    var ne=el('input',{type:'text','class':'emo',placeholder:'🍎',maxlength:'4',style:'width:64px;text-align:center'});
+    var nlb=el('input',{type:'text',placeholder:'New quest (e.g. Fruit for kinder)',maxlength:'28',style:'flex:1'});
+    var ab=el('button',{'class':'btn primary'},'Add');
+    ab.addEventListener('click',function(){
+      if(!nlb.value.trim())return;
+      cfg.steps.push({id:'s'+Date.now(),emoji:ne.value||'⭐',label:nlb.value.trim()});
+      save('qb_cfg',cfg);renderSettings();
+    });
+    add.appendChild(ne);add.appendChild(nlb);add.appendChild(ab);sc.appendChild(add);
+    sc.appendChild(el('p',{'class':'hint'},'New quests start switched off: tick them on for each day above.'));
+    sBody.appendChild(sc);
+
+    // Options
+    var oc=el('div',{'class':'card'});oc.appendChild(el('h3',null,'🔧 Options'));
+    var vr=el('label',{'class':'chk'});var vcb=el('input',{type:'checkbox'});vcb.checked=cfg.voice;
+    vcb.addEventListener('change',function(){cfg.voice=vcb.checked;save('qb_cfg',cfg);});
+    vr.appendChild(vcb);vr.appendChild(document.createTextNode('Voice reads out each quest'));oc.appendChild(vr);
+    var lyr=el('div',{'class':'row',style:'margin-top:10px'});
+    lyr.appendChild(el('span',{style:'font-size:18px'},'Layout:'));
+    var lys=el('select');
+    [['hybrid','Home screen, then a page per kid'],['split','Both kids side by side']].forEach(function(p){
+      var o=el('option',{value:p[0]},p[1]);if((cfg.layout||'hybrid')===p[0])o.selected=true;lys.appendChild(o);
+    });
+    lys.addEventListener('change',function(){cfg.layout=lys.value;view=-1;save('qb_cfg',cfg);});
+    lyr.appendChild(lys);oc.appendChild(lyr);
+    // weather location search
+    var cur=el('div',{'class':'row',style:'margin-top:14px;font-size:18px'});
+    cur.appendChild(document.createTextNode('📍 Weather location: '));
+    var curName=el('b',null,cfg.loc.name||'Frankston');cur.appendChild(curName);
+    oc.appendChild(cur);
+    var lrow=el('div',{'class':'row'});
+    var q=el('input',{type:'text',placeholder:'Type a town or suburb',style:'flex:1'});
+    var sb=el('button',{'class':'btn'},'Search');
+    var results=el('div',{'class':'locresults'});
+    function doSearch(){
+      var term=q.value.trim();if(term.length<2)return;
+      results.innerHTML='';results.appendChild(el('p',{'class':'hint'},'Searching…'));
+      var url='https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name='+encodeURIComponent(term);
+      try{
+        fetch(url).then(function(r){return r.json();}).then(function(j){
+          results.innerHTML='';
+          var list=(j&&j.results)||[];
+          if(!list.length){results.appendChild(el('p',{'class':'hint'},'No places found. Try a nearby bigger town.'));return;}
+          list.sort(function(a,b){return (b.country_code==='AU')-(a.country_code==='AU');});
+          list.forEach(function(p){
+            var label=p.name+(p.admin1?', '+p.admin1:'')+(p.country?', '+p.country:'');
+            var b=el('button',{'class':'btn locbtn'},label);
+            b.addEventListener('click',function(){
+              cfg.loc={name:p.name+(p.admin1?', '+p.admin1:''),lat:p.latitude,lon:p.longitude};
+              save('qb_cfg',cfg);curName.textContent=cfg.loc.name;results.innerHTML='';q.value='';
+              wx=null;fetchWx();
+            });
+            results.appendChild(b);
+          });
+        }).catch(function(){results.innerHTML='';results.appendChild(el('p',{'class':'hint'},'Search needs the board running from its own web address (GitHub Pages).'));});
+      }catch(e){}
+    }
+    sb.addEventListener('click',doSearch);
+    q.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch();});
+    lrow.appendChild(q);lrow.appendChild(sb);oc.appendChild(lrow);oc.appendChild(results);
+    oc.appendChild(el('p',{'class':'hint'},'Clothes colours go by today\'s top temperature: red 27°+, orange 22–26°, yellow 17–21°, blue 12–16°, purple under 12°.'));
+    var ar=el('label',{'class':'chk',style:'margin-top:10px'});var acb=el('input',{type:'checkbox'});acb.checked=cfg.autoSun!==false;
+    acb.addEventListener('change',function(){cfg.autoSun=acb.checked;save('qb_cfg',cfg);});
+    ar.appendChild(acb);ar.appendChild(document.createTextNode('Auto sunscreen quest from the UV forecast'));oc.appendChild(ar);
+    var ur=el('div',{'class':'row'});ur.appendChild(el('span',{style:'font-size:18px'},'Add sunscreen when UV in the next 8 hours reaches:'));
+    var us=el('select');[2,3,4,5,6].forEach(function(n){var o=el('option',{value:String(n)},String(n)+(n===3?' (SunSmart)':''));if(n===uvLimit())o.selected=true;us.appendChild(o);});
+    us.addEventListener('change',function(){cfg.uvLimit=+us.value;save('qb_cfg',cfg);});
+    ur.appendChild(us);oc.appendChild(ur);
+    oc.appendChild(el('p',{'class':'hint'},'When the forecast stays below this, the sunscreen quest disappears automatically (most of winter). If the forecast can\'t load, each day\'s own setting is used.'));
+    // voice
+    oc.appendChild(el('h3',{style:'margin-top:18px'},'🗣️ Voice'));
+    var vrow=el('div',{'class':'row'});
+    vrow.appendChild(el('span',{style:'font-size:18px'},'Voice:'));
+    var vsel=el('select',{style:'max-width:100%'});
+    function fillVoices(){
+      var vs=[];try{vs=speechSynthesis.getVoices()||[];}catch(e){}
+      var en=vs.filter(function(v){return /^en/i.test(v.lang);});if(!en.length)en=vs;
+      en.sort(function(a,b){return ((b.lang==='en-AU')-(a.lang==='en-AU'))||a.name.localeCompare(b.name);});
+      vsel.innerHTML='';
+      vsel.appendChild(el('option',{value:''},'Tablet default (Australian if available)'));
+      en.forEach(function(v){var o=el('option',{value:v.name},v.name+' ('+v.lang+')');if(v.name===cfg.voiceName)o.selected=true;vsel.appendChild(o);});
+    }
+    fillVoices();
+    try{speechSynthesis.addEventListener('voiceschanged',fillVoices);}catch(e){}
+    vsel.addEventListener('change',function(){cfg.voiceName=vsel.value;save('qb_cfg',cfg);});
+    vrow.appendChild(vsel);oc.appendChild(vrow);
+    function slider(label,key,min,max,step,def){
+      var r=el('div',{'class':'row'});r.appendChild(el('span',{style:'font-size:18px;min-width:70px'},label));
+      var s=el('input',{type:'range',min:String(min),max:String(max),step:String(step),value:String(cfg[key]||def),style:'flex:1'});
+      var val=el('span',{style:'font-size:18px;min-width:44px'},String(cfg[key]||def));
+      s.addEventListener('input',function(){cfg[key]=parseFloat(s.value);val.textContent=s.value;save('qb_cfg',cfg);});
+      r.appendChild(s);r.appendChild(val);return r;
+    }
+    oc.appendChild(slider('Speed','rate',0.6,1.4,0.05,0.95));
+    oc.appendChild(slider('Pitch','pitch',0.5,2,0.05,1.25));
+    var tb=el('button',{'class':'btn primary'},'▶ Test voice');
+    tb.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say('Brush your teeth! Great job, '+cfg.kids[0].name+'! Two more to go.');cfg.voice=v;});
+    oc.appendChild(tb);
+    oc.appendChild(el('p',{'class':'hint'},'Voices come from the tablet itself. For better ones: Android Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia), then pick a voice there.'));
+    var br=el('div',{'class':'row',style:'margin-top:16px'});
+    var rt=el('button',{'class':'btn'},'Clear today\'s ticks');
+    rt.addEventListener('click',function(){prog={date:today(),done:[[],[]],celebrated:[false,false]};save('qb_prog',prog);rt.textContent='Cleared ✓';});
+    var rs=el('button',{'class':'btn'},'Reset streaks');
+    rs.addEventListener('click',function(){streaks=[{count:0,last:''},{count:0,last:''}];save('qb_streaks',streaks);rs.textContent='Reset ✓';});
+    var rd=el('button',{'class':'btn danger'},'Restore default quests');
+    var armed=false;
+    rd.addEventListener('click',function(){
+      if(!armed){armed=true;rd.textContent='Tap again to confirm';return;}
+      var names=cfg.kids;cfg=defaults();cfg.kids=names;save('qb_cfg',cfg);renderSettings();
+    });
+    br.appendChild(rt);br.appendChild(rs);br.appendChild(rd);oc.appendChild(br);
+    oc.appendChild(el('p',{'class':'hint'},'Settings and streaks are saved on this device only.'));
+    sBody.appendChild(oc);
+  }
+
+  // ---------- weather & what to wear ----------
+  if(!cfg.loc)cfg.loc={name:'Frankston',lat:-38.14,lon:145.12};
+  var wx=load('qb_wx',null);
+  var BANDS=[ // by today's top temperature
+    {min:27,name:'Hot day',colour:'#ff5e5e',word:'red',wear:[['🩳','Shorts'],['👕','T-shirt']]},
+    {min:22,name:'Warm day',colour:'#ff9f43',word:'orange',wear:[['🩳','Shorts'],['👕','T-shirt']]},
+    {min:17,name:'Nice day',colour:'#f6d743',word:'yellow',wear:[['👖','Pants or shorts'],['👕','T-shirt']]},
+    {min:12,name:'Cool day',colour:'#4fa3ff',word:'blue',wear:[['👖','Long pants'],['🧶','Jumper']]},
+    {min:-99,name:'Cold day',colour:'#a77bff',word:'purple',wear:[['👖','Long pants'],['🧶','Jumper'],['🧥','Jacket'],['🧢','Beanie']]}
+  ];
+  function wxIcon(code){
+    if(code===0)return '☀️';if(code<=2)return '🌤️';if(code===3)return '☁️';
+    if(code===45||code===48)return '🌫️';if(code>=95)return '⛈️';
+    if(code>=71&&code<=77)return '❄️';if(code>=80&&code<=82)return '🌦️';
+    if(code>=51)return '🌧️';return '🌤️';
+  }
+  function outfit(w){
+    var band=BANDS.filter(function(b){return w.max>=b.min;})[0];
+    var wear=band.wear.map(function(x){return x.slice();});
+    var extras=[];
+    if(w.min<=10&&band.min>=17)extras.push(['🧶','Jumper for the morning']);
+    if(w.rain>=40)extras.push(['☔','Raincoat']);
+    if(uvPeakAhead()>=uvLimit()&&band.min>=12)extras.push(['👒','Sun hat']);
+    return {band:band,wear:wear.concat(extras)};
+  }
+  // ----- UV helpers -----
+  function uvLimit(){return cfg.uvLimit||3;}
+  function wxFresh(){return !!(wx&&wx.date===today()&&wx.hours&&wx.hours.length);}
+  function hourDate(s){var p=s.split(/[-T:]/);return new Date(+p[0],+p[1]-1,+p[2],+p[3],+(p[4]||0));}
+  function uvPeakAhead(){ // highest UV forecast from now through the next 8 hours
+    if(!wxFresh())return wx&&wx.date===today()?(wx.uv||0):0;
+    var now=Date.now(),end=now+8*3600000,peak=0;
+    for(var i=0;i<wx.hours.length;i++){var t=hourDate(wx.hours[i]).getTime();if(t>=now-3600000&&t<=end)peak=Math.max(peak,wx.uvh[i]||0);}
+    return peak;
+  }
+  function sunscreenNeeded(){if(!wx||wx.date!==today())return null;return uvPeakAhead()>=uvLimit();}
+  function protectionTimes(){ // first and last hour today with UV at or above the limit
+    if(!wxFresh())return null;
+    var first=null,last=null,td=today();
+    for(var i=0;i<wx.hours.length;i++){
+      if(wx.hours[i].slice(0,10)!==td)continue;
+      if((wx.uvh[i]||0)>=uvLimit()){var h=hourDate(wx.hours[i]);if(!first)first=h;last=h;}
+    }
+    return first?{from:first,to:new Date(last.getTime()+3600000)}:null;
+  }
+  function fmtH(d){var h=d.getHours();return ((h%12)||12)+(h<12?'am':'pm');}
+  var UVCAT=[ // WHO / SunSmart UV categories
+    {min:11,name:'Extreme',colour:'#b567ff'},
+    {min:8,name:'Very high',colour:'#ff4d4d'},
+    {min:6,name:'High',colour:'#ff9f1a'},
+    {min:3,name:'Moderate',colour:'#ffe14d'},
+    {min:0,name:'Low',colour:'#3ecf5a'}
+  ];
+  function uvCat(v){for(var i=0;i<UVCAT.length;i++)if(v>=UVCAT[i].min)return UVCAT[i];return UVCAT[UVCAT.length-1];}
+  function uvMessage(peak){
+    if(peak<uvLimit())return {title:'Gentle sun — no sunscreen needed',say:'The sun is gentle today. No sunscreen needed.'};
+    if(peak<6)return {title:'Sunscreen and hat on!',say:'The sun is medium strong today. Put on sunscreen and a hat.'};
+    if(peak<8)return {title:'Strong sun — sunscreen, hat & shade',say:'The sun is strong today. Sunscreen, hat, and play in the shade.'};
+    return {title:'Super strong sun — stay in the shade',say:'The sun is super strong today! Sunscreen, hat, and stay in the shade at lunchtime.'};
+  }
+  function renderUV(){
+    var box=document.getElementById('uv'),strip=document.getElementById('uvStrip');
+    if(!wx||wx.date!==today()){
+      box.classList.add('off');box.style.removeProperty('--uc');
+      document.getElementById('uvLight').textContent='';
+      document.getElementById('uvTitle').textContent='Sun check not available';
+      document.getElementById('uvSub').textContent='';strip.innerHTML='';return;
+    }
+    box.classList.remove('off');
+    var peak=uvPeakAhead(),cat=uvCat(peak),msg=uvMessage(peak);
+    box.style.setProperty('--uc',cat.colour);
+    document.getElementById('uvLight').textContent=Math.round(peak);
+    document.getElementById('uvTitle').textContent=msg.title;
+    var pt=protectionTimes();
+    document.getElementById('uvSub').textContent='UV '+cat.name+' (peak '+Math.round(peak)+')'+(pt?' · sun protection '+fmtH(pt.from)+'–'+fmtH(pt.to):' · no sun protection times today');
+    strip.innerHTML='';
+    if(wxFresh()){
+      var td=today(),nowH=new Date().getHours();
+      for(var i=0;i<wx.hours.length;i++){
+        if(wx.hours[i].slice(0,10)!==td)continue;
+        var h=hourDate(wx.hours[i]).getHours();
+        if(h<7||h>19)continue;
+        var v=wx.uvh[i]||0;
+        var c=el('div',{'class':'uvh'+(h===nowH?' now':'')});
+        var b=el('div',{'class':'b'});b.style.background=uvCat(v).colour;b.title=fmtH(hourDate(wx.hours[i]))+': UV '+v.toFixed(1);
+        c.appendChild(b);c.appendChild(el('div',{'class':'l'},(h%3===0)?String((h%12)||12):''));
+        strip.appendChild(c);
+      }
+    }
+  }
+  document.getElementById('uv').addEventListener('click',function(){
+    keepAwake();
+    if(!wx||wx.date!==today()){say('Sorry, I can\'t check the sun right now.');return;}
+    var pt=protectionTimes(),m=uvMessage(uvPeakAhead()).say;
+    if(pt)m+=' Sun protection from '+fmtH(pt.from).replace('am',' a m').replace('pm',' p m')+' until '+fmtH(pt.to).replace('am',' a m').replace('pm',' p m')+'.';
+    say(m);
+  });
+
+  function renderWx(){
+    renderUV();
+    var box=document.getElementById('wx');
+    if(!wx||wx.date!==today()){
+      box.classList.add('off');box.style.removeProperty('--wc');
+      document.getElementById('wxTitle').textContent=wxErr?'Weather not available':'Checking the weather…';
+      document.getElementById('wxSub').textContent=wxErr||'';
+      document.getElementById('wxWear').innerHTML='';
+      document.getElementById('wxTemp').textContent='--°';
+      return;
+    }
+    box.classList.remove('off');
+    var o=outfit(wx);
+    box.style.setProperty('--wc',o.band.colour);
+    document.getElementById('wxIcon').textContent=wxIcon(wx.code);
+    document.getElementById('wxTemp').textContent=Math.round(wx.max)+'°';
+    document.getElementById('wxTitle').textContent=o.band.name+' — wear '+o.band.word+'-day clothes';
+    var sub=(cfg.loc.name?cfg.loc.name.split(',')[0]+' · ':'')+'Now '+Math.round(wx.now)+'° · low '+Math.round(wx.min)+'° · top '+Math.round(wx.max)+'°';
+    if(wx.rain>=20)sub+=' · rain '+wx.rain+'%';
+    document.getElementById('wxSub').textContent=sub;
+    var wr=document.getElementById('wxWear');wr.innerHTML='';
+    o.wear.forEach(function(x){
+      var d=el('div',{'class':'wear'});d.appendChild(el('div',{'class':'e'},x[0]));d.appendChild(el('div',{'class':'t'},x[1]));wr.appendChild(d);
+    });
+  }
+  function speakWx(){
+    keepAwake();
+    if(!wx||wx.date!==today()){say('Sorry, I can\'t see the weather right now.');return;}
+    var o=outfit(wx);
+    var items=o.wear.map(function(x){return x[1].toLowerCase();});
+    var last=items.pop();
+    say('Today is a '+o.band.word+' day. It will get to '+Math.round(wx.max)+' degrees. Wear '+(items.length?items.join(', ')+' and ':'')+last+'.');
+  }
+  document.getElementById('wx').addEventListener('click',speakWx);
+  var wxErr='';
+  function fetchWx(){
+    var L=cfg.loc;
+    var url='https://api.open-meteo.com/v1/forecast?latitude='+L.lat+'&longitude='+L.lon+
+      '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,weather_code'+
+      '&hourly=uv_index&timezone=auto&forecast_days=2';
+    try{
+      fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){
+        var d=j.daily;
+        wx={date:today(),now:j.current.temperature_2m,code:d.weather_code[0],max:d.temperature_2m_max[0],min:d.temperature_2m_min[0],
+            rain:d.precipitation_probability_max[0]||0,uv:d.uv_index_max[0]||0,at:Date.now(),
+            hours:(j.hourly&&j.hourly.time)||[],uvh:(j.hourly&&j.hourly.uv_index)||[]};
+        wxErr='';save('qb_wx',wx);render();renderWx();
+      }).catch(function(){wxErr='Open this board from its own web address to get live weather';renderWx();});
+    }catch(e){wxErr='Weather blocked here';renderWx();}
+  }
+  setInterval(fetchWx,30*60000);
+
+  render();
+  renderWx();
+  fetchWx();
+})();
+</script>
+</body>
+</html>
