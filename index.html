@@ -235,7 +235,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · centred header';
+  var BOARD_VERSION='10 Nov 2026 · daytime weather icon';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -1028,7 +1028,7 @@
     box.style.setProperty('--wc',o.band.colour);
     document.getElementById('wxIcon').textContent=wxIcon(wx.code);
     document.getElementById('wxTemp').textContent='';
-    document.getElementById('wxTitle').textContent='Wear today';
+    document.getElementById('wxTitle').textContent='What should I wear?';
     // small print for grown-ups only
     var sub=(cfg.loc.name?cfg.loc.name.split(',')[0]+' · ':'')+Math.round(wx.min)+'°→'+Math.round(wx.max)+'°';
     if(wx.rain>=20)sub+=' · rain '+wx.rain+'%';
@@ -1068,7 +1068,7 @@
     var L=cfg.loc;
     var url='https://api.open-meteo.com/v1/forecast?latitude='+L.lat+'&longitude='+L.lon+
       '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,weather_code,wind_speed_10m_max,wind_gusts_10m_max'+
-      '&hourly=uv_index&timezone=auto&forecast_days=2';
+      '&hourly=uv_index,weather_code,precipitation_probability&timezone=auto&forecast_days=2';
     try{
       fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){
         var d=j.daily;
@@ -1076,6 +1076,26 @@
             rain:d.precipitation_probability_max[0]||0,uv:d.uv_index_max[0]||0,at:Date.now(),
             wind:(d.wind_speed_10m_max&&d.wind_speed_10m_max[0])||0,gust:(d.wind_gusts_10m_max&&d.wind_gusts_10m_max[0])||0,
             hours:(j.hourly&&j.hourly.time)||[],uvh:(j.hourly&&j.hourly.uv_index)||[]};
+        // Daily weather_code is the WORST weather of the whole day (one passing shower = rain cloud),
+        // so pick the icon and rain chance from the daytime hours (7am–6pm) instead.
+        var h=j.hourly||{},td=today(),cnt={sun:0,part:0,cloud:0,rain:0,storm:0,snow:0},dayRain=-1;
+        (h.time||[]).forEach(function(t,i){
+          if(t.slice(0,10)!==td)return;var hr=+t.slice(11,13);if(hr<7||hr>18)return;
+          var c=(h.weather_code||[])[i],pp=(h.precipitation_probability||[])[i];
+          if(pp!=null)dayRain=Math.max(dayRain,pp);
+          if(c==null)return;
+          if(c===0)cnt.sun++;else if(c<=2)cnt.part++;else if(c===3||c===45||c===48)cnt.cloud++;
+          else if(c>=95)cnt.storm++;else if((c>=71&&c<=77)||c===85||c===86)cnt.snow++;else cnt.rain++;
+        });
+        var tot=cnt.sun+cnt.part+cnt.cloud+cnt.rain+cnt.storm+cnt.snow;
+        if(tot){
+          if(cnt.storm>=2)wx.code=95;
+          else if(cnt.snow>=2)wx.code=71;
+          else if(cnt.rain>=5)wx.code=61;          // rainy day
+          else if(cnt.rain>=2)wx.code=80;          // some showers
+          else wx.code=cnt.sun>=cnt.part&&cnt.sun>=cnt.cloud?0:(cnt.part>=cnt.cloud?2:3);
+        }
+        if(dayRain>=0)wx.rain=dayRain;
         wxErr='';save('qb_wx',wx);render();renderWx();
       }).catch(function(){wxErr='Open this board from its own web address to get live weather';renderWx();});
     }catch(e){wxErr='Weather blocked here';renderWx();}
