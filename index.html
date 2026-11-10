@@ -271,6 +271,8 @@
   .sw{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.25);cursor:pointer}
   .sw.sel{border-color:#fff;box-shadow:0 0 0 3px #2ecc71}
 
+  #updBar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:80;background:#2ecc71;color:#06301a;border:none;border-radius:99px;padding:10px 22px;font-family:inherit;font-size:17px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.35);cursor:pointer}
+
   /* time clock overlay */
   #clockOv{position:fixed;inset:0;z-index:70;background:rgba(10,12,40,.85);display:none;align-items:center;justify-content:center}
   #clockOv.show{display:flex;animation:mileIn .4s cubic-bezier(.3,1.6,.6,1)}
@@ -333,6 +335,7 @@
 </head>
 <body>
 <div id="fx"></div>
+<button id="updBar" style="display:none">✨ New version ready · tap to update</button>
 <div id="app">
   <header>
     <div class="dt" id="dt">
@@ -382,7 +385,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · animated clock';
+  var BOARD_VERSION='11 Nov 2026 · auto-update';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -977,6 +980,31 @@
     else renderHeader();
   },15000);
 
+  // ---------- Updates: the board checks for a new version and refreshes itself when nobody is using it ----------
+  var updateReady=null,lastTouch=Date.now();
+  document.addEventListener('pointerdown',function(){lastTouch=Date.now();},true);
+  function checkUpdate(){
+    return fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
+      var m=t.match(/var BOARD_VERSION='([^']*)'/);
+      if(m&&m[1]!==BOARD_VERSION){updateReady=m[1];showUpdateBar();return true;}
+      return false;
+    }).catch(function(){return null;});
+  }
+  function showUpdateBar(){
+    var b=document.getElementById('updBar');if(!b)return;
+    b.style.display='';
+  }
+  function applyUpdate(){location.reload();}
+  function idleUpdate(){
+    if(!updateReady)return;
+    var busy=document.getElementById('settings').classList.contains('open')||document.getElementById('clockOv').classList.contains('show')||document.getElementById('gate').classList.contains('open');
+    if(!busy&&view===-1&&Date.now()-lastTouch>90000)applyUpdate(); // quietly refresh after 1½ minutes untouched
+  }
+  setTimeout(checkUpdate,8000);
+  setInterval(checkUpdate,10*60000);
+  setInterval(idleUpdate,30000);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')checkUpdate();});
+
   // ---------- "What time is it?" clock (tap the countdown or the time) ----------
   var NUMW=['twelve','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
   function hourWord(h){return NUMW[(h%12)||12];}
@@ -1555,6 +1583,19 @@
     rc.appendChild(sField('Clear today\'s ticks','Unticks everything for today. Stars and reading days stay.',[sConfirm('Clear','Tap again to clear','btn',function(){prog=null;ensureProg();renderSettings();})]));
     rc.appendChild(sField('Restore the default quests','Replaces your quests and week plan. Children, stars and reading days stay.',[sConfirm('Restore','Tap again to restore','btn danger',function(){var names=cfg.kids;cfg=defaults();cfg.kids=names;normalize();sv();renderSettings();})]));
     inner.appendChild(rc);
+    var uc=sCard('Updates','The board checks for a new version every 10 minutes and refreshes itself when nobody has touched it for a minute or two.');
+    var ust=el('span',{'class':'muted'},updateReady?'New version ready: '+updateReady:'Version: '+BOARD_VERSION);
+    var ub=sBtn(updateReady?'Update now':'Check now','primary',function(){
+      if(updateReady){applyUpdate();return;}
+      ub.textContent='Checking…';
+      checkUpdate().then(function(r){
+        if(r===true){ub.textContent='Update now';ust.textContent='New version ready: '+updateReady;}
+        else if(r===false){ub.textContent='Check now';ust.textContent='✅ Up to date ('+BOARD_VERSION+')';}
+        else{ub.textContent='Check now';ust.textContent='Couldn\'t check. Is the internet on?';}
+      });
+    });
+    uc.appendChild(sField('This board',null,[ust,ub]));
+    inner.appendChild(uc);
     inner.appendChild(el('p',{'class':'ssub',style:'text-align:center'},'Quest Board · version '+BOARD_VERSION));
   }
 
@@ -1999,6 +2040,7 @@
   fetchWx();
   // Offline support + install as an app
   try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js');}catch(e){}
+  document.getElementById('updBar').addEventListener('click',applyUpdate);
   var installEvt=null;
   window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installEvt=e;});
   window.addEventListener('appinstalled',function(){installEvt=null;});
