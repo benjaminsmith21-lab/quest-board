@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Morning Quest Board</title>
+<title>Quest Board</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1b1f3b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -183,6 +187,11 @@
   .steprow input.lbl{flex:1}
   .hint{color:var(--muted);font-size:16px;margin:4px 0 0}
   .sayrow{margin:-4px 0 12px 74px}
+  .tile .tick{inset:auto;top:8px;right:10px;font-size:clamp(26px,3.4vw,40px)}
+  .lane.solo .tile.mini .tick{inset:0;top:0;right:0}
+  .svgicon{height:1.3em;width:1.3em;vertical-align:-0.2em;margin:-0.15em}
+  .kicon{display:inline}
+  .kicon .svgicon{height:1.1em;width:1.1em}
   .pergrp{font-weight:800;color:var(--warn);margin:8px 0 2px;font-size:17px}
   .locresults{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:6px}
   .locbtn{font-size:17px;text-align:left}
@@ -236,7 +245,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · you brushed your teeth';
+  var BOARD_VERSION='10 Nov 2026 · clothes, backup, new quests';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -257,7 +266,10 @@
     sport:['Sports uniform','You put on your sports uniform'],
     bed:['Make bed','You made your bed'],
     tidy:['Tidy one thing','You tidied something up'],
-    reading:['Reading','You did your reading']
+    reading:['Reading','You did your reading'],
+    lunchbox:['Put lunchbox away','You put your lunchbox away'],
+    dishes:['Put dishes away','You put your dishes away'],
+    pyjamas:['Get pyjamas ready','You got your pyjamas ready']
   };
   var IRREG={get:'got',eat:'ate',make:'made',put:'put',take:'took',go:'went','do':'did',feed:'fed',read:'read',write:'wrote',
     give:'gave',bring:'brought',have:'had',drink:'drank',hang:'hung',find:'found',set:'set',sweep:'swept',wear:'wore',say:'said',
@@ -315,7 +327,7 @@
       {id:'dress',emoji:'👕',label:'Get dressed'},
       {id:'breakfast',emoji:'🥣',label:'Eat breakfast'},
       {id:'teeth',emoji:'🪥',label:'Brush teeth'},
-      {id:'hair',emoji:'💇',label:'Brush hair'},
+      {id:'hair',emoji:'🪮',label:'Brush hair'},
       {id:'sunscreen',emoji:'🧴',label:'Sunscreen'},
       {id:'bag',emoji:'🎒',label:'Pack bag'},
       {id:'shoes',emoji:'👟',label:'Shoes & hat'},
@@ -324,7 +336,10 @@
       {id:'sport',emoji:'🧢',label:'Sports uniform'},
       {id:'bed',emoji:'🛏️',label:'Make bed'},
       {id:'tidy',emoji:'🧸',label:'Tidy one thing'},
-      {id:'reading',emoji:'📖',label:'Reading',period:'pm'}
+      {id:'lunchbox',emoji:'🍱',label:'Put lunchbox away',period:'pm'},
+      {id:'reading',emoji:'📖',label:'Reading',period:'pm'},
+      {id:'dishes',emoji:'🍽️',label:'Put dishes away',period:'pm'},
+      {id:'pyjamas',emoji:'🛌',label:'Get pyjamas ready',period:'pm'}
     ];
     var wk0=['toilet','dress','breakfast','teeth','hair','sunscreen','bag','shoes'];
     var wk1=['toilet','dress','breakfast','teeth','hair','sunscreen','shoes'];
@@ -333,14 +348,23 @@
     var days={};
     for(var d=0;d<7;d++){
       var weekend=(d===0||d===6);
-      days[d]={leave:weekend?'':'08:15',kids:[(weekend?we0:wk0).concat(['reading']),(weekend?we1:wk1).concat(['reading'])]};
+      var pm=(weekend?[]:['lunchbox']).concat(['reading','dishes','pyjamas']);
+      days[d]={leave:weekend?'':'08:15',kids:[(weekend?we0:wk0).concat(pm),(weekend?we1:wk1).concat(pm)]};
     }
     return {kids:[{name:'Big Kid',emoji:'🦊'},{name:'Little Kid',emoji:'🐢'}],steps:steps,days:days,voice:true,arvoStart:'12:00',v:2};
   }
 
   // ---------- storage ----------
-  function load(key,fallback){try{var v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
-  function save(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+  function load(key,fallback){
+    try{var v=localStorage.getItem(key);if(v)return JSON.parse(v);}catch(e){}
+    try{var b=localStorage.getItem(key+'_backup');if(b)return JSON.parse(b);}catch(e){}  // fall back to the backup copy
+    return fallback;
+  }
+  function save(key,val){
+    try{var j=JSON.stringify(val);localStorage.setItem(key,j);if(key==='qb_cfg'){localStorage.setItem(key+'_backup',j);localStorage.setItem('qb_saved_at',String(Date.now()));}}catch(e){}
+  }
+  // Ask the browser to treat this board's data as important so it isn't cleared to free up space
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 
   var cfg=load('qb_cfg',null)||defaults();
   // v2: afternoon ("arvo") quests, with daily Reading for both kids
@@ -360,13 +384,33 @@
     cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';});
     cfg.v=4;try{localStorage.setItem('qb_cfg',JSON.stringify(cfg));}catch(e){}
   }
+  // v5: hairbrush icon, three new afternoon quests, warm-day clothes choice per child
+  if(cfg.v<5){
+    var hs=null;cfg.steps.forEach(function(x){if(x.id==='hair'&&x.emoji==='💇')x.emoji='🪮';});
+    function addStep(st,beforeId,afterId){
+      if(cfg.steps.some(function(x){return x.id===st.id;}))return false;
+      var idx=-1;cfg.steps.forEach(function(x,i){if(x.id===(beforeId||afterId))idx=i;});
+      if(idx<0)cfg.steps.push(st);else cfg.steps.splice(beforeId?idx:idx+1,0,st);
+      return true;
+    }
+    var addL=addStep({id:'lunchbox',emoji:'🍱',label:'Put lunchbox away',period:'pm'},'reading');
+    var addP=addStep({id:'pyjamas',emoji:'🛌',label:'Get pyjamas ready',period:'pm'},null,'reading');
+    var addD=addStep({id:'dishes',emoji:'🍽️',label:'Put dishes away',period:'pm'},null,'reading');
+    for(var d5=0;d5<7;d5++)cfg.days[d5].kids.forEach(function(list){
+      if(addL&&d5>=1&&d5<=5&&list.indexOf('lunchbox')<0)list.push('lunchbox');
+      if(addD&&list.indexOf('dishes')<0)list.push('dishes');
+      if(addP&&list.indexOf('pyjamas')<0)list.push('pyjamas');
+    });
+    cfg.kids.forEach(function(kd){kd.clothes=kd.clothes||'shorts';});
+    cfg.v=5;save('qb_cfg',cfg);
+  }
   var PALETTE=[['#ff9f43','#a85d14'],['#2ecc9a','#167a5b'],['#5aa9ff','#2b5f99'],['#ff6fb5','#a33a6f'],['#b98cff','#6a45a8'],['#ffd23f','#9c7d10']];
   function kidColour(node,k){var c=PALETTE[k%PALETTE.length];node.style.setProperty('--c',c[0]);node.style.setProperty('--cd',c[1]);}
   function nKids(){return cfg.kids.length;}
   function normalize(){
     var n=nKids();
     for(var d=0;d<7;d++){var a=cfg.days[d].kids;while(a.length<n)a.push([]);if(a.length>n)a.length=n;}
-    cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';});
+    cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';kd.clothes=kd.clothes||'shorts';});
   }
   normalize();
   function stepByIdRaw(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
@@ -492,7 +536,8 @@
     else{
       var next=steps.filter(function(s){return done.indexOf(s.id)<0;})[0];
       c.appendChild(el('div',{'class':'kcount'},count+' of '+steps.length+' done'));
-      c.appendChild(el('div',{'class':'knext'},'Next: '+next.emoji+' '+next.label));
+      var kn=el('div',{'class':'knext'});kn.appendChild(document.createTextNode('Next: '));
+      var ki=iconEl(next.emoji,'kicon');kn.appendChild(ki);kn.appendChild(document.createTextNode(' '+next.label));c.appendChild(kn);
     }
     c.addEventListener('click',function(){openKid(k);});
     return c;
@@ -504,18 +549,37 @@
     return b;
   }
   function hasReading(k){for(var d=0;d<7;d++)if(cfg.days[d].kids[k].indexOf('reading')>-1)return true;return false;}
-  function outfitChip(){
+  function outfitChip(k){
     if(!wx||wx.date!==today())return null;
-    var o=outfit(wx);
+    var o=outfit(wx,k);
     var chip=el('div',{'class':'ochip'});chip.style.background=o.band.colour;
     chip.textContent=o.wear.map(function(x){return x[0];}).join(' ');
     chip.title=o.band.name;
     return chip;
   }
+  var HAIRBRUSH_SVG="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><g transform='rotate(-35 32 32)'><rect x='27.5' y='36' width='9' height='25' rx='4.5' fill='%23b8692a'/><ellipse cx='32' cy='22' rx='16' ry='19' fill='%23e8954a'/><ellipse cx='32' cy='22' rx='12.5' ry='15.5' fill='%23402f55'/><g fill='%23f6eaff'><circle cx='27' cy='10' r='1.9'/><circle cx='32' cy='10' r='1.9'/><circle cx='37' cy='10' r='1.9'/><circle cx='22' cy='15' r='1.9'/><circle cx='27' cy='15' r='1.9'/><circle cx='32' cy='15' r='1.9'/><circle cx='37' cy='15' r='1.9'/><circle cx='42' cy='15' r='1.9'/><circle cx='22' cy='20' r='1.9'/><circle cx='27' cy='20' r='1.9'/><circle cx='32' cy='20' r='1.9'/><circle cx='37' cy='20' r='1.9'/><circle cx='42' cy='20' r='1.9'/><circle cx='22' cy='25' r='1.9'/><circle cx='27' cy='25' r='1.9'/><circle cx='32' cy='25' r='1.9'/><circle cx='37' cy='25' r='1.9'/><circle cx='42' cy='25' r='1.9'/><circle cx='27' cy='30' r='1.9'/><circle cx='32' cy='30' r='1.9'/><circle cx='37' cy='30' r='1.9'/><circle cx='27' cy='35' r='1.9'/><circle cx='32' cy='35' r='1.9'/><circle cx='37' cy='35' r='1.9'/></g></g></svg>";
+  var emojiCache={};
+  function emojiOK(ch){ // does this tablet have a picture for this emoji? (newer emojis can show as a blank box)
+    if(ch in emojiCache)return emojiCache[ch];
+    var ok=true;
+    try{
+      var c=document.createElement('canvas');c.width=c.height=40;var x=c.getContext('2d');
+      function px(t){x.clearRect(0,0,40,40);x.font='32px sans-serif';x.textBaseline='top';x.fillText(t,0,0);return x.getImageData(0,0,40,40).data.join(',');}
+      ok=px(ch)!==px('\u{1FFFE}');
+    }catch(e){}
+    return (emojiCache[ch]=ok);
+  }
+  function iconEl(ch,cls){
+    var d=el('div',{'class':cls});
+    if(ch==='🪮'){ // always draw our own paddle hairbrush (the 🪮 emoji is a comb, and missing on older tablets)
+      var im=el('img',{src:HAIRBRUSH_SVG,alt:'hairbrush','class':'svgicon'});d.appendChild(im);}
+    else d.textContent=ch;
+    return d;
+  }
   // A quest tile. Tap to tick. Ticked tiles need a 1.5s hold to undo, so little fingers can't untick by accident.
   function makeTile(k,s,isDone,extra){
     var b=el('button',{'class':'tile'+(isDone?' done':'')+(extra?' '+extra:'')});
-    b.appendChild(el('div',{'class':'em'},s.emoji));
+    b.appendChild(iconEl(s.emoji,'em'));
     if(extra!=='mini')b.appendChild(el('div',{'class':'lb'},s.label));
     b.appendChild(el('div',{'class':'tick'},'✅'));
     b.appendChild(el('div',{'class':'hold'}));
@@ -546,7 +610,7 @@
     var av=document.createElement('div');av.className='avatar';av.textContent=kid.emoji;
     var nm=document.createElement('div');nm.className='name';nm.textContent=kid.name;
     head.appendChild(av);head.appendChild(nm);
-    if(solo){var oc=outfitChip();if(oc)head.appendChild(oc);}
+    if(solo){var oc=outfitChip(k);if(oc)head.appendChild(oc);}
     head.appendChild(badges(k,'lbadges'));
     lane.appendChild(head);
 
@@ -564,7 +628,7 @@
         var nb=makeTile(k,now,false,'nn-now');nn.appendChild(nb);
         var nx=el('div',{'class':'nn-next'});
         nx.appendChild(el('div',{'class':'nn-cap'},nxt?'Next':'Last one!'));
-        nx.appendChild(el('div',{'class':'em'},nxt?nxt.emoji:'⭐'));
+        nx.appendChild(iconEl(nxt?nxt.emoji:'⭐','em'));
         if(nxt)nx.appendChild(el('div',{'class':'lb'},nxt.label));
         nn.appendChild(nx);
       } else nn.appendChild(el('div',{'class':'nn-done'},'🎉'));
@@ -726,7 +790,7 @@
   var sBody=document.getElementById('sBody');
   function openSettings(){sDay=new Date().getDay();renderSettings();document.getElementById('settings').classList.add('open');}
   document.getElementById('closeSettings').addEventListener('click',function(){
-    save('qb_cfg',cfg);document.getElementById('settings').classList.remove('open');render();
+    save('qb_cfg',cfg);document.getElementById('settings').classList.remove('open');render();renderWx();
   });
   function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)for(var a in attrs)e.setAttribute(a,attrs[a]);if(text!=null)e.textContent=text;return e;}
 
@@ -747,7 +811,12 @@
         var o=el('option',{value:p[0]},p[1]);if((kid.mode||'grid')===p[0])o.selected=true;ms.appendChild(o);
       });
       ms.addEventListener('change',function(){kid.mode=ms.value;save('qb_cfg',cfg);});
-      r.appendChild(sel);r.appendChild(inp);r.appendChild(ms);
+      var cs=el('select',{title:'What this child wears on warm days'});
+      [['shorts','Warm days: shorts'],['dress','Warm days: dresses & skirts'],['both','Warm days: both']].forEach(function(p){
+        var o=el('option',{value:p[0]},p[1]);if((kid.clothes||'shorts')===p[0])o.selected=true;cs.appendChild(o);
+      });
+      cs.addEventListener('change',function(){kid.clothes=cs.value;save('qb_cfg',cfg);});
+      r.appendChild(sel);r.appendChild(inp);r.appendChild(ms);r.appendChild(cs);
       if(nKids()>1){
         var rm=el('button',{'class':'btn danger'},'Remove'),armed=false;
         rm.addEventListener('click',function(){
@@ -765,7 +834,7 @@
     addk.addEventListener('click',function(){
       var used=cfg.kids.map(function(x){return x.emoji;});
       var em=AVATARS.filter(function(a){return used.indexOf(a)<0;})[0]||'⭐';
-      cfg.kids.push({name:'Child '+(nKids()+1),emoji:em,mode:'grid',reads:{count:0,last:'',prev:''},stars:{count:0,last:'',prev:''}});
+      cfg.kids.push({name:'Child '+(nKids()+1),emoji:em,mode:'grid',clothes:'shorts',reads:{count:0,last:'',prev:''},stars:{count:0,last:'',prev:''}});
       for(var d=0;d<7;d++){var src=cfg.days[d].kids[0]||[];cfg.days[d].kids.push(src.slice());}
       normalize();ensureProg();save('qb_cfg',cfg);renderSettings();
     });
@@ -986,6 +1055,29 @@
     });
     br.appendChild(rt);br.appendChild(rd);oc.appendChild(br);
     oc.appendChild(el('p',{'class':'hint'},'Settings, reading days and stars are saved on this device only. Other families using the same link keep their own.'));
+    var bk=el('div',{'class':'card',style:'background:#0e1130;margin-top:14px'});
+    bk.appendChild(el('h3',null,'💾 Backup & move to another device'));
+    var sa=0;try{sa=+localStorage.getItem('qb_saved_at')||0;}catch(e){}
+    bk.appendChild(el('p',{'class':'hint'},'Last saved on this device: '+(sa?new Date(sa).toLocaleString():'not yet')+'. Copy the backup code and keep it (e.g. email it to yourself). Paste it here on any device to restore children, quests, reading days and stars. You can also send it to another family as a starting setup.'));
+    var ta=el('textarea',{rows:'3',style:'width:100%;font-size:13px;border-radius:10px;background:#12153a;color:#fff;border:2px solid #444b8a;padding:8px',placeholder:'Backup code appears here, or paste one to restore'});
+    bk.appendChild(ta);
+    var brow=el('div',{'class':'row',style:'margin-top:8px'});
+    var mk=el('button',{'class':'btn'},'Make backup code');
+    mk.addEventListener('click',function(){
+      ta.value='QB1:'+btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+      try{ta.select();if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(function(){mk.textContent='Copied ✓';},function(){mk.textContent='Select and copy the code';});}catch(e){}
+    });
+    var rs2=el('button',{'class':'btn primary'},'Restore from code');
+    rs2.addEventListener('click',function(){
+      try{
+        var v=ta.value.trim();if(v.indexOf('QB1:')!==0)throw 0;
+        var c=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));
+        if(!c||!c.kids||!c.steps||!c.days)throw 0;
+        cfg=c;normalize();save('qb_cfg',cfg);prog=null;ensureProg();renderSettings();
+      }catch(e){rs2.textContent='That code didn\'t work';}
+    });
+    brow.appendChild(mk);brow.appendChild(rs2);bk.appendChild(brow);
+    oc.appendChild(bk);
     oc.appendChild(el('p',{'class':'hint'},'Board version: '+BOARD_VERSION));
     sBody.appendChild(oc);
   }
@@ -994,11 +1086,11 @@
   if(!cfg.loc)cfg.loc={name:'Frankston',lat:-38.14,lon:145.12};
   var wx=load('qb_wx',null);
   var BANDS=[ // by today's top temperature
-    {min:27,name:'Hot day',colour:'#ff5e5e',word:'red',wear:[['🩳','Shorts'],['👕','T-shirt']]},
-    {min:22,name:'Warm day',colour:'#ff9f43',word:'orange',wear:[['🩳','Shorts'],['👕','T-shirt']]},
-    {min:17,name:'Nice day',colour:'#f6d743',word:'yellow',wear:[['👖','Pants or shorts'],['👕','T-shirt']]},
-    {min:12,name:'Cool day',colour:'#4fa3ff',word:'blue',wear:[['👖','Long pants'],['🧥','Jumper']]},
-    {min:-99,name:'Cold day',colour:'#a77bff',word:'purple',wear:[['👖','Long pants'],['🧥','Warm jacket'],['🧣','Scarf']]}
+    {min:27,name:'Hot day',colour:'#ff5e5e',word:'red',bottoms:{shorts:['🩳','Shorts'],dress:['👗','Dress or skirt']},wear:[['👕','T-shirt']]},
+    {min:22,name:'Warm day',colour:'#ff9f43',word:'orange',bottoms:{shorts:['🩳','Shorts'],dress:['👗','Dress or skirt']},wear:[['👕','T-shirt']]},
+    {min:17,name:'Nice day',colour:'#f6d743',word:'yellow',bottoms:{shorts:['👖','Pants or shorts'],dress:['👗','Dress or skirt']},wear:[['👕','T-shirt']]},
+    {min:12,name:'Cool day',colour:'#4fa3ff',word:'blue',bottoms:{shorts:['👖','Long pants'],dress:['👗','Dress & tights']},wear:[['🧥','Jumper']]},
+    {min:-99,name:'Cold day',colour:'#a77bff',word:'purple',bottoms:{shorts:['👖','Long pants'],dress:['👗','Dress & tights']},wear:[['🧥','Warm jacket'],['🧣','Scarf']]}
   ];
   function wxIcon(code){
     if(code===0)return '☀️';if(code<=2)return '🌤️';if(code===3)return '☁️';
@@ -1006,9 +1098,17 @@
     if(code>=71&&code<=77)return '❄️';if(code>=80&&code<=82)return '🌦️';
     if(code>=51)return '🌧️';return '🌤️';
   }
-  function outfit(w){
+  function clothesPref(k){
+    if(k!=null&&cfg.kids[k])return cfg.kids[k].clothes||'shorts';
+    var set={};cfg.kids.forEach(function(kd){set[kd.clothes||'shorts']=1;});  // home screen: cover every child's choice
+    var keys=Object.keys(set);return keys.length===1?keys[0]:'both';
+  }
+  function outfit(w,k){
     var band=BANDS.filter(function(b){return w.max>=b.min;})[0];
-    var wear=band.wear.map(function(x){return x.slice();});
+    var pref=clothesPref(k),wear=[];
+    if(pref!=='dress')wear.push(band.bottoms.shorts.concat(['b']));
+    if(pref!=='shorts')wear.push(band.bottoms.dress.concat(['b']));
+    band.wear.forEach(function(x){wear.push(x.slice());});
     var extras=[];
     if(w.min<=10&&band.min>=17)extras.push(['🧥','Jumper']);
     if(w.rain>=40)extras.push(['☔','Raincoat']);
@@ -1128,8 +1228,13 @@
     parts.push('Today will be '+feel+(wnd?' and '+wnd:'')+'.');
     if(wx.rain>=70)parts.push('It will rain, so take your raincoat.');
     else if(wx.rain>=40)parts.push('It might rain, so take your raincoat.');
-    var items=o.wear.filter(function(x){return ['Raincoat','Hat','Sunscreen'].indexOf(x[1])<0;}).map(function(x){return x[1].toLowerCase();});
-    if(items.length){var last=items.pop();parts.push('Wear '+(items.length?items.join(', ')+' and ':'')+last+'.');}
+    var SPOKEN={'Dress or skirt':'a dress or skirt','Dress & tights':'a dress and tights','T-shirt':'a t-shirt','Jumper':'a jumper',
+      'Warm jacket':'a warm jacket','Scarf':'a scarf','Pants or shorts':'pants or shorts'};
+    function sp(x){return SPOKEN[x[1]]||x[1].toLowerCase();}
+    var bot=o.wear.filter(function(x){return x[2]==='b';}).map(sp);
+    var items=o.wear.filter(function(x){return x[2]!=='b'&&['Raincoat','Hat','Sunscreen'].indexOf(x[1])<0;}).map(sp);
+    if(bot.length)items.unshift(bot.join(' or '));
+    if(items.length){var last=items.pop();parts.push('Wear '+(items.length?items.join(', ')+(bot.length>1?', and ':' and '):'')+last+'.');}
     if(uvPeakAhead()>=uvLimit())parts.push('The sun will be strong today, so wear sunscreen and try and play in the shade. Don\'t forget your hat!');
     return parts.join(' ');
   }
