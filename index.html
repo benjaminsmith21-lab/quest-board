@@ -267,6 +267,10 @@
   .dragging{opacity:.9;outline:3px solid var(--warn);outline-offset:-3px;background:#2f3670 !important;border-radius:12px}
   tr.dragging td{background:#2f3670}
   .sorting{user-select:none;-webkit-user-select:none}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:2px solid #444b8a;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:16px;padding:6px 12px;border-radius:99px;cursor:pointer}
+  .chip.on{background:#fff;border-color:#fff;color:#1b1f3b}
+  .chip.day{min-width:52px}
   .swatches{display:flex;gap:10px;flex-wrap:wrap}
   .sw{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.25);cursor:pointer}
   .sw.sel{border-color:#fff;box-shadow:0 0 0 3px #2ecc71}
@@ -385,7 +389,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · put cream on';
+  var BOARD_VERSION='11 Nov 2026 · recurring events';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -607,6 +611,7 @@
     period=period||curPeriod();
     var dc=cfg.days[new Date().getDay()];
     var ids=(dc.kids[k]||[]).filter(function(id){var s=stepByIdRaw(id);return s&&stepPeriod(s)===period;});
+    eventQuestIds(k).forEach(function(id){var s=stepByIdRaw(id);if(s&&stepPeriod(s)===period&&ids.indexOf(id)<0)ids.push(id);});
     // auto sunscreen from the UV forecast (falls back to the day's setting if no forecast) - mornings only
     var need=sunscreenNeeded();
     if(period==='am'&&cfg.autoSun!==false&&need!==null&&ids.length){
@@ -1196,7 +1201,7 @@
   function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)for(var a in attrs)e.setAttribute(a,attrs[a]);if(text!=null)e.textContent=text;return e;}
 
   // ================= SETTINGS (sectioned layout) =================
-  var sTab='children',sQuestView='days',openAvatar=-1;
+  var sTab='children',sQuestView='days',openAvatar=-1,openEvent=null;
   var S_TABS=[['children','👧','Children'],['quests','✅','Quests'],['leaving','🚗','Leaving'],['events','📅','Events'],['weather','🌤️','Weather'],['sound','🔊','Sound'],['device','📱','This device']];
   function sCard(title,desc){var c=el('div',{'class':'scard'});if(title)c.appendChild(el('h3',null,title));if(desc)c.appendChild(el('p',{'class':'desc'},desc));return c;}
   function sField(label,help,controls){
@@ -1444,37 +1449,93 @@
   // ---------- Events ----------
   function setEvents(inner){
     sHead(inner,'Events','Countdowns in "sleeps" on the home screen. Tap one on the board to hear it.');
-    var ec=sCard('Your events','Birthdays, parties, playdates, holidays. Tap one to edit.');
+    var ec=sCard('Your events','Birthdays, sport and activities, parties, playdates, holidays. Tap one to edit.');
     var t0=today0();
     cfg.events.forEach(function(ev,idx){
       var d=el('details',{'class':'item'}),sm=el('summary');
-      var past=(ev.repeat||'none')==='none'&&ev.date&&daysBetween(t0,parseD(ev.end||ev.date))<0;
+      var r=rep_(ev),next=ev.date?nextOccurrence(ev,t0):null,past=ev.date&&!next;
       sm.appendChild(el('span',{'class':'iic'},ev.emoji||'📅'));sm.appendChild(el('span',{'class':'iname'},ev.name||'New event'));
-      sm.appendChild(el('span',{'class':'tag'},(past?'Past · ':'')+fmtDate(ev.date)+({yearly:' · every year',birthday:' · birthday'}[ev.repeat]||'')));
+      sm.appendChild(el('span',{'class':'tag'},(past?'Finished · ':'')+repeatSummary(ev)));
       if(past)d.style.opacity='.5';
-      if(!ev.date||!ev.name||ev.name==='\'s birthday')d.open=true;
+      if(!ev.date||!ev.name||openEvent===ev.id)d.open=true;
+      d.addEventListener('toggle',function(){if(d.open)openEvent=ev.id;else if(openEvent===ev.id)openEvent=null;});
       d.appendChild(sm);var b=el('div',{'class':'body'});
+      function redraw(){openEvent=ev.id;sv();renderSettings();}
+      // what + who
       var em=el('input',{type:'text','class':'emo',value:ev.emoji||'',maxlength:'4'});em.addEventListener('input',function(){ev.emoji=em.value;sv();});
       var nm=el('input',{type:'text',value:ev.name||'',placeholder:'What is it?',style:'flex:1;min-width:160px'});nm.addEventListener('input',function(){ev.name=nm.value;sv();});
-      b.appendChild(sField('Picture and name',ev.repeat==='birthday'?'e.g. Ava\'s birthday':'',[em,nm]));
-      b.appendChild(sField('Repeats','Birthdays repeat every year and show the age.',[sSeg([['none','Once'],['yearly','Every year'],['birthday','Birthday']],ev.repeat||'none',function(v){ev.repeat=v;if(v==='birthday'&&!ev.emoji)ev.emoji='🎂';sv();renderSettings();})]));
-      var dt=el('input',{type:'date',value:ev.date||''});dt.addEventListener('change',function(){ev.date=dt.value;sv();});
-      b.appendChild(sField(ev.repeat==='birthday'?'Date of birth':'Date',ev.repeat==='birthday'?'Include the real year so the board knows how old they\'ll be.':'',[dt]));
-      if((ev.repeat||'none')==='none'){
-        var en=el('input',{type:'date',value:ev.end||''});en.addEventListener('change',function(){ev.end=en.value;sv();});
+      b.appendChild(sField('Picture and name',r==='birthday'?'e.g. Ava\'s birthday':'e.g. Soccer training',[em,nm]));
+      var whoBox=el('div',{'class':'chips'});
+      cfg.kids.forEach(function(kd,k){
+        var on=!ev.kids||!ev.kids.length||ev.kids.indexOf(k)>-1;
+        var c=el('button',{'class':'chip'+(on?' on':'')},kd.emoji+' '+kd.name);
+        c.addEventListener('click',function(){
+          var cur=(!ev.kids||!ev.kids.length)?cfg.kids.map(function(_,i){return i;}):ev.kids.slice();
+          var i=cur.indexOf(k);if(i>-1){if(cur.length>1)cur.splice(i,1);}else cur.push(k);
+          ev.kids=cur.length===nKids()?[]:cur.sort();evQuestCache.day='';redraw();
+        });
+        whoBox.appendChild(c);
+      });
+      b.appendChild(sField('Who\'s it for','Tap to include or leave out each child.',[whoBox]));
+      // when
+      var dt=el('input',{type:'date',value:ev.date||''});dt.addEventListener('change',function(){ev.date=dt.value;evQuestCache.day='';redraw();});
+      var tm=el('input',{type:'time',value:ev.time||''});tm.addEventListener('change',function(){ev.time=tm.value;sv();});
+      var clr=ev.time?sBtn('No time','',function(){ev.time='';redraw();}):null;
+      b.appendChild(sField(r==='birthday'?'Date of birth':(r==='none'?'Date':'Starts on'),r==='birthday'?'Include the real year so the board knows how old they\'ll be.':'',[dt]));
+      if(r!=='birthday')b.appendChild(sField('Time (optional)','Shown and spoken on the day, e.g. "today at half past four".',[tm,clr]));
+      // repeats
+      b.appendChild(sField('Repeats','',[sSeg([['none','Once'],['daily','Daily'],['weekly','Weekly'],['monthly','Monthly'],['yearly','Yearly'],['birthday','Birthday']],r,function(v){
+        ev.repeat=v;if(v==='birthday'&&!ev.emoji)ev.emoji='🎂';
+        if(v==='weekly'&&(!ev.wdays||!ev.wdays.length))ev.wdays=[ev.date?parseD(ev.date).getDay():new Date().getDay()];
+        if(!ev.endMode)ev.endMode='never';evQuestCache.day='';redraw();})]));
+      if(r==='daily'||r==='weekly'||r==='monthly'||r==='yearly'){
+        var unit={daily:['day','days'],weekly:['week','weeks'],monthly:['month','months'],yearly:['year','years']}[r];
+        var ev_=sNum(evEvery(ev),1,function(v){ev.every=v;evQuestCache.day='';redraw();},70);
+        b.appendChild(sField('Every',null,[ev_,el('span',{'class':'muted'},evEvery(ev)===1?unit[0]:unit[1])]));
+      }
+      if(r==='weekly'){
+        var wbox=el('div',{'class':'chips'}),cur=(ev.wdays&&ev.wdays.length)?ev.wdays:[ev.date?parseD(ev.date).getDay():1];
+        [1,2,3,4,5,6,0].forEach(function(x){
+          var c=el('button',{'class':'chip day'+(cur.indexOf(x)>-1?' on':'')},DOW[x]);
+          c.addEventListener('click',function(){var a=cur.slice(),i=a.indexOf(x);if(i>-1){if(a.length>1)a.splice(i,1);}else a.push(x);ev.wdays=a;evQuestCache.day='';redraw();});
+          wbox.appendChild(c);
+        });
+        b.appendChild(sField('On these days',null,[wbox]));
+      }
+      if(r==='monthly'&&ev.date){
+        var sd=parseD(ev.date);
+        b.appendChild(sField('On',null,[sSeg([['date','Day '+sd.getDate()],['nth','The '+['','1st','2nd','3rd','4th','5th'][Math.ceil(sd.getDate()/7)]+' '+DAYS[sd.getDay()]]],ev.monthMode||'date',function(v){ev.monthMode=v;evQuestCache.day='';redraw();})]));
+      }
+      if(r==='daily'||r==='weekly'||r==='monthly'||r==='yearly'){
+        var endc=[sSeg([['never','Never'],['on','On a date'],['after','After a number of times']],ev.endMode||'never',function(v){ev.endMode=v;evQuestCache.day='';redraw();})];
+        if(ev.endMode==='on'){var ud=el('input',{type:'date',value:ev.until||''});ud.addEventListener('change',function(){ev.until=ud.value;evQuestCache.day='';redraw();});endc.push(ud);}
+        if(ev.endMode==='after'){endc.push(sNum(ev.count||10,1,function(v){ev.count=v;evQuestCache.day='';redraw();},80));endc.push(el('span',{'class':'muted'},'times'));}
+        b.appendChild(sField('Ends','e.g. the last training of the season.',endc));
+      }
+      if(r==='none'){
+        var en=el('input',{type:'date',value:ev.end||''});en.addEventListener('change',function(){ev.end=en.value;redraw();});
         b.appendChild(sField('Last day (optional)','For things that last a while, like holidays. Shows "On now!" during it.',[en]));
       }
-      var evLead=sNum(ev.lead===''||ev.lead==null?null:ev.lead,0,function(v){ev.lead=v;sv();},90);evLead.placeholder=String(cfg.eventLead);
-      evLead.addEventListener('change',function(){if(evLead.value===''){ev.lead='';sv();}});
-      b.appendChild(sField('Start the countdown','Days before. Leave blank to use the default ('+cfg.eventLead+').',[evLead]));
+      b.appendChild(el('p',{'class':'status'},'📅 '+repeatSummary(ev)+(next?' · next: '+(daysBetween(t0,next)===0?'today':daysBetween(t0,next)===1?'tomorrow':fmtDate(ymd(next))):(ev.date?' · no more dates':''))));
+      // on the board
+      var lead=sNum(ev.lead===''||ev.lead==null?null:ev.lead,0,function(v){ev.lead=v;sv();},90);lead.placeholder=String(defaultLead(ev));
+      lead.addEventListener('change',function(){if(lead.value===''){ev.lead='';sv();}});
+      b.appendChild(sField('Start the countdown','Days before each time. Blank = '+defaultLead(ev)+' (good for '+(r==='weekly'||r==='daily'?'things that happen often':'this kind of event')+').',[lead]));
+      var qs=el('select');qs.appendChild(el('option',{value:''},'Nothing extra'));
+      cfg.steps.forEach(function(st){var o=el('option',{value:st.id},(/^svg:/.test(st.emoji)?'':st.emoji+' ')+st.label+(stepPeriod(st)==='pm'?' (afternoon)':''));if(ev.quest===st.id)o.selected=true;qs.appendChild(o);});
+      qs.addEventListener('change',function(){ev.quest=qs.value;evQuestCache.day='';sv();});
+      b.appendChild(sField('Add a quest on the day','e.g. "Swim bag" on swimming days. Shows for the children above, even if it\'s switched off in the week plan.',[qs]));
+      b.appendChild(sField('Make the board special on the day','Party colours, decorations and a big banner. Best for birthdays and one-off days, not weekly things.',[sSwitch(evSpecial(ev),function(v){ev.special=v;sv();})]));
       var acts=el('div',{'class':'row',style:'justify-content:flex-end;margin-top:6px'});
-      acts.appendChild(sConfirm('Delete event','Tap again to delete','linkbtn',function(){cfg.events.splice(idx,1);sv();renderSettings();}));
+      acts.appendChild(sConfirm('Delete event','Tap again to delete','linkbtn',function(){cfg.events.splice(idx,1);evQuestCache.day='';sv();renderSettings();}));
       b.appendChild(acts);d.appendChild(b);ec.appendChild(d);
     });
     var adds=el('div',{'class':'row',style:'margin-top:8px'});
-    [['🎂','Birthday','birthday'],['🎈','Party','none'],['🧸','Playdate','none'],['🏖️','Holiday','none'],['⭐','Other','none']].forEach(function(p){
+    [['🎂','Birthday','birthday'],['⚽','Sport / activity','weekly'],['🎈','Party','none'],['🧸','Playdate','none'],['🏖️','Holiday','none'],['⭐','Other','none']].forEach(function(p){
       adds.appendChild(sBtn('+ '+p[0]+' '+p[1],'',function(){
-        cfg.events.push({id:'e'+Date.now(),emoji:p[0],name:p[2]==='birthday'?'':(p[1]==='Other'?'':p[1]),date:'',end:'',repeat:p[2],lead:''});sv();renderSettings();
+        var td=new Date(),ev={id:'e'+Date.now(),emoji:p[0],name:p[2]==='birthday'||p[1]==='Other'?'':(p[2]==='weekly'?'':p[1]),date:p[2]==='weekly'?ymd(td):'',end:'',repeat:p[2],lead:'',endMode:'never'};
+        if(p[2]==='weekly'){ev.wdays=[td.getDay()];ev.special=false;}
+        cfg.events.push(ev);openEvent=ev.id;sv();renderSettings();
       }));
     });
     ec.appendChild(adds);inner.appendChild(ec);
@@ -1698,6 +1759,104 @@
     if(/anzac/.test(n))return '🎖️';if(/easter|good friday/.test(n))return '🐣';if(/labour/.test(n))return '🛠️';if(/king|queen/.test(n))return '👑';
     if(/cup/.test(n))return '🏇';if(/grand final|football/.test(n))return '🏉';return '📅';
   }
+  // ----- Recurring events (Outlook-style) -----
+  // ev.repeat: none | daily | weekly | monthly | yearly | birthday
+  // ev.every (interval), ev.wdays [0-6] for weekly, ev.monthMode 'date' | 'nth',
+  // ev.endMode never | on | after, ev.until 'YYYY-MM-DD', ev.count N, ev.time 'HH:MM'
+  function rep_(ev){return ev.repeat||'none';}
+  function evEvery(ev){return Math.max(1,parseInt(ev.every,10)||1);}
+  function startOfWeek(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());}
+  function matchesPattern(ev,d){ // ignores the end rule
+    var st=parseD(ev.date),r=rep_(ev),n=evEvery(ev);
+    if(d<st)return false;
+    if(r==='none')return daysBetween(st,d)===0;
+    if(r==='daily')return daysBetween(st,d)%n===0;
+    if(r==='weekly'){
+      var wd=(ev.wdays&&ev.wdays.length)?ev.wdays:[st.getDay()];
+      if(wd.indexOf(d.getDay())<0)return false;
+      return Math.round(daysBetween(startOfWeek(st),startOfWeek(d))/7)%n===0;
+    }
+    if(r==='monthly'){
+      var months=(d.getFullYear()-st.getFullYear())*12+d.getMonth()-st.getMonth();
+      if(months<0||months%n!==0)return false;
+      if(ev.monthMode==='nth')return d.getDay()===st.getDay()&&Math.ceil(d.getDate()/7)===Math.ceil(st.getDate()/7);
+      return d.getDate()===st.getDate();
+    }
+    if(r==='yearly'||r==='birthday'){
+      var yrs=d.getFullYear()-st.getFullYear();
+      return d.getMonth()===st.getMonth()&&d.getDate()===st.getDate()&&(r==='birthday'||yrs%n===0);
+    }
+    return false;
+  }
+  var occCountCache={};
+  function occurrenceNumber(ev,d){ // 1 for the first time it happens, 2 for the second…
+    var key=ev.id+'|'+ymd(d)+'|'+JSON.stringify([ev.date,ev.repeat,ev.every,ev.wdays,ev.monthMode]);
+    if(key in occCountCache)return occCountCache[key];
+    var st=parseD(ev.date),c=0;
+    for(var x=new Date(st),i=0;x<=d&&i<4000;x.setDate(x.getDate()+1),i++)if(matchesPattern(ev,x))c++;
+    return (occCountCache[key]=c);
+  }
+  function occursOn(ev,d){
+    if(!ev.date)return false;
+    var r=rep_(ev);
+    if(r==='none'){var st=parseD(ev.date),en=ev.end?parseD(ev.end):st;return d>=st&&d<=en;}
+    if(!matchesPattern(ev,d))return false;
+    if(r!=='birthday'){
+      if(ev.endMode==='on'&&ev.until&&d>parseD(ev.until))return false;
+      if(ev.endMode==='after'&&ev.count&&occurrenceNumber(ev,d)>+ev.count)return false;
+    }
+    return true;
+  }
+  function nextOccurrence(ev,from){
+    if(!ev.date)return null;
+    var r=rep_(ev),st=parseD(ev.date);
+    if(r==='none'){var en=ev.end?parseD(ev.end):st;return en>=from?(st>from?st:from):null;}
+    var x=st>from?new Date(st):new Date(from),limit=(r==='yearly'?366*evEvery(ev):r==='birthday'?367:r==='monthly'?32*evEvery(ev)*2:120)+7;
+    for(var i=0;i<limit;i++){if(occursOn(ev,x))return new Date(x);x.setDate(x.getDate()+1);}
+    return null;
+  }
+  function defaultLead(ev){var r=rep_(ev);return (r==='daily'||r==='weekly')?1:(r==='monthly'?3:cfg.eventLead);}
+  function evLead(ev){return ev.lead!=null&&ev.lead!==''?+ev.lead:defaultLead(ev);}
+  function evSpecial(ev){if(ev.special!=null)return !!ev.special;var r=rep_(ev);return r==='none'||r==='yearly'||r==='birthday';}
+  function fmtTime(hm){if(!hm)return '';var p=hm.split(':'),h=+p[0];return ((h%12)||12)+(p[1]==='00'?'':':'+p[1])+(h<12?'am':'pm');}
+  function sayTime(hm){var p=hm.split(':'),h=+p[0],m=+p[1];return m%5===0?clockPhrase(h,m):(hourWord(h)+' '+m+(h<12?' a m':' p m'));}
+  var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function joinList(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];}
+  function ordinal(n){return n+(['th','st','nd','rd'][(n%100-20)%10]||['th','st','nd','rd'][n%100]||'th');}
+  function repeatSummary(ev){ // "Every week on Mon, Wed and Fri, until 26 Jun 2026, at 4:30pm"
+    var r=rep_(ev),n=evEvery(ev),st=ev.date?parseD(ev.date):null,out='';
+    if(!st)return 'No date yet';
+    if(r==='none')out=fmtDate(ev.date)+(ev.end&&ev.end!==ev.date?' – '+fmtDate(ev.end):'');
+    else if(r==='daily')out=n===1?'Every day':'Every '+n+' days';
+    else if(r==='weekly'){var wd=(ev.wdays&&ev.wdays.length?ev.wdays:[st.getDay()]).slice().sort(function(a,b){return ((a+6)%7)-((b+6)%7);}).map(function(x){return DOW[x];});
+      out=(n===1?'Every week':'Every '+n+' weeks')+' on '+joinList(wd);}
+    else if(r==='monthly')out=(n===1?'Every month':'Every '+n+' months')+(ev.monthMode==='nth'?' on the '+['','1st','2nd','3rd','4th','5th'][Math.ceil(st.getDate()/7)]+' '+DAYS[st.getDay()]:' on the '+ordinal(st.getDate()));
+    else if(r==='yearly')out=(n===1?'Every year':'Every '+n+' years')+' on '+st.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][st.getMonth()];
+    else if(r==='birthday')out='Birthday · '+st.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][st.getMonth()];
+    if(r!=='none'&&r!=='birthday'){
+      if(st>today0())out+=', from '+fmtDate(ev.date);
+      if(ev.endMode==='on'&&ev.until)out+=', until '+fmtDate(ev.until);
+      else if(ev.endMode==='after'&&ev.count)out+=', '+ev.count+' times';
+    }
+    if(ev.time)out+=', at '+fmtTime(ev.time);
+    return out;
+  }
+  // quests that events add on their day (e.g. "Pack swim bag" on swimming days)
+  var evQuestCache={day:'',map:{}};
+  function eventQuestIds(k){
+    var td=today();
+    if(evQuestCache.day!==td){
+      evQuestCache={day:td,map:{}};var t=today0();
+      cfg.events.forEach(function(ev){
+        if(!ev.quest||!occursOn(ev,t))return;
+        for(var kk=0;kk<nKids();kk++){
+          if(ev.kids&&ev.kids.length&&ev.kids.indexOf(kk)<0)continue;
+          (evQuestCache.map[kk]=evQuestCache.map[kk]||[]).push(ev.quest);
+        }
+      });
+    }
+    return evQuestCache.map[k]||[];
+  }
   function upcoming(){
     var t=today0(),y=t.getFullYear(),out=[],specialDays={};
     function add(emoji,name,start,end,lead,speakName,meta){
@@ -1727,14 +1886,14 @@
     // the family's own events
     cfg.events.forEach(function(ev){
       if(!ev.date)return;
-      var lead=ev.lead!=null&&ev.lead!==''?+ev.lead:cfg.eventLead;
-      var st=parseD(ev.date),en=ev.end?parseD(ev.end):null;
-      if(ev.repeat==='yearly'||ev.repeat==='birthday'){
-        var occ=new Date(y,st.getMonth(),st.getDate());if(daysBetween(t,occ)<0)occ=new Date(y+1,st.getMonth(),st.getDate());
-        var nm=ev.name,sp=ev.name;
-        if(ev.repeat==='birthday'){var age=occ.getFullYear()-st.getFullYear();if(age>0&&age<120){nm=ev.name+' ('+age+')';sp=ev.name+'! Turning '+age;}}
-        add(ev.emoji||'🎂',nm,occ,null,lead,sp,{kind:ev.repeat==='birthday'?'birthday':'event',raw:ev.name,age:ev.repeat==='birthday'?occ.getFullYear()-st.getFullYear():null});
-      } else add(ev.emoji||'📅',ev.name,st,en,lead,ev.name,{kind:'event',raw:ev.name});
+      var r=rep_(ev),lead=evLead(ev),st=parseD(ev.date);
+      var who=(ev.kids&&ev.kids.length&&ev.kids.length<nKids())?ev.kids.map(function(k){return cfg.kids[k]&&cfg.kids[k].name;}).filter(Boolean):[];
+      var meta={kind:r==='birthday'?'birthday':'event',raw:ev.name,time:ev.time||'',special:evSpecial(ev),evid:ev.id};
+      if(r==='none'){add(ev.emoji||'📅',ev.name,st,ev.end?parseD(ev.end):null,lead,ev.name,meta);return;}
+      var occ=nextOccurrence(ev,t);if(!occ)return;
+      var nm=ev.name,sp=ev.name;
+      if(r==='birthday'){var age=occ.getFullYear()-st.getFullYear();meta.age=age;if(age>0&&age<120){nm=ev.name+' ('+age+')';sp=ev.name+'! Turning '+age;}}
+      add(ev.emoji||(r==='birthday'?'🎂':'📅'),nm,occ,null,lead,sp,meta);
     });
     out.forEach(function(it){it.key2=(it.kind||'')+':'+(it.raw||it.key||it.name);});
     out.sort(function(a,b){return a.days-b.days;});
@@ -1789,7 +1948,7 @@
   }
   function currentTheme(){
     if(previewTheme)return {key:previewTheme,banner:bannerFor(previewTheme,{name:'Preview',raw:previewTheme==='birthday'?cfg.kids[0].name+'\'s birthday':'Preview',age:7,emoji:'🎉',kind:previewTheme==='birthday'?'birthday':'special'}),item:null};
-    var today=upcoming().filter(function(e){return e.days===0||e.on;});
+    var today=upcoming().filter(function(e){return (e.days===0||e.on)&&e.special!==false;});
     if(!today.length)return null;
     var rank={birthday:0,special:1,event:2,public:3};
     today.sort(function(a,b){return (rank[a.kind]||9)-(rank[b.kind]||9);});
@@ -1828,8 +1987,8 @@
   }
   function sleepsText(e){
     if(e.on)return 'On now!';
-    if(e.days===0)return 'Today! 🎉';
-    if(e.days===1)return 'Tomorrow!';
+    if(e.days===0)return e.time?'Today '+fmtTime(e.time):(e.special===false?'Today':'Today! 🎉');
+    if(e.days===1)return 'Tomorrow'+(e.time?' '+fmtTime(e.time):'!');
     return e.days+' sleeps';
   }
   function renderEvents(show){
@@ -1845,8 +2004,8 @@
       c.addEventListener('click',function(){
         keepAwake();
         if(e.on)say(e.speak+' is on now!');
-        else if(e.days===0)say('Today is '+e.speak+'! Hooray!');
-        else if(e.days===1)say(e.speak+' is tomorrow! Just one more sleep!');
+        else if(e.days===0)say(e.time?e.speak+' is today, at '+sayTime(e.time)+'.':'Today is '+e.speak+'! Hooray!');
+        else if(e.days===1)say(e.speak+' is tomorrow'+(e.time?', at '+sayTime(e.time):'')+'! Just one more sleep!');
         else say(e.days+' more sleeps until '+e.speak+'!');
       });
       box.appendChild(c);
