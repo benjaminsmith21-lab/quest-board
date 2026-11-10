@@ -165,6 +165,83 @@
   .uvh.now .b{outline:3px solid #fff;outline-offset:1px}
   .uv.off{opacity:.6}
 
+  /* ===== settings layout ===== */
+  .s-saved{color:var(--muted);font-size:15px;font-weight:600}
+  #settings input[type=number],#settings input[type=date]{font-family:inherit;font-size:18px;padding:8px 10px;border-radius:10px;border:2px solid #444b8a;background:#0e1130;color:#fff;color-scheme:dark}
+  #settings input[type=text]{color-scheme:dark}
+  .s-wrap>*{min-width:0}
+  .bigname{width:100%}
+  .s-wrap{flex:1;display:flex;min-height:0}
+  .s-nav{width:210px;flex:none;background:#171b45;padding:12px 10px;display:flex;flex-direction:column;gap:4px;overflow:auto}
+  .s-nav button{display:flex;align-items:center;gap:12px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:18px;font-weight:700;padding:11px 14px;border-radius:12px;cursor:pointer;text-align:left;white-space:nowrap}
+  .s-nav button .ni{font-size:22px}
+  .s-nav button.sel{background:#2f3670;color:#fff}
+  .s-body{flex:1;overflow-y:auto;padding:20px 22px 40px;display:block}
+  .s-inner{max-width:860px;margin:0 auto}
+  .stitle{margin:0 0 4px;font-size:28px}
+  .ssub{color:var(--muted);font-size:16px;margin:0 0 16px}
+  .scard{background:var(--bg2);border-radius:18px;padding:16px 18px;margin-bottom:14px}
+  .scard>h3{margin:0 0 2px;font-size:20px;color:#fff}
+  .scard>.desc{color:var(--muted);font-size:15px;margin:0 0 8px}
+  .field{display:flex;align-items:center;gap:16px;padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}
+  .scard>.field:first-child,.scard>h3+.field,.scard>.desc+.field,.body>.field:first-child{border-top:none}
+  .fl{flex:1;min-width:0}.fl b{display:block;font-size:17px}.fl span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+  .fc{flex:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:62%}
+  .muted{color:var(--muted);font-size:16px}
+  .status{background:#0e1130;border-radius:12px;padding:10px 12px;font-size:15px;margin:8px 0 0}
+  .switch{position:relative;display:inline-block;cursor:pointer}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch .tr{display:block;width:54px;height:32px;border-radius:99px;background:#444b8a;transition:background .2s;position:relative}
+  .switch .tr::after{content:'';position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .2s}
+  .switch input:checked+.tr{background:var(--good)}
+  .switch input:checked+.tr::after{left:26px}
+  .seg{display:inline-flex;flex-wrap:wrap;background:#0e1130;border-radius:12px;padding:3px;gap:3px}
+  .seg button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:16px;padding:8px 13px;border-radius:9px;cursor:pointer}
+  .seg button.sel{background:#fff;color:#1b1f3b}
+  .linkbtn{background:none;border:none;color:#ff8a8a;font-family:inherit;font-weight:700;font-size:16px;cursor:pointer;padding:6px}
+  .kidtop{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+  .avbtn{font-size:46px;line-height:1;background:#0e1130;border:2px dashed #444b8a;border-radius:18px;width:78px;height:78px;cursor:pointer;flex:none}
+  .bigname{flex:1;min-width:0;font-size:24px !important;font-weight:800;padding:10px 12px !important}
+  .avgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;background:#0e1130;border-radius:14px;padding:8px;margin:8px 0}
+  .avgrid button{font-size:30px;background:transparent;border:2px solid transparent;border-radius:12px;padding:4px;cursor:pointer}
+  .avgrid button.sel{border-color:var(--warn)}
+  .addcard{width:100%;padding:18px;border-radius:18px;border:2px dashed #444b8a;background:transparent;color:#fff;font-family:inherit;font-size:19px;font-weight:800;cursor:pointer;margin-bottom:8px}
+  .qwrap{overflow-x:auto;margin-top:10px}
+  .qtable{width:100%;border-collapse:collapse}
+  .qtable th{padding:6px 4px;text-align:center;font-weight:700;vertical-align:bottom}
+  .qtable td{padding:4px;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
+  .qtable td.ql,.qtable th.ql{text-align:left;width:100%}
+  .qtable td.ql{display:flex;align-items:center;gap:10px;font-size:17px;padding:8px 4px}
+  .qav{font-size:30px;line-height:1}.qnm{font-size:13px;color:var(--muted);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qic{font-size:26px;width:34px;text-align:center}
+  .qgroup td{text-align:left;color:var(--warn);font-weight:800;font-size:16px;padding-top:14px;border-top:none}
+  .qpill{width:48px;height:38px;border-radius:12px;border:2px solid #444b8a;background:transparent;color:#06301a;font-size:20px;font-weight:800;cursor:pointer}
+  .qpill.on{background:var(--good);border-color:var(--good)}
+  details.item{background:#0e1130;border-radius:14px;margin-top:8px}
+  details.item>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;font-size:17px;font-weight:700}
+  details.item>summary::-webkit-details-marker{display:none}
+  details.item>summary::after{content:'▾';margin-left:auto;color:var(--muted);transition:transform .2s}
+  details.item[open]>summary::after{transform:rotate(180deg)}
+  .iic{font-size:26px;width:34px;text-align:center;flex:none}
+  .iname{flex:none;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tag{font-size:13px;padding:3px 9px;border-radius:99px;background:#2f3670;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  details.item .body{padding:2px 14px 14px}
+  input.emo{width:64px;text-align:center;font-size:22px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px}
+  .lgi{display:flex;align-items:center;gap:8px;background:#0e1130;border-radius:99px;padding:6px 12px;font-size:15px;font-weight:700}
+  .lgd{width:16px;height:16px;border-radius:50%}
+  .codebox{width:100%;font-size:13px;border-radius:10px;background:#12153a;color:#fff;border:2px solid #444b8a;padding:8px;font-family:monospace;box-sizing:border-box}
+  .locresults{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:6px}
+  @media (max-width:900px){
+    .s-wrap{flex-direction:column}
+    .s-nav{width:auto;flex-direction:row;overflow-x:auto;padding:8px}
+    .s-nav button{padding:8px 12px;font-size:16px}
+    .s-body{padding:16px 14px 40px}
+    .field{flex-direction:column;align-items:stretch;gap:8px}
+    .fc{justify-content:flex-start;max-width:none}
+    .s-saved{display:none}
+  }
+
   /* grown-up gate */
   #gate{position:fixed;inset:0;background:rgba(5,7,25,.85);z-index:90;display:none;align-items:center;justify-content:center}
   #gate.open{display:flex}
@@ -253,13 +330,13 @@
 </div>
 
 <div id="settings">
-  <div class="s-head"><h2>⚙️ Parent settings</h2><button class="btn primary" id="closeSettings">Done</button></div>
-  <div class="s-body" id="sBody"></div>
+  <div class="s-head"><h2>⚙️ Settings</h2><span class="s-saved">Changes save automatically</span><button class="btn primary" id="closeSettings">Done</button></div>
+  <div class="s-wrap"><nav class="s-nav" id="sNav"></nav><div class="s-body" id="sBody"></div></div>
 </div>
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · natural AI voice + jumper';
+  var BOARD_VERSION='10 Nov 2026 · tidy settings';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -870,390 +947,347 @@
   });
   function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)for(var a in attrs)e.setAttribute(a,attrs[a]);if(text!=null)e.textContent=text;return e;}
 
-  function renderSettings(){
-    sBody.innerHTML='';
+  // ================= SETTINGS (sectioned layout) =================
+  var sTab='children',sQuestView='days',openAvatar=-1;
+  var S_TABS=[['children','👧','Children'],['quests','✅','Quests'],['events','📅','Events'],['weather','🌤️','Weather'],['sound','🔊','Sound'],['device','📱','This device']];
+  function sCard(title,desc){var c=el('div',{'class':'scard'});if(title)c.appendChild(el('h3',null,title));if(desc)c.appendChild(el('p',{'class':'desc'},desc));return c;}
+  function sField(label,help,controls){
+    var f=el('div',{'class':'field'}),l=el('div',{'class':'fl'});l.appendChild(el('b',null,label));if(help)l.appendChild(el('span',null,help));
+    var c=el('div',{'class':'fc'});(controls||[]).forEach(function(x){if(x)c.appendChild(x);});f.appendChild(l);f.appendChild(c);return f;
+  }
+  function sSwitch(on,onChange){
+    var w=el('label',{'class':'switch'}),i=el('input',{type:'checkbox'});i.checked=!!on;w.appendChild(i);w.appendChild(el('span',{'class':'tr'}));
+    i.addEventListener('change',function(){onChange(i.checked);});return w;
+  }
+  function sSeg(options,value,onChange){
+    var g=el('div',{'class':'seg'});
+    options.forEach(function(o){var b=el('button',{'class':o[0]===value?'sel':''},o[1]);
+      b.addEventListener('click',function(){[].forEach.call(g.children,function(x){x.classList.remove('sel');});b.classList.add('sel');onChange(o[0]);});g.appendChild(b);});
+    return g;
+  }
+  function sNum(value,min,onChange,width){
+    var i=el('input',{type:'number',min:String(min||0),value:value==null?'':String(value),style:'width:'+(width||90)+'px'});
+    i.addEventListener('change',function(){var v=parseInt(i.value,10);if(!isNaN(v)&&v>=(min||0))onChange(v);});return i;
+  }
+  function sBtn(text,cls,fn){var b=el('button',{'class':'btn'+(cls?' '+cls:'')},text);b.addEventListener('click',fn);return b;}
+  function sConfirm(text,confirmText,cls,fn){var armed=false,b=el('button',{'class':cls||'linkbtn'},text);
+    b.addEventListener('click',function(){if(!armed){armed=true;b.textContent=confirmText;setTimeout(function(){armed=false;b.textContent=text;},4000);return;}fn();});return b;}
+  function fmtDate(s){if(!s)return 'No date yet';var d=parseD(s);return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getFullYear();}
+  function sv(){save('qb_cfg',cfg);}
 
-    // Kids
-    var kc=el('div',{'class':'card'});kc.appendChild(el('h3',null,'👧👦 Kids'));
-    cfg.kids.forEach(function(kid,k){
-      var r=el('div',{'class':'row'});
-      var sel=el('select');
-      AVATARS.forEach(function(a){var o=el('option',{value:a},a);if(a===kid.emoji)o.selected=true;sel.appendChild(o);});
-      sel.addEventListener('change',function(){kid.emoji=sel.value;save('qb_cfg',cfg);});
-      var inp=el('input',{type:'text',value:kid.name,maxlength:'16'});
-      inp.addEventListener('input',function(){kid.name=inp.value||('Kid '+(k+1));save('qb_cfg',cfg);});
-      var ms=el('select');
-      [['nownext','One at a time (best for little ones)'],['grid','All quests at once']].forEach(function(p){
-        var o=el('option',{value:p[0]},p[1]);if((kid.mode||'grid')===p[0])o.selected=true;ms.appendChild(o);
-      });
-      ms.addEventListener('change',function(){kid.mode=ms.value;save('qb_cfg',cfg);});
-      var cs=el('select',{title:'What this child wears on warm days'});
-      [['shorts','Warm days: shorts'],['dress','Warm days: dresses & skirts'],['both','Warm days: both']].forEach(function(p){
-        var o=el('option',{value:p[0]},p[1]);if((kid.clothes||'shorts')===p[0])o.selected=true;cs.appendChild(o);
-      });
-      cs.addEventListener('change',function(){kid.clothes=cs.value;save('qb_cfg',cfg);});
-      r.appendChild(sel);r.appendChild(inp);r.appendChild(ms);r.appendChild(cs);
-      if(nKids()>1){
-        var rm=el('button',{'class':'btn danger'},'Remove'),armed=false;
-        rm.addEventListener('click',function(){
-          if(!armed){armed=true;rm.textContent='Tap again to remove '+kid.name;return;}
-          cfg.kids.splice(k,1);
-          for(var d=0;d<7;d++)cfg.days[d].kids.splice(k,1);
-          prog.done.splice(k,1);prog.celebrated.am.splice(k,1);prog.celebrated.pm.splice(k,1);
-          view=-1;save('qb_cfg',cfg);save('qb_prog',prog);renderSettings();
-        });
-        r.appendChild(rm);
-      }
-      kc.appendChild(r);
+  function renderSettings(){
+    var nav=document.getElementById('sNav');nav.innerHTML='';
+    S_TABS.forEach(function(t){
+      var b=el('button',{'class':t[0]===sTab?'sel':''});b.appendChild(el('span',{'class':'ni'},t[1]));b.appendChild(el('span',null,t[2]));
+      b.addEventListener('click',function(){sTab=t[0];renderSettings();sBody.scrollTop=0;});nav.appendChild(b);
     });
-    var addk=el('button',{'class':'btn primary'},'+ Add a child');
-    addk.addEventListener('click',function(){
+    sBody.innerHTML='';
+    var inner=el('div',{'class':'s-inner'});sBody.appendChild(inner);
+    ({children:setChildren,quests:setQuests,events:setEvents,weather:setWeather,sound:setSound,device:setDevice})[sTab](inner);
+  }
+  function sHead(inner,title,sub){inner.appendChild(el('h2',{'class':'stitle'},title));if(sub)inner.appendChild(el('p',{'class':'ssub'},sub));}
+
+  // ---------- Children ----------
+  function setChildren(inner){
+    sHead(inner,'Children','Who uses the board. Each child gets their own card on the home screen.');
+    cfg.kids.forEach(function(kid,k){
+      var c=sCard();
+      var top=el('div',{'class':'kidtop'});
+      var av=el('button',{'class':'avbtn',title:'Change character'},kid.emoji);
+      av.addEventListener('click',function(){openAvatar=openAvatar===k?-1:k;renderSettings();});
+      var nm=el('input',{type:'text','class':'bigname',value:kid.name,maxlength:'16',placeholder:'Name'});
+      nm.addEventListener('input',function(){kid.name=nm.value||('Child '+(k+1));sv();});
+      top.appendChild(av);top.appendChild(nm);
+      if(nKids()>1)top.appendChild(sConfirm('Remove','Tap again to remove '+kid.name,'linkbtn',function(){
+        cfg.kids.splice(k,1);for(var d=0;d<7;d++)cfg.days[d].kids.splice(k,1);
+        prog.done.splice(k,1);prog.celebrated.am.splice(k,1);prog.celebrated.pm.splice(k,1);
+        view=-1;openAvatar=-1;sv();save('qb_prog',prog);renderSettings();
+      }));
+      c.appendChild(top);
+      if(openAvatar===k){
+        var g=el('div',{'class':'avgrid'});
+        AVATARS.forEach(function(a){var b=el('button',{'class':a===kid.emoji?'sel':''},a);b.addEventListener('click',function(){kid.emoji=a;openAvatar=-1;sv();renderSettings();});g.appendChild(b);});
+        c.appendChild(g);
+      }
+      c.appendChild(sField('Board style','How their quests are shown.',[sSeg([['nownext','One at a time'],['grid','All at once']],kid.mode||'grid',function(v){kid.mode=v;sv();})]));
+      c.appendChild(sField('Warm-day clothes','What "What should I wear?" suggests for them.',[sSeg([['shorts','Shorts'],['dress','Dresses & skirts'],['both','Both']],kid.clothes||'shorts',function(v){kid.clothes=v;sv();})]));
+      c.appendChild(sField('📚 Days of reading','Set where they are up to. Ticking Reading adds one each day.',[sNum(kid.reads.count||0,0,function(v){kid.reads.count=v;sv();},110)]));
+      c.appendChild(sField('⭐ Stars in the star jar','A star is added when every quest for the day is done.',[sNum(kid.stars.count||0,0,function(v){kid.stars.count=v;sv();},110)]));
+      inner.appendChild(c);
+    });
+    var add=el('button',{'class':'addcard'},'+ Add a child');
+    add.addEventListener('click',function(){
       var used=cfg.kids.map(function(x){return x.emoji;});
       var em=AVATARS.filter(function(a){return used.indexOf(a)<0;})[0]||'⭐';
       cfg.kids.push({name:'Child '+(nKids()+1),emoji:em,mode:'grid',clothes:'shorts',reads:{count:0,last:'',prev:''},stars:{count:0,last:'',prev:''}});
       for(var d=0;d<7;d++){var src=cfg.days[d].kids[0]||[];cfg.days[d].kids.push(src.slice());}
-      normalize();ensureProg();save('qb_cfg',cfg);renderSettings();
+      normalize();ensureProg();sv();renderSettings();
     });
-    kc.appendChild(addk);
-    kc.appendChild(el('p',{'class':'hint'},'A new child starts with the same quests as the first child. Change them under Daily quests.'));
-    sBody.appendChild(kc);
+    inner.appendChild(add);
+    inner.appendChild(el('p',{'class':'ssub'},'A new child starts with the same quests as the first child. Change them in Quests.'));
+  }
 
-    // Upcoming events
-    var ec=el('div',{'class':'card'});ec.appendChild(el('h3',null,'📅 Upcoming events'));
-    ec.appendChild(el('p',{'class':'hint',style:'margin-bottom:8px'},'Shown on the home screen as a countdown in "sleeps". Each event appears once it is within its "days ahead" number. Tap a countdown on the board to hear it.'));
-    var lr0=el('div',{'class':'row'});lr0.appendChild(el('span',{style:'font-size:18px'},'Default days ahead for your events:'));
-    var dl=el('input',{type:'number',min:'0',max:'366',value:String(cfg.eventLead),style:'width:90px'});
-    dl.addEventListener('change',function(){var v=parseInt(dl.value,10);if(!isNaN(v)&&v>=0){cfg.eventLead=v;save('qb_cfg',cfg);}});
-    lr0.appendChild(dl);ec.appendChild(lr0);
-
-    // public holidays
-    var hr=el('div',{'class':'row',style:'margin-top:10px'});
-    var hcb=el('input',{type:'checkbox',id:'holOn'});hcb.checked=!!cfg.holidays.on;
-    var hl=el('label',{'class':'chk','for':'holOn'});hl.appendChild(hcb);hl.appendChild(document.createTextNode('🇦🇺 Public holidays for'));
-    var hs=el('select');['ACT','NSW','NT','QLD','SA','TAS','VIC','WA'].forEach(function(st){var o=el('option',{value:st},st);if(st===cfg.holidays.state)o.selected=true;hs.appendChild(o);});
-    var hlead=el('input',{type:'number',min:'0',max:'366',value:String(cfg.holidays.lead),style:'width:80px'});
-    hcb.addEventListener('change',function(){cfg.holidays.on=hcb.checked;save('qb_cfg',cfg);fetchHolidays();});
-    hs.addEventListener('change',function(){cfg.holidays.state=hs.value;save('qb_cfg',cfg);fetchHolidays();});
-    hlead.addEventListener('change',function(){var v=parseInt(hlead.value,10);if(!isNaN(v)&&v>=0){cfg.holidays.lead=v;save('qb_cfg',cfg);}});
-    hr.appendChild(hl);hr.appendChild(hs);hr.appendChild(el('span',{style:'font-size:17px'},'days ahead:'));hr.appendChild(hlead);
-    ec.appendChild(hr);
-    ec.appendChild(el('p',{'class':'hint'},'Updated automatically each week, including state-only days like Melbourne Cup and the Grand Final Friday. If the update can\'t load, the national holidays still show.'));
-
-    // celebrations
-    ec.appendChild(el('div',{'class':'pergrp',style:'margin-top:12px'},'Celebrations'));
-    SPECIALS.forEach(function(x){
-      var sp=cfg.specials[x[0]]||(cfg.specials[x[0]]={on:true,lead:x[3]});
-      var r=el('div',{'class':'row'});
-      var cb=el('input',{type:'checkbox',id:'sp_'+x[0]});cb.checked=!!sp.on;
-      var lb=el('label',{'class':'chk','for':'sp_'+x[0],style:'min-width:200px'});lb.appendChild(cb);lb.appendChild(document.createTextNode(x[1]+' '+x[2]));
-      var ld=el('input',{type:'number',min:'0',max:'366',value:String(sp.lead),style:'width:80px'});
-      cb.addEventListener('change',function(){sp.on=cb.checked;save('qb_cfg',cfg);});
-      ld.addEventListener('change',function(){var v=parseInt(ld.value,10);if(!isNaN(v)&&v>=0){sp.lead=v;save('qb_cfg',cfg);}});
-      r.appendChild(lb);r.appendChild(el('span',{style:'font-size:17px'},'days ahead:'));r.appendChild(ld);ec.appendChild(r);
+  // ---------- Quests ----------
+  function setQuests(inner){
+    sHead(inner,'Quests','Choose which jobs each child does on each day, and edit the jobs themselves.');
+    inner.appendChild(sSeg([['days','Plan the week'],['list','Edit quests']],sQuestView,function(v){sQuestView=v;renderSettings();}));
+    inner.appendChild(el('div',{style:'height:12px'}));
+    if(sQuestView==='days')setQuestDays(inner);else setQuestList(inner);
+  }
+  function setQuestDays(inner){
+    var dayCard=sCard();
+    var order=[1,2,3,4,5,6,0],td=new Date().getDay();
+    dayCard.appendChild(sSeg(order.map(function(d){return [String(d),SHORT[d]+(d===td?' •':'')];}),String(sDay),function(v){sDay=+v;renderSettings();}));
+    var day=cfg.days[sDay];
+    var tm=el('input',{type:'time',value:day.leave||'08:15'});tm.disabled=!day.leave;
+    tm.addEventListener('change',function(){if(tm.value){day.leave=tm.value;sv();}});
+    dayCard.appendChild(sField('Leaving countdown on '+DAYS[sDay],'Shows a runner heading to the car in the hour before you leave. Turn off for relaxed days.',
+      [tm,sSwitch(!!day.leave,function(on){day.leave=on?(tm.value||'08:15'):'';tm.disabled=!on;sv();})]));
+    // grid: quests x children
+    var tbl=el('table',{'class':'qtable'}),thead=el('tr');
+    thead.appendChild(el('th',{'class':'ql'},''));
+    cfg.kids.forEach(function(kd){var th=el('th');th.appendChild(el('div',{'class':'qav'},kd.emoji));th.appendChild(el('div',{'class':'qnm'},kd.name));thead.appendChild(th);});
+    tbl.appendChild(thead);
+    [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(per){
+      var gr=el('tr',{'class':'qgroup'});gr.appendChild(el('td',{colspan:String(nKids()+1)},per[1]));tbl.appendChild(gr);
+      cfg.steps.filter(function(s){return stepPeriod(s)===per[0];}).forEach(function(s){
+        var tr=el('tr');var tdl=el('td',{'class':'ql'});tdl.appendChild(iconEl(s.emoji,'qic'));tdl.appendChild(el('span',null,s.label));tr.appendChild(tdl);
+        cfg.kids.forEach(function(kd,k){
+          var on=day.kids[k].indexOf(s.id)>-1;
+          var b=el('button',{'class':'qpill'+(on?' on':''),'aria-label':kd.name+': '+s.label},on?'✓':'');
+          b.addEventListener('click',function(){var a=day.kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);else a.push(s.id);sv();
+            var now=a.indexOf(s.id)>-1;b.classList.toggle('on',now);b.textContent=now?'✓':'';});
+          var tdc=el('td');tdc.appendChild(b);tr.appendChild(tdc);
+        });
+        tbl.appendChild(tr);
+      });
     });
+    var wrap=el('div',{'class':'qwrap'});wrap.appendChild(tbl);dayCard.appendChild(wrap);
+    var copy=el('div',{'class':'row',style:'margin-top:12px'});
+    copy.appendChild(el('span',{'class':'muted'},'Copy '+DAYS[sDay]+' to:'));
+    copy.appendChild(sBtn('All weekdays','',function(e){[1,2,3,4,5].forEach(function(d){if(d!==sDay)cfg.days[d]=JSON.parse(JSON.stringify(cfg.days[sDay]));});sv();e.target.textContent='Copied ✓';}));
+    copy.appendChild(sBtn('Every day','',function(e){[0,1,2,3,4,5,6].forEach(function(d){if(d!==sDay)cfg.days[d]=JSON.parse(JSON.stringify(cfg.days[sDay]));});sv();e.target.textContent='Copied ✓';}));
+    dayCard.appendChild(copy);
+    inner.appendChild(dayCard);
+    var tcard=sCard();
+    var at=el('input',{type:'time',value:cfg.arvoStart||'12:00'});
+    at.addEventListener('change',function(){if(at.value){cfg.arvoStart=at.value;selPeriod=null;sv();}});
+    tcard.appendChild(sField('Afternoon starts at','The board switches from Morning to Afternoon quests at this time, every day.',[at]));
+    inner.appendChild(tcard);
+  }
+  function setQuestList(inner){
+    var addc=sCard('Add a quest','It starts switched off. Turn it on for each child in "Plan the week".');
+    var row=el('div',{'class':'row'});
+    var ne=el('input',{type:'text','class':'emo',placeholder:'🍎',maxlength:'4'});
+    var nl=el('input',{type:'text',placeholder:'e.g. Feed the dog',maxlength:'28',style:'flex:1;min-width:160px'});
+    var per='am';var ps=sSeg([['am','Morning'],['pm','Afternoon']],'am',function(v){per=v;});
+    row.appendChild(ne);row.appendChild(nl);row.appendChild(ps);
+    row.appendChild(sBtn('Add','primary',function(){if(!nl.value.trim())return;cfg.steps.push({id:'s'+Date.now(),emoji:ne.value||'⭐',label:nl.value.trim(),period:per});sv();renderSettings();}));
+    addc.appendChild(row);inner.appendChild(addc);
+    [['am','🌅 Morning quests'],['pm','☀️ Afternoon quests']].forEach(function(pp){
+      var c=sCard(pp[1],'Tap a quest to edit it. The order here is the order on the board.');
+      var list=cfg.steps.filter(function(s){return stepPeriod(s)===pp[0];});
+      list.forEach(function(s,li){
+        var d=el('details',{'class':'item'}),sm=el('summary');
+        sm.appendChild(iconEl(s.emoji,'iic'));sm.appendChild(el('span',{'class':'iname'},s.label));
+        sm.appendChild(el('span',{'class':'tag'},'🗣️ '+pastPhrase(s)));
+        d.appendChild(sm);var b=el('div',{'class':'body'});
+        var e1=el('input',{type:'text','class':'emo',value:s.emoji,maxlength:'4'});e1.addEventListener('input',function(){s.emoji=e1.value;sv();});
+        var l1=el('input',{type:'text',value:s.label,maxlength:'28',style:'flex:1;min-width:160px'});l1.addEventListener('input',function(){s.label=l1.value;sv();});
+        b.appendChild(sField('Picture and name','',[e1,l1]));
+        b.appendChild(sField('Part of the day','',[sSeg([['am','Morning'],['pm','Afternoon']],stepPeriod(s),function(v){s.period=v;sv();renderSettings();})]));
+        var sy=el('input',{type:'text',value:s.say||'',placeholder:pastPhrase({id:s.id,label:s.label}),style:'flex:1;min-width:200px'});
+        sy.addEventListener('input',function(){s.say=sy.value.replace(/,?\s*(superstar|champ|legend|great job|well done|nice work)!?$/i,'');sv();});
+        b.appendChild(sField('What the voice says','Leave blank to use the suggestion. "Superstar!" etc. is added for you.',[sy,sBtn('▶','',function(){var v=cfg.voice;cfg.voice=true;say(praiseLine(s));cfg.voice=v;})]));
+        var acts=el('div',{'class':'row',style:'margin-top:8px'});
+        function move(dir){var all=cfg.steps,i=all.indexOf(s),j=i;do{j+=dir;}while(j>=0&&j<all.length&&stepPeriod(all[j])!==stepPeriod(s));
+          if(j<0||j>=all.length)return;all[i]=all[j];all[j]=s;sv();renderSettings();}
+        if(li>0)acts.appendChild(sBtn('↑ Move up','',function(){move(-1);}));
+        if(li<list.length-1)acts.appendChild(sBtn('↓ Move down','',function(){move(1);}));
+        acts.appendChild(el('span',{style:'flex:1'}));
+        acts.appendChild(sConfirm('Delete quest','Tap again to delete','linkbtn',function(){
+          cfg.steps.splice(cfg.steps.indexOf(s),1);
+          for(var dd=0;dd<7;dd++)for(var k=0;k<nKids();k++){var a=cfg.days[dd].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
+          sv();renderSettings();
+        }));
+        b.appendChild(acts);d.appendChild(b);c.appendChild(d);
+      });
+      inner.appendChild(c);
+    });
+  }
 
-    // own events
-    ec.appendChild(el('div',{'class':'pergrp',style:'margin-top:12px'},'Your events (birthdays, parties, playdates, holidays…)'));
+  // ---------- Events ----------
+  function setEvents(inner){
+    sHead(inner,'Events','Countdowns in "sleeps" on the home screen. Tap one on the board to hear it.');
+    var ec=sCard('Your events','Birthdays, parties, playdates, holidays. Tap one to edit.');
     var t0=today0();
     cfg.events.forEach(function(ev,idx){
-      var r=el('div',{'class':'row evrow'});
-      var em=el('input',{type:'text','class':'emo',value:ev.emoji||'',maxlength:'4',style:'width:60px;text-align:center'});
-      em.addEventListener('input',function(){ev.emoji=em.value;save('qb_cfg',cfg);});
-      var nm=el('input',{type:'text',value:ev.name||'',placeholder:'What is it?',style:'flex:1;min-width:140px'});
-      nm.addEventListener('input',function(){ev.name=nm.value;save('qb_cfg',cfg);});
-      var dt=el('input',{type:'date',value:ev.date||''});
-      dt.addEventListener('change',function(){ev.date=dt.value;save('qb_cfg',cfg);});
-      var rp=el('select');
-      [['none','Once'],['yearly','Every year'],['birthday','Birthday (every year, shows age)']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if((ev.repeat||'none')===p[0])o.selected=true;rp.appendChild(o);});
-      var en=el('input',{type:'date',value:ev.end||'',title:'Last day (optional, for things like holidays)'});
-      en.addEventListener('change',function(){ev.end=en.value;save('qb_cfg',cfg);});
-      var enWrap=el('span',{style:'display:'+((ev.repeat||'none')==='none'?'inline-flex':'none')+';gap:6px;align-items:center'});
-      enWrap.appendChild(el('span',{style:'font-size:16px;color:var(--muted)'},'until'));enWrap.appendChild(en);
-      rp.addEventListener('change',function(){ev.repeat=rp.value;if(rp.value==='birthday'&&!ev.emoji){ev.emoji='🎂';em.value='🎂';}enWrap.style.display=rp.value==='none'?'inline-flex':'none';save('qb_cfg',cfg);});
-      var ld=el('input',{type:'number',min:'0',max:'366',value:ev.lead!=null&&ev.lead!==''?String(ev.lead):'',placeholder:String(cfg.eventLead),title:'Days ahead to start the countdown',style:'width:70px'});
-      ld.addEventListener('change',function(){ev.lead=ld.value===''?'':parseInt(ld.value,10);save('qb_cfg',cfg);});
-      var del=el('button',{'class':'btn danger'},'✕');
-      del.addEventListener('click',function(){cfg.events.splice(idx,1);save('qb_cfg',cfg);renderSettings();});
-      r.appendChild(em);r.appendChild(nm);r.appendChild(dt);r.appendChild(enWrap);r.appendChild(rp);
-      r.appendChild(el('span',{style:'font-size:16px;color:var(--muted)'},'days ahead'));r.appendChild(ld);r.appendChild(del);
+      var d=el('details',{'class':'item'}),sm=el('summary');
       var past=(ev.repeat||'none')==='none'&&ev.date&&daysBetween(t0,parseD(ev.end||ev.date))<0;
-      if(past)r.style.opacity='.45';
-      ec.appendChild(r);
+      sm.appendChild(el('span',{'class':'iic'},ev.emoji||'📅'));sm.appendChild(el('span',{'class':'iname'},ev.name||'New event'));
+      sm.appendChild(el('span',{'class':'tag'},(past?'Past · ':'')+fmtDate(ev.date)+({yearly:' · every year',birthday:' · birthday'}[ev.repeat]||'')));
+      if(past)d.style.opacity='.5';
+      if(!ev.date||!ev.name||ev.name==='\'s birthday')d.open=true;
+      d.appendChild(sm);var b=el('div',{'class':'body'});
+      var em=el('input',{type:'text','class':'emo',value:ev.emoji||'',maxlength:'4'});em.addEventListener('input',function(){ev.emoji=em.value;sv();});
+      var nm=el('input',{type:'text',value:ev.name||'',placeholder:'What is it?',style:'flex:1;min-width:160px'});nm.addEventListener('input',function(){ev.name=nm.value;sv();});
+      b.appendChild(sField('Picture and name',ev.repeat==='birthday'?'e.g. Ava\'s birthday':'',[em,nm]));
+      b.appendChild(sField('Repeats','Birthdays repeat every year and show the age.',[sSeg([['none','Once'],['yearly','Every year'],['birthday','Birthday']],ev.repeat||'none',function(v){ev.repeat=v;if(v==='birthday'&&!ev.emoji)ev.emoji='🎂';sv();renderSettings();})]));
+      var dt=el('input',{type:'date',value:ev.date||''});dt.addEventListener('change',function(){ev.date=dt.value;sv();});
+      b.appendChild(sField(ev.repeat==='birthday'?'Date of birth':'Date',ev.repeat==='birthday'?'Include the real year so the board knows how old they\'ll be.':'',[dt]));
+      if((ev.repeat||'none')==='none'){
+        var en=el('input',{type:'date',value:ev.end||''});en.addEventListener('change',function(){ev.end=en.value;sv();});
+        b.appendChild(sField('Last day (optional)','For things that last a while, like holidays. Shows "On now!" during it.',[en]));
+      }
+      var evLead=sNum(ev.lead===''||ev.lead==null?null:ev.lead,0,function(v){ev.lead=v;sv();},90);evLead.placeholder=String(cfg.eventLead);
+      evLead.addEventListener('change',function(){if(evLead.value===''){ev.lead='';sv();}});
+      b.appendChild(sField('Start the countdown','Days before. Leave blank to use the default ('+cfg.eventLead+').',[evLead]));
+      var acts=el('div',{'class':'row',style:'justify-content:flex-end;margin-top:6px'});
+      acts.appendChild(sConfirm('Delete event','Tap again to delete','linkbtn',function(){cfg.events.splice(idx,1);sv();renderSettings();}));
+      b.appendChild(acts);d.appendChild(b);ec.appendChild(d);
     });
-    var ar=el('div',{'class':'row',style:'margin-top:8px'});
+    var adds=el('div',{'class':'row',style:'margin-top:8px'});
     [['🎂','Birthday','birthday'],['🎈','Party','none'],['🧸','Playdate','none'],['🏖️','Holiday','none'],['⭐','Other','none']].forEach(function(p){
-      var b=el('button',{'class':'btn'},'+ '+p[0]+' '+p[1]);
-      b.addEventListener('click',function(){
-        cfg.events.push({id:'e'+Date.now(),emoji:p[0],name:p[2]==='birthday'?'\'s birthday':(p[1]==='Other'?'':p[1]),date:'',end:'',repeat:p[2],lead:''});
-        save('qb_cfg',cfg);renderSettings();
-        var rows=sBody.querySelectorAll('.evrow');var last=rows[rows.length-1];if(last){var inp=last.querySelector('input[type=text]:not(.emo)');try{inp.focus();if(p[2]==='birthday')inp.setSelectionRange(0,0);}catch(e){}}
-      });
-      ar.appendChild(b);
+      adds.appendChild(sBtn('+ '+p[0]+' '+p[1],'',function(){
+        cfg.events.push({id:'e'+Date.now(),emoji:p[0],name:p[2]==='birthday'?'':(p[1]==='Other'?'':p[1]),date:'',end:'',repeat:p[2],lead:''});sv();renderSettings();
+      }));
     });
-    ec.appendChild(ar);
-    ec.appendChild(el('p',{'class':'hint'},'For a birthday, pick the actual birth date (with the year) and the board shows how old they will be. Past one-off events fade out and stop showing on the board.'));
-    sBody.appendChild(ec);
+    ec.appendChild(adds);inner.appendChild(ec);
 
-    // Reading & star jar
-    var rcd=el('div',{'class':'card'});rcd.appendChild(el('h3',null,'📚 Reading & ⭐ Star jar'));
-    rcd.appendChild(el('p',{'class':'hint',style:'margin-bottom:8px'},'Set where each child is up to. Ticking 📖 Reading adds a day (once per day) and it is announced, with a big celebration every 50 days. A star goes in the jar when every morning and afternoon quest is done.'));
-    cfg.kids.forEach(function(kid){
-      var r=el('div',{'class':'row'});
-      r.appendChild(el('span',{style:'font-size:19px;min-width:150px;font-weight:700'},kid.emoji+' '+kid.name));
-      r.appendChild(el('span',{style:'font-size:18px'},'Days read:'));
-      var ri=el('input',{type:'number',min:'0',value:String(kid.reads.count||0),style:'width:110px'});
-      ri.addEventListener('change',function(){var v=parseInt(ri.value,10);if(!isNaN(v)&&v>=0){kid.reads.count=v;save('qb_cfg',cfg);}});
-      r.appendChild(ri);
-      r.appendChild(el('span',{style:'font-size:18px'},'Stars in jar:'));
-      var si=el('input',{type:'number',min:'0',value:String(kid.stars.count||0),style:'width:110px'});
-      si.addEventListener('change',function(){var v=parseInt(si.value,10);if(!isNaN(v)&&v>=0){kid.stars.count=v;save('qb_cfg',cfg);}});
-      r.appendChild(si);
-      rcd.appendChild(r);
-    });
-    sBody.appendChild(rcd);
+    var hc=sCard('Public holidays','Updated automatically each week, including state-only days like Melbourne Cup.');
+    var hs=el('select');['ACT','NSW','NT','QLD','SA','TAS','VIC','WA'].forEach(function(st){var o=el('option',{value:st},st);if(st===cfg.holidays.state)o.selected=true;hs.appendChild(o);});
+    hs.addEventListener('change',function(){cfg.holidays.state=hs.value;sv();fetchHolidays();});
+    hc.appendChild(sField('Show public holidays','',[sSwitch(cfg.holidays.on,function(v){cfg.holidays.on=v;sv();fetchHolidays();})]));
+    hc.appendChild(sField('State','',[hs]));
+    hc.appendChild(sField('Start the countdown','Days before each holiday.',[sNum(cfg.holidays.lead,0,function(v){cfg.holidays.lead=v;sv();})]));
+    inner.appendChild(hc);
 
-    // Days
-    var dc=el('div',{'class':'card'});dc.appendChild(el('h3',null,'📅 Daily quests'));
-    var tabs=el('div',{'class':'daytabs'});
-    [1,2,3,4,5,6,0].forEach(function(d){
-      var b=el('button',{'class':d===sDay?'sel':''},SHORT[d]);
-      b.addEventListener('click',function(){sDay=d;renderSettings();});
-      tabs.appendChild(b);
+    var cc=sCard('Celebrations','Worked out automatically every year (Australian dates). Number = days of countdown.');
+    SPECIALS.forEach(function(x){
+      var sp=cfg.specials[x[0]]||(cfg.specials[x[0]]={on:true,lead:x[3]});
+      cc.appendChild(sField(x[1]+' '+x[2],'',[sNum(sp.lead,0,function(v){sp.lead=v;sv();},80),sSwitch(sp.on,function(v){sp.on=v;sv();})]));
     });
-    dc.appendChild(tabs);
-    var day=cfg.days[sDay];
-    var lr=el('div',{'class':'row'});
-    lr.appendChild(el('span',{style:'font-size:18px'},'Leave time:'));
-    var t=el('input',{type:'time',value:day.leave||'08:15'});
-    var noRush=el('input',{type:'checkbox',id:'norush'});noRush.checked=!day.leave;
-    t.disabled=!day.leave;
-    t.addEventListener('change',function(){day.leave=t.value;save('qb_cfg',cfg);});
-    noRush.addEventListener('change',function(){day.leave=noRush.checked?'':(t.value||'08:15');t.disabled=noRush.checked;save('qb_cfg',cfg);});
-    var nl=el('label',{'class':'chk','for':'norush'});nl.appendChild(noRush);nl.appendChild(document.createTextNode('No countdown (relaxed day)'));
-    lr.appendChild(t);lr.appendChild(nl);dc.appendChild(lr);
-    var ar2=el('div',{'class':'row'});
-    ar2.appendChild(el('span',{style:'font-size:18px'},'Afternoon quests start at (every day):'));
-    var at=el('input',{type:'time',value:cfg.arvoStart||'12:00'});
-    at.addEventListener('change',function(){if(at.value){cfg.arvoStart=at.value;selPeriod=null;save('qb_cfg',cfg);}});
-    ar2.appendChild(at);dc.appendChild(ar2);
+    inner.appendChild(cc);
+    var dc=sCard();
+    dc.appendChild(sField('Default countdown for your events','How many days before an event its countdown appears, unless the event says otherwise.',[sNum(cfg.eventLead,0,function(v){cfg.eventLead=v;sv();})]));
+    inner.appendChild(dc);
+  }
 
-    var cols=el('div',{'class':'kidcols'});
-    cfg.kids.forEach(function(kid,k){
-      var col=el('div',{'class':'kidcol'});col.appendChild(el('h4',null,kid.emoji+' '+kid.name));
-      [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(per){
-      col.appendChild(el('div',{'class':'pergrp'},per[1]));
-      cfg.steps.filter(function(s){return stepPeriod(s)===per[0];}).forEach(function(s){
-        var lab=el('label',{'class':'chk'});
-        var cb=el('input',{type:'checkbox'});cb.checked=day.kids[k].indexOf(s.id)>-1;
-        cb.addEventListener('change',function(){
-          var arr=day.kids[k],i=arr.indexOf(s.id);
-          if(cb.checked&&i<0)arr.push(s.id);if(!cb.checked&&i>-1)arr.splice(i,1);
-          save('qb_cfg',cfg);
-        });
-        lab.appendChild(cb);lab.appendChild(document.createTextNode(s.emoji+' '+s.label));col.appendChild(lab);
-      });
-      });
-      cols.appendChild(col);
-    });
-    dc.appendChild(cols);
-    var cr=el('div',{'class':'row',style:'margin-top:10px'});
-    var copyWk=el('button',{'class':'btn'},'Copy '+SHORT[sDay]+' to all weekdays');
-    copyWk.addEventListener('click',function(){
-      [1,2,3,4,5].forEach(function(d){if(d!==sDay)cfg.days[d]=JSON.parse(JSON.stringify(cfg.days[sDay]));});
-      save('qb_cfg',cfg);copyWk.textContent='Copied ✓';
-    });
-    cr.appendChild(copyWk);dc.appendChild(cr);
-    sBody.appendChild(dc);
-
-    // Steps library
-    var sc=el('div',{'class':'card'});sc.appendChild(el('h3',null,'🧩 Quest list'));
-    sc.appendChild(el('p',{'class':'hint'},'Edit the emoji and words. The order here is the order on the board. "Says" is what the voice says when it is ticked: leave it blank to use the suggestion shown, or type your own (e.g. "You fed the dog"). Press ▶ to hear it.'));
-    cfg.steps.forEach(function(s,idx){
-      var r=el('div',{'class':'row steprow'});
-      var e1=el('input',{type:'text','class':'emo',value:s.emoji,maxlength:'4'});
-      e1.addEventListener('input',function(){s.emoji=e1.value;save('qb_cfg',cfg);});
-      var l1=el('input',{type:'text','class':'lbl',value:s.label,maxlength:'28'});
-      l1.addEventListener('input',function(){s.label=l1.value;save('qb_cfg',cfg);});
-      var up=el('button',{'class':'btn'},'↑');
-      up.addEventListener('click',function(){if(idx>0){var tmp=cfg.steps[idx-1];cfg.steps[idx-1]=s;cfg.steps[idx]=tmp;save('qb_cfg',cfg);renderSettings();}});
-      var del=el('button',{'class':'btn danger'},'✕');
-      del.addEventListener('click',function(){
-        cfg.steps.splice(idx,1);
-        for(var d=0;d<7;d++)for(var k=0;k<nKids();k++){var a=cfg.days[d].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
-        save('qb_cfg',cfg);renderSettings();
-      });
-      var ps=el('select');
-      [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if(stepPeriod(s)===p[0])o.selected=true;ps.appendChild(o);});
-      ps.addEventListener('change',function(){s.period=ps.value;save('qb_cfg',cfg);renderSettings();});
-      r.appendChild(e1);r.appendChild(l1);r.appendChild(ps);r.appendChild(up);r.appendChild(del);sc.appendChild(r);
-      var sr=el('div',{'class':'row sayrow'});
-      sr.appendChild(el('span',{style:'font-size:16px;color:var(--muted)'},'🗣️ Says:'));
-      var sy=el('input',{type:'text',value:s.say||'',placeholder:pastPhrase({id:s.id,label:s.label})+', superstar!',style:'flex:1;font-size:16px'});
-      sy.addEventListener('input',function(){s.say=sy.value.replace(/,?\s*(superstar|champ|legend|great job|well done|nice work)!?$/i,'');save('qb_cfg',cfg);});
-      var tst=el('button',{'class':'btn'},'▶');
-      tst.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say(praiseLine(s));cfg.voice=v;});
-      sr.appendChild(sy);sr.appendChild(tst);sc.appendChild(sr);
-    });
-    var add=el('div',{'class':'row'});
-    var ne=el('input',{type:'text','class':'emo',placeholder:'🍎',maxlength:'4',style:'width:64px;text-align:center'});
-    var nlb=el('input',{type:'text',placeholder:'New quest (e.g. Fruit for kinder)',maxlength:'28',style:'flex:1'});
-    var nps=el('select');
-    [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(p){nps.appendChild(el('option',{value:p[0]},p[1]));});
-    var ab=el('button',{'class':'btn primary'},'Add');
-    ab.addEventListener('click',function(){
-      if(!nlb.value.trim())return;
-      cfg.steps.push({id:'s'+Date.now(),emoji:ne.value||'⭐',label:nlb.value.trim(),period:nps.value});
-      save('qb_cfg',cfg);renderSettings();
-    });
-    add.appendChild(ne);add.appendChild(nlb);add.appendChild(nps);add.appendChild(ab);sc.appendChild(add);
-    sc.appendChild(el('p',{'class':'hint'},'New quests start switched off: tick them on for each day above.'));
-    sBody.appendChild(sc);
-
-    // Options
-    var oc=el('div',{'class':'card'});oc.appendChild(el('h3',null,'🔧 Options'));
-    var vr=el('label',{'class':'chk'});var vcb=el('input',{type:'checkbox'});vcb.checked=cfg.voice;
-    vcb.addEventListener('change',function(){cfg.voice=vcb.checked;save('qb_cfg',cfg);});
-    vr.appendChild(vcb);vr.appendChild(document.createTextNode('Voice reads out each quest'));oc.appendChild(vr);
-    var lyr=el('div',{'class':'row',style:'margin-top:10px'});
-    lyr.appendChild(el('span',{style:'font-size:18px'},'Layout:'));
-    var lys=el('select');
-    [['hybrid','Home screen, then a page per kid'],['split','Both kids side by side']].forEach(function(p){
-      var o=el('option',{value:p[0]},p[1]);if((cfg.layout||'hybrid')===p[0])o.selected=true;lys.appendChild(o);
-    });
-    lys.addEventListener('change',function(){cfg.layout=lys.value;view=-1;save('qb_cfg',cfg);});
-    lyr.appendChild(lys);oc.appendChild(lyr);
-    // weather location search
-    var cur=el('div',{'class':'row',style:'margin-top:14px;font-size:18px'});
-    cur.appendChild(document.createTextNode('📍 Weather location: '));
-    var curName=el('b',null,cfg.loc.name||'Frankston');cur.appendChild(curName);
-    oc.appendChild(cur);
-    var lrow=el('div',{'class':'row'});
-    var q=el('input',{type:'text',placeholder:'Type a town or suburb',style:'flex:1'});
-    var sb=el('button',{'class':'btn'},'Search');
+  // ---------- Weather ----------
+  function setWeather(inner){
+    sHead(inner,'Weather','Powers "What should I wear?" and the automatic sunscreen reminder.');
+    var lc=sCard('Location');
+    var curName=el('b',null,cfg.loc.name||'Frankston');
+    var cur=el('div',{'class':'row'});cur.appendChild(el('span',{'class':'muted'},'Currently:'));cur.appendChild(curName);lc.appendChild(cur);
+    var row=el('div',{'class':'row'});
+    var q=el('input',{type:'text',placeholder:'Type your town or suburb',style:'flex:1;min-width:180px'});
     var results=el('div',{'class':'locresults'});
     function doSearch(){
       var term=q.value.trim();if(term.length<2)return;
       results.innerHTML='';results.appendChild(el('p',{'class':'hint'},'Searching…'));
-      var url='https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name='+encodeURIComponent(term);
       try{
-        fetch(url).then(function(r){return r.json();}).then(function(j){
-          results.innerHTML='';
-          var list=(j&&j.results)||[];
+        fetch('https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name='+encodeURIComponent(term)).then(function(r){return r.json();}).then(function(j){
+          results.innerHTML='';var list=(j&&j.results)||[];
           if(!list.length){results.appendChild(el('p',{'class':'hint'},'No places found. Try a nearby bigger town.'));return;}
           list.sort(function(a,b){return (b.country_code==='AU')-(a.country_code==='AU');});
           list.forEach(function(p){
-            var label=p.name+(p.admin1?', '+p.admin1:'')+(p.country?', '+p.country:'');
-            var b=el('button',{'class':'btn locbtn'},label);
-            b.addEventListener('click',function(){
-              cfg.loc={name:p.name+(p.admin1?', '+p.admin1:''),lat:p.latitude,lon:p.longitude};
-              save('qb_cfg',cfg);curName.textContent=cfg.loc.name;results.innerHTML='';q.value='';
-              wx=null;fetchWx();
-            });
-            results.appendChild(b);
+            results.appendChild(sBtn(p.name+(p.admin1?', '+p.admin1:'')+(p.country?', '+p.country:''),'locbtn',function(){
+              cfg.loc={name:p.name+(p.admin1?', '+p.admin1:''),lat:p.latitude,lon:p.longitude};sv();curName.textContent=cfg.loc.name;results.innerHTML='';q.value='';wx=null;fetchWx();
+            }));
           });
-        }).catch(function(){results.innerHTML='';results.appendChild(el('p',{'class':'hint'},'Search needs the board running from its own web address (GitHub Pages).'));});
+        }).catch(function(){results.innerHTML='';results.appendChild(el('p',{'class':'hint'},'Couldn\'t search right now. Check the internet connection.'));});
       }catch(e){}
     }
-    sb.addEventListener('click',doSearch);
     q.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch();});
-    lrow.appendChild(q);lrow.appendChild(sb);oc.appendChild(lrow);oc.appendChild(results);
-    oc.appendChild(el('p',{'class':'hint'},'Clothes colours go by today\'s top temperature: red 27°+, orange 22–26°, yellow 17–21°, blue 12–16°, purple under 12°.'));
-    var ar=el('label',{'class':'chk',style:'margin-top:10px'});var acb=el('input',{type:'checkbox'});acb.checked=cfg.autoSun!==false;
-    acb.addEventListener('change',function(){cfg.autoSun=acb.checked;save('qb_cfg',cfg);});
-    ar.appendChild(acb);ar.appendChild(document.createTextNode('Auto sunscreen quest from the UV forecast'));oc.appendChild(ar);
-    var ur=el('div',{'class':'row'});ur.appendChild(el('span',{style:'font-size:18px'},'Add sunscreen when UV in the next 8 hours reaches:'));
-    var us=el('select');[2,3,4,5,6].forEach(function(n){var o=el('option',{value:String(n)},String(n)+(n===3?' (SunSmart)':''));if(n===uvLimit())o.selected=true;us.appendChild(o);});
-    us.addEventListener('change',function(){cfg.uvLimit=+us.value;save('qb_cfg',cfg);});
-    ur.appendChild(us);oc.appendChild(ur);
-    oc.appendChild(el('p',{'class':'hint'},'When the forecast stays below this, the sunscreen quest disappears automatically (most of winter). If the forecast can\'t load, each day\'s own setting is used.'));
-    // voice
-    oc.appendChild(el('h3',{style:'margin-top:18px'},'🗣️ Voice'));
-    var air=el('label',{'class':'chk'});var aicb=el('input',{type:'checkbox'});aicb.checked=!!cfg.ai.on;
-    air.appendChild(aicb);air.appendChild(document.createTextNode('✨ Natural AI voice (free, made on this device)'));oc.appendChild(air);
-    var avr=el('div',{'class':'row'});avr.appendChild(el('span',{style:'font-size:18px'},'Natural voice:'));
+    row.appendChild(q);row.appendChild(sBtn('Search','primary',doSearch));lc.appendChild(row);lc.appendChild(results);
+    inner.appendChild(lc);
+    var sc=sCard('Sunscreen');
+    sc.appendChild(sField('Add the sunscreen quest automatically','Appears when the sun will be strong in the next 8 hours, and disappears on low-UV days (most of winter).',[sSwitch(cfg.autoSun!==false,function(v){cfg.autoSun=v;sv();})]));
+    sc.appendChild(sField('UV level that needs sunscreen','3 is the SunSmart guideline.',[sSeg([['2','2'],['3','3'],['4','4'],['5','5'],['6','6']],String(uvLimit()),function(v){cfg.uvLimit=+v;sv();})]));
+    inner.appendChild(sc);
+    var cl=sCard('Clothes colours','The card turns one colour for the day, based on the top temperature.');
+    var lg=el('div',{'class':'legend'});
+    [['#ff5e5e','27°+','Hot'],['#ff9f43','22–26°','Warm'],['#f6d743','17–21°','Nice'],['#4fa3ff','12–16°','Cool'],['#a77bff','under 12°','Cold']].forEach(function(x){
+      var i=el('div',{'class':'lgi'});var dot=el('span',{'class':'lgd'});dot.style.background=x[0];i.appendChild(dot);i.appendChild(el('span',null,x[2]+' · '+x[1]));lg.appendChild(i);
+    });
+    cl.appendChild(lg);cl.appendChild(el('p',{'class':'hint'},'Shorts or dresses for each child is set in Children.'));
+    inner.appendChild(cl);
+  }
+
+  // ---------- Sound ----------
+  function setSound(inner){
+    sHead(inner,'Sound','How the board talks to the kids.');
+    var mc=sCard();
+    mc.appendChild(sField('Voice','Reads out each quest, the weather and countdowns.',[sSwitch(cfg.voice,function(v){cfg.voice=v;sv();})]));
+    mc.appendChild(sField('Try it','',[sBtn('▶ Play a sample','primary',function(){var v=cfg.voice;cfg.voice=true;say('You brushed your teeth, superstar!');cfg.voice=v;})]));
+    inner.appendChild(mc);
+    var ac=sCard('✨ Natural voice','A free AI voice made on this device, so nothing is sent anywhere. The first time it downloads about 100 MB (use Wi-Fi), then works offline.');
+    ac.appendChild(sField('Use the natural voice','If it can\'t load, the tablet\'s own voice is used instead.',[sSwitch(cfg.ai.on,function(v){cfg.ai.on=v;sv();AI.failedAt=0;if(AI.state==='error')AI.state='off';if(v)aiLoad();aiStatus();})]));
     var avs=el('select');AI_VOICES.forEach(function(v){var o=el('option',{value:v[0]},v[1]);if(v[0]===cfg.ai.voice)o.selected=true;avs.appendChild(o);});
-    avr.appendChild(avs);oc.appendChild(avr);
-    oc.appendChild(el('p',{'class':'hint',id:'aiStatus'},''));
-    aicb.addEventListener('change',function(){cfg.ai.on=aicb.checked;save('qb_cfg',cfg);AI.failedAt=0;if(AI.state==='error')AI.state='off';if(cfg.ai.on)aiLoad();aiStatus();});
-    avs.addEventListener('change',function(){cfg.ai.voice=avs.value;save('qb_cfg',cfg);AI.state='off';AI.failedAt=0;if(cfg.ai.on)aiLoad();aiStatus();});
-    oc.appendChild(el('p',{'class':'hint'},'The first time, it downloads the voice (about 60 MB) and the speech engine (about 40 MB), so do it on Wi-Fi. After that it is saved on this device and works offline. Each new voice you pick is another download. If anything goes wrong, the board quietly uses the tablet voice instead. The voice and pitch settings below only apply to the tablet voice.'));
+    avs.addEventListener('change',function(){cfg.ai.voice=avs.value;sv();AI.state='off';AI.failedAt=0;if(cfg.ai.on)aiLoad();aiStatus();});
+    ac.appendChild(sField('Which voice','Each new voice is another download.',[avs]));
+    ac.appendChild(el('p',{'class':'status',id:'aiStatus'},''));
     setTimeout(aiStatus,0);
-    var vrow=el('div',{'class':'row'});
-    vrow.appendChild(el('span',{style:'font-size:18px'},'Voice:'));
-    var vsel=el('select',{style:'max-width:100%'});
+    inner.appendChild(ac);
+    var tc=sCard();
+    var d=el('details',{'class':'item'});d.appendChild(el('summary',null,'Tablet voice (backup) settings'));var b=el('div',{'class':'body'});
+    var vsel=el('select',{style:'max-width:260px'});
     function fillVoices(){
       var vs=[];try{vs=speechSynthesis.getVoices()||[];}catch(e){}
       var en=vs.filter(function(v){return /^en/i.test(v.lang);});if(!en.length)en=vs;
       en.sort(function(a,b){return ((b.lang==='en-AU')-(a.lang==='en-AU'))||a.name.localeCompare(b.name);});
-      vsel.innerHTML='';
-      vsel.appendChild(el('option',{value:''},'Tablet default (Australian if available)'));
+      vsel.innerHTML='';vsel.appendChild(el('option',{value:''},'Tablet default'));
       en.forEach(function(v){var o=el('option',{value:v.name},v.name+' ('+v.lang+')');if(v.name===cfg.voiceName)o.selected=true;vsel.appendChild(o);});
     }
-    fillVoices();
-    try{speechSynthesis.addEventListener('voiceschanged',fillVoices);}catch(e){}
-    vsel.addEventListener('change',function(){cfg.voiceName=vsel.value;save('qb_cfg',cfg);});
-    vrow.appendChild(vsel);oc.appendChild(vrow);
-    function slider(label,key,min,max,step,def){
-      var r=el('div',{'class':'row'});r.appendChild(el('span',{style:'font-size:18px;min-width:70px'},label));
-      var s=el('input',{type:'range',min:String(min),max:String(max),step:String(step),value:String(cfg[key]||def),style:'flex:1'});
-      var val=el('span',{style:'font-size:18px;min-width:44px'},String(cfg[key]||def));
-      s.addEventListener('input',function(){cfg[key]=parseFloat(s.value);val.textContent=s.value;save('qb_cfg',cfg);});
-      r.appendChild(s);r.appendChild(val);return r;
+    fillVoices();try{speechSynthesis.addEventListener('voiceschanged',fillVoices);}catch(e){}
+    vsel.addEventListener('change',function(){cfg.voiceName=vsel.value;sv();});
+    b.appendChild(sField('Voice','',[vsel]));
+    function slider(key,min,max,step,def){
+      var s=el('input',{type:'range',min:String(min),max:String(max),step:String(step),value:String(cfg[key]||def),style:'width:200px'});
+      var val=el('span',{'class':'muted',style:'min-width:40px'},String(cfg[key]||def));
+      s.addEventListener('input',function(){cfg[key]=parseFloat(s.value);val.textContent=s.value;sv();});return [s,val];
     }
-    oc.appendChild(slider('Speed','rate',0.6,1.4,0.05,0.95));
-    oc.appendChild(slider('Pitch','pitch',0.5,2,0.05,1.25));
-    var tb=el('button',{'class':'btn primary'},'▶ Test voice');
-    tb.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say('You brushed your teeth, superstar!');cfg.voice=v;});
-    oc.appendChild(tb);
-    oc.appendChild(el('p',{'class':'hint'},'Voices come from the tablet itself. For better ones: Android Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia), then pick a voice there.'));
-    var br=el('div',{'class':'row',style:'margin-top:16px'});
-    var rt=el('button',{'class':'btn'},'Clear today\'s ticks');
-    rt.addEventListener('click',function(){prog=null;ensureProg();rt.textContent='Cleared ✓';});
-    var rd=el('button',{'class':'btn danger'},'Restore default quests');
-    var armed=false;
-    rd.addEventListener('click',function(){
-      if(!armed){armed=true;rd.textContent='Tap again to confirm';return;}
-      var names=cfg.kids;cfg=defaults();cfg.kids=names;save('qb_cfg',cfg);renderSettings();
-    });
-    br.appendChild(rt);br.appendChild(rd);oc.appendChild(br);
-    oc.appendChild(el('p',{'class':'hint'},'Settings, reading days and stars are saved on this device only. Other families using the same link keep their own.'));
-    var ic=el('div',{'class':'card',style:'background:#0e1130;margin-top:14px'});
-    ic.appendChild(el('h3',null,'📲 Install as an app'));
-    if(isInstalled())ic.appendChild(el('p',{'class':'hint'},'✅ Installed. The board opens full screen from its own icon and works without internet (weather and holidays update when back online).'));
+    var sp=slider('rate',0.6,1.4,0.05,0.95),pi=slider('pitch',0.5,2,0.05,1.25);
+    b.appendChild(sField('Speed','Also affects the natural voice.',sp));
+    b.appendChild(sField('Pitch','Tablet voice only.',pi));
+    b.appendChild(el('p',{'class':'hint'},'Better tablet voices on Android: Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia).'));
+    d.appendChild(b);tc.appendChild(d);inner.appendChild(tc);
+  }
+
+  // ---------- This device ----------
+  function setDevice(inner){
+    sHead(inner,'This device','Everything here is saved on this device only. Other families using the link keep their own.');
+    var ic=sCard('📲 Install as an app');
+    if(isInstalled())ic.appendChild(el('p',{'class':'status'},'✅ Installed. It opens full screen from its own icon and works without internet.'));
     else{
-      if(installEvt){
-        var ib=el('button',{'class':'btn primary'},'Install Quest Board');
-        ib.addEventListener('click',function(){installEvt.prompt();installEvt.userChoice.then(function(){installEvt=null;renderSettings();});});
-        ic.appendChild(ib);
-      }
-      ic.appendChild(el('p',{'class':'hint'},'Android / Chrome: tap the button above, or Chrome menu ⋮ → "Install app" (or "Add to Home screen"). iPhone / iPad: open in Safari → Share → "Add to Home Screen". It then opens full screen from its own icon and keeps working offline.'));
+      if(installEvt)ic.appendChild(sBtn('Install Quest Board','primary',function(){installEvt.prompt();installEvt.userChoice.then(function(){installEvt=null;renderSettings();});}));
+      ic.appendChild(el('p',{'class':'hint'},'Android: Chrome menu ⋮ → "Install app" (or "Add to Home screen"). iPhone / iPad: Safari → Share → "Add to Home Screen".'));
     }
-    oc.appendChild(ic);
-    var bk=el('div',{'class':'card',style:'background:#0e1130;margin-top:14px'});
-    bk.appendChild(el('h3',null,'💾 Backup & move to another device'));
+    inner.appendChild(ic);
+    var lc=sCard();
+    lc.appendChild(sField('Home screen layout','',[sSeg([['hybrid','Card per child'],['split','All children side by side']],cfg.layout||'hybrid',function(v){cfg.layout=v;view=-1;sv();})]));
+    inner.appendChild(lc);
+    var bk=sCard('💾 Backup','Keep a copy of children, quests, reading days and stars. Use it to move to a new device, or give another family your setup.');
     var sa=0;try{sa=+localStorage.getItem('qb_saved_at')||0;}catch(e){}
-    bk.appendChild(el('p',{'class':'hint'},'Last saved on this device: '+(sa?new Date(sa).toLocaleString():'not yet')+'. Copy the backup code and keep it (e.g. email it to yourself). Paste it here on any device to restore children, quests, reading days and stars. You can also send it to another family as a starting setup.'));
-    var ta=el('textarea',{rows:'3',style:'width:100%;font-size:13px;border-radius:10px;background:#12153a;color:#fff;border:2px solid #444b8a;padding:8px',placeholder:'Backup code appears here, or paste one to restore'});
+    bk.appendChild(el('p',{'class':'muted'},'Last saved: '+(sa?new Date(sa).toLocaleString():'not yet')));
+    var ta=el('textarea',{rows:'3','class':'codebox',placeholder:'Tap "Make backup code", or paste a code here to restore'});
     bk.appendChild(ta);
     var brow=el('div',{'class':'row',style:'margin-top:8px'});
-    var mk=el('button',{'class':'btn'},'Make backup code');
-    mk.addEventListener('click',function(){
+    var mk=sBtn('Make backup code','primary',function(){
       ta.value='QB1:'+btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
-      try{ta.select();if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(function(){mk.textContent='Copied ✓';},function(){mk.textContent='Select and copy the code';});}catch(e){}
+      try{ta.select();if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(function(){mk.textContent='Copied ✓ (email it to yourself)';},function(){mk.textContent='Select and copy the code';});}catch(e){}
     });
-    var rs2=el('button',{'class':'btn primary'},'Restore from code');
-    rs2.addEventListener('click',function(){
-      try{
-        var v=ta.value.trim();if(v.indexOf('QB1:')!==0)throw 0;
-        var c=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));
-        if(!c||!c.kids||!c.steps||!c.days)throw 0;
-        cfg=c;normalize();save('qb_cfg',cfg);prog=null;ensureProg();renderSettings();
-      }catch(e){rs2.textContent='That code didn\'t work';}
+    var rs=sBtn('Restore from code','',function(){
+      try{var v=ta.value.trim();if(v.indexOf('QB1:')!==0)throw 0;var c=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));
+        if(!c||!c.kids||!c.steps||!c.days)throw 0;cfg=c;normalize();sv();prog=null;ensureProg();renderSettings();
+      }catch(e){rs.textContent='That code didn\'t work';}
     });
-    brow.appendChild(mk);brow.appendChild(rs2);bk.appendChild(brow);
-    oc.appendChild(bk);
-    oc.appendChild(el('p',{'class':'hint'},'Board version: '+BOARD_VERSION));
-    sBody.appendChild(oc);
+    brow.appendChild(mk);brow.appendChild(rs);bk.appendChild(brow);inner.appendChild(bk);
+    var rc=sCard('Reset');
+    rc.appendChild(sField('Clear today\'s ticks','Unticks everything for today. Stars and reading days stay.',[sConfirm('Clear','Tap again to clear','btn',function(){prog=null;ensureProg();renderSettings();})]));
+    rc.appendChild(sField('Restore the default quests','Replaces your quests and week plan. Children, stars and reading days stay.',[sConfirm('Restore','Tap again to restore','btn danger',function(){var names=cfg.kids;cfg=defaults();cfg.kids=names;normalize();sv();renderSettings();})]));
+    inner.appendChild(rc);
+    inner.appendChild(el('p',{'class':'ssub',style:'text-align:center'},'Quest Board · version '+BOARD_VERSION));
   }
 
   // ---------- upcoming events ----------
