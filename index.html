@@ -82,7 +82,21 @@
   .lane.solo .tile.mini .tick{font-size:clamp(26px,3.6vw,40px)}
   .tile.mini.hinted::after{font-size:11px;top:-22px}
 
-  /* morning / arvo tabs */
+  /* badges, many kids, milestone banner */
+  .kbadges{position:absolute;top:12px;right:14px;display:flex;gap:6px}
+  .lbadges{display:flex;gap:6px;flex:none}
+  .pill{font-size:clamp(16px,2.2vw,24px);font-weight:800;background:#0e1130;padding:4px 12px;border-radius:99px;white-space:nowrap}
+  main.many{flex-wrap:wrap}
+  main.many .kcard{flex:1 1 40%}
+  main.many .ring{width:clamp(80px,12vw,140px)}
+  main.many .ring-inner{font-size:clamp(40px,6vw,74px)}
+  .mile{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,12,40,.82);pointer-events:none;animation:mileIn .5s cubic-bezier(.3,1.6,.6,1);transition:opacity .6s}
+  .mile.out{opacity:0}
+  .mile-big{font-size:clamp(90px,16vw,200px);font-weight:800;line-height:1;text-shadow:0 0 40px #ffd23f}
+  .mile-small{font-size:clamp(24px,3.6vw,44px);font-weight:800;margin-top:12px;text-align:center;padding:0 20px}
+  @keyframes mileIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* morning / afternoon tabs */
   .ptabs{display:flex;gap:10px;justify-content:center}
   .ptab{font-family:inherit;font-weight:800;font-size:clamp(14px,1.8vw,20px);padding:4px 18px;border-radius:99px;border:none;background:var(--bg2);color:var(--muted);cursor:pointer}
   .ptab.sel{background:#fff;color:#1b1f3b}
@@ -270,6 +284,20 @@
     cfg.kids[0].mode=cfg.kids[0].mode||'grid';cfg.kids[1].mode=cfg.kids[1].mode||'nownext';
     cfg.v=3;try{localStorage.setItem('qb_cfg',JSON.stringify(cfg));}catch(e){}
   }
+  // v4: any number of children; per-child reading count and star jar (replaces streaks)
+  if(cfg.v<4){
+    cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';});
+    cfg.v=4;try{localStorage.setItem('qb_cfg',JSON.stringify(cfg));}catch(e){}
+  }
+  var PALETTE=[['#ff9f43','#a85d14'],['#2ecc9a','#167a5b'],['#5aa9ff','#2b5f99'],['#ff6fb5','#a33a6f'],['#b98cff','#6a45a8'],['#ffd23f','#9c7d10']];
+  function kidColour(node,k){var c=PALETTE[k%PALETTE.length];node.style.setProperty('--c',c[0]);node.style.setProperty('--cd',c[1]);}
+  function nKids(){return cfg.kids.length;}
+  function normalize(){
+    var n=nKids();
+    for(var d=0;d<7;d++){var a=cfg.days[d].kids;while(a.length<n)a.push([]);if(a.length>n)a.length=n;}
+    cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';});
+  }
+  normalize();
   function stepByIdRaw(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
   function stepPeriod(s){return s.period==='pm'?'pm':'am';}
   function autoPeriod(){
@@ -279,14 +307,17 @@
   var selPeriod=null,lastAuto=autoPeriod();
   function curPeriod(){var a=autoPeriod();if(a!==lastAuto){lastAuto=a;selPeriod=null;}return selPeriod||a;}
   var prog=load('qb_prog',null);
-  var streaks=load('qb_streaks',[{count:0,last:''},{count:0,last:''}]);
 
   function pad(n){return (n<10?'0':'')+n;}
   function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
   function today(){return dateKey(new Date());}
   function ensureProg(){
-    if(!prog||prog.date!==today()){prog={date:today(),done:[[],[]],celebrated:{am:[false,false],pm:[false,false]}};save('qb_prog',prog);}
-    if(Array.isArray(prog.celebrated))prog.celebrated={am:prog.celebrated,pm:[false,false]};
+    if(!prog||prog.date!==today()){prog={date:today(),done:[],celebrated:{am:[],pm:[]}};}
+    if(Array.isArray(prog.celebrated))prog.celebrated={am:prog.celebrated,pm:[]};
+    var n=nKids();
+    while(prog.done.length<n)prog.done.push([]);if(prog.done.length>n)prog.done.length=n;
+    ['am','pm'].forEach(function(p){var a=prog.celebrated[p];while(a.length<n)a.push(false);if(a.length>n)a.length=n;});
+    save('qb_prog',prog);
   }
   ensureProg();
 
@@ -356,17 +387,19 @@
     document.getElementById('wx').style.display=showBars?'':'none';
     document.getElementById('uv').style.display='none'; // UV detail is grown-up info: it lives in the small print and drives sunscreen/hat
     renderTabs();
-    if(split){for(var k=0;k<2;k++)lanesEl.appendChild(renderLane(k,false));}
-    else if(view===-1){for(var j=0;j<2;j++)lanesEl.appendChild(renderCard(j));}
+    if(view>=nKids())view=-1;
+    lanesEl.className=nKids()>3?'many':'';
+    if(split){for(var k=0;k<nKids();k++)lanesEl.appendChild(renderLane(k,false));}
+    else if(view===-1){for(var j=0;j<nKids();j++)lanesEl.appendChild(renderCard(j));}
     else lanesEl.appendChild(renderLane(view,true));
     renderHeader();
   }
   function renderTabs(){
     var t=document.getElementById('ptabs');t.innerHTML='';
     var cp=curPeriod();
-    [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(p){
+    [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(p){
       var left=0,total=0;
-      for(var k=0;k<2;k++){var st=todaysSteps(k,p[0]);total+=st.length;left+=st.filter(function(s){return prog.done[k].indexOf(s.id)<0;}).length;}
+      for(var k=0;k<nKids();k++){var st=todaysSteps(k,p[0]);total+=st.length;left+=st.filter(function(s){return prog.done[k].indexOf(s.id)<0;}).length;}
       var b=el('button',{'class':'ptab'+(cp===p[0]?' sel':'')},p[1]+(total?(left?'':' ✅'):''));
       b.addEventListener('click',function(){selPeriod=p[0];bumpIdle();render();});
       t.appendChild(b);
@@ -376,8 +409,8 @@
     var kid=cfg.kids[k],steps=todaysSteps(k),done=prog.done[k];
     var count=steps.filter(function(s){return done.indexOf(s.id)>-1;}).length;
     var complete=steps.length&&count===steps.length;
-    var c=el('button',{'class':'kcard k'+k+(complete?' complete':'')});
-    var st=el('div',{'class':'kstreak'},'🔥 '+(streaks[k].count||0));c.appendChild(st);
+    var c=el('button',{'class':'kcard'+(complete?' complete':'')});kidColour(c,k);
+    c.appendChild(badges(k,'kbadges'));
     var ring=el('div',{'class':'ring'});
     ring.style.background='conic-gradient(var(--c) '+(steps.length?count/steps.length*360:0)+'deg, #0e1130 0deg)';
     ring.appendChild(el('div',{'class':'ring-inner'},kid.emoji));
@@ -393,6 +426,13 @@
     c.addEventListener('click',function(){openKid(k);});
     return c;
   }
+  function badges(k,cls){
+    var kd=cfg.kids[k],b=el('div',{'class':cls});
+    b.appendChild(el('span',{'class':'pill',title:'Stars in the star jar'},'⭐ '+(kd.stars.count||0)));
+    if(hasReading(k))b.appendChild(el('span',{'class':'pill',title:'Days of reading'},'📚 '+(kd.reads.count||0)));
+    return b;
+  }
+  function hasReading(k){for(var d=0;d<7;d++)if(cfg.days[d].kids[k].indexOf('reading')>-1)return true;return false;}
   function outfitChip(){
     if(!wx||wx.date!==today())return null;
     var o=outfit(wx);
@@ -426,7 +466,7 @@
   function renderLane(k,solo){
     var kid=cfg.kids[k],steps=todaysSteps(k),done=prog.done[k];
     var lane=document.createElement('section');
-    lane.className='lane k'+k+(solo?' solo':'');
+    lane.className='lane'+(solo?' solo':'');kidColour(lane,k);
     var head=document.createElement('div');head.className='lane-head';
     if(solo){
       var back=el('button',{'class':'homebtn',title:'Home'},'🏠');
@@ -434,11 +474,9 @@
     }
     var av=document.createElement('div');av.className='avatar';av.textContent=kid.emoji;
     var nm=document.createElement('div');nm.className='name';nm.textContent=kid.name;
-    var st=document.createElement('div');st.className='streak';st.textContent='🔥 '+(streaks[k].count||0);
-    st.title='Days in a row';
     head.appendChild(av);head.appendChild(nm);
     if(solo){var oc=outfitChip();if(oc)head.appendChild(oc);}
-    head.appendChild(st);
+    head.appendChild(badges(k,'lbadges'));
     lane.appendChild(head);
 
     var count=steps.filter(function(s){return done.indexOf(s.id)>-1;}).length;
@@ -476,48 +514,67 @@
     return lane;
   }
 
+  function allDoneToday(k){
+    var any=false;
+    for(var pi=0;pi<2;pi++){var st=todaysSteps(k,['am','pm'][pi]);if(st.length)any=true;
+      for(var j=0;j<st.length;j++)if(prog.done[k].indexOf(st[j].id)<0)return false;}
+    return any;
+  }
   function toggle(k,s){
     keepAwake();bumpIdle();
-    var done=prog.done[k],i=done.indexOf(s.id);
-    if(i>-1){done.splice(i,1);undoSound();}
+    var kd=cfg.kids[k],done=prog.done[k],i=done.indexOf(s.id),t=today();
+    if(i>-1){
+      done.splice(i,1);undoSound();
+      // undo today's reading day and star if they were just earned
+      if(s.id==='reading'&&kd.reads.last===t){kd.reads.count=Math.max(0,kd.reads.count-1);kd.reads.last=kd.reads.prev||'';}
+      if(kd.stars.last===t&&!allDoneToday(k)){kd.stars.count=Math.max(0,kd.stars.count-1);kd.stars.last=kd.stars.prev||'';}
+      save('qb_cfg',cfg);
+    }
     else{
       done.push(s.id);
-      var per=curPeriod();
+      var per=curPeriod(),lines=[],big=false,milestone=0;
       var steps=todaysSteps(k,per);
       var left=steps.filter(function(x){return done.indexOf(x.id)<0;}).length;
-      if(left===0){
-        fanfare();say('Hooray '+cfg.kids[k].name+'! All done'+(per==='pm'?' for the afternoon':'')+'! You are a superstar!');
-        if(!prog.celebrated[per][k]){prog.celebrated[per][k]=true;if(per==='am')bumpStreak(k);}
-        confetti(k);
-        if(!isSplit()){clearTimeout(idleT);idleT=setTimeout(goHome,6000);}
-      } else {
-        blip();
-        var praise=PRAISE[Math.floor(Math.random()*PRAISE.length)];
-        say(s.label+'! '+praise+' '+left+' more!');
+      // reading count
+      if(s.id==='reading'&&kd.reads.last!==t){
+        kd.reads.prev=kd.reads.last;kd.reads.last=t;kd.reads.count=(kd.reads.count||0)+1;
+        var rc=kd.reads.count;
+        if(rc%50===0){milestone=rc;lines.push('Wow! '+kd.name+', that is '+rc+' days of reading! That is amazing!');}
+        else lines.push(rc+(rc===1?' day':' days')+' of reading! Great job!');
       }
+      else if(left>0){lines.push(s.label+'! '+PRAISE[Math.floor(Math.random()*PRAISE.length)]+' '+left+' more!');}
+      if(left===0){
+        big=true;
+        lines.push('Hooray '+kd.name+'! All done'+(per==='pm'?' for the afternoon':' for the morning')+'!');
+        prog.celebrated[per][k]=true;
+      }
+      // star jar: everything done for the whole day
+      var star=false;
+      if(allDoneToday(k)&&kd.stars.last!==t){
+        kd.stars.prev=kd.stars.last;kd.stars.last=t;kd.stars.count=(kd.stars.count||0)+1;star=true;
+        lines.push('You earned a star for your star jar! You have '+kd.stars.count+(kd.stars.count===1?' star!':' stars!'));
+      }
+      save('qb_cfg',cfg);
+      if(milestone){bigFanfare();confetti(k,['📚','🏆','⭐','🎉','✨']);showBanner('📚 '+milestone+'!',kd.name+' — '+milestone+' days of reading!');}
+      else if(star){fanfare();confetti(k,['⭐','🌟','✨','⭐']);showBanner('⭐','A star for '+kd.name+'\'s jar! ('+kd.stars.count+')');}
+      else if(big){fanfare();confetti(k);}
+      else blip();
+      say(lines.join(' '));
+      if(big&&!isSplit()){clearTimeout(idleT);idleT=setTimeout(goHome,milestone||star?8000:6000);}
     }
     save('qb_prog',prog);
     render();
   }
-
-  function bumpStreak(k){
-    // previous day that had quests for this kid
-    var d=new Date();var prev='';
-    for(var i=1;i<=7;i++){
-      var t=new Date(d.getFullYear(),d.getMonth(),d.getDate()-i);
-      if((cfg.days[t.getDay()].kids[k]||[]).length){prev=dateKey(t);break;}
-    }
-    var s=streaks[k];
-    if(s.last===today())return;
-    s.count=(s.last&&s.last===prev)?(s.count||0)+1:1;
-    s.last=today();
-    save('qb_streaks',streaks);
+  function showBanner(bigText,small){
+    var o=el('div',{'class':'mile'});o.appendChild(el('div',{'class':'mile-big'},bigText));o.appendChild(el('div',{'class':'mile-small'},small));
+    document.body.appendChild(o);setTimeout(function(){o.classList.add('out');},3600);setTimeout(function(){o.remove();},4300);
   }
+  function bigFanfare(){[523,659,784,1047,784,1047,1319,1568].forEach(function(f,i){tone(f,i*0.13,0.3,'square');});}
 
-  function confetti(k){
-    var bits=['🎉','⭐','🎊','✨','🌟',cfg.kids[k].emoji];
+  function confetti(k,custom){
+    var bits=custom||['🎉','⭐','🎊','✨','🌟',cfg.kids[k].emoji];
     var w=window.innerWidth,half=w/2;
-    for(var i=0;i<36;i++){
+    for(var i=0;i<(custom?60:36);i++){
       var c=document.createElement('div');c.className='confetti';
       c.textContent=bits[i%bits.length];
       var x=(isSplit()&&window.innerWidth>window.innerHeight)?(k*half+Math.random()*half):(Math.random()*w);
@@ -621,9 +678,49 @@
         var o=el('option',{value:p[0]},p[1]);if((kid.mode||'grid')===p[0])o.selected=true;ms.appendChild(o);
       });
       ms.addEventListener('change',function(){kid.mode=ms.value;save('qb_cfg',cfg);});
-      r.appendChild(sel);r.appendChild(inp);r.appendChild(ms);kc.appendChild(r);
+      r.appendChild(sel);r.appendChild(inp);r.appendChild(ms);
+      if(nKids()>1){
+        var rm=el('button',{'class':'btn danger'},'Remove'),armed=false;
+        rm.addEventListener('click',function(){
+          if(!armed){armed=true;rm.textContent='Tap again to remove '+kid.name;return;}
+          cfg.kids.splice(k,1);
+          for(var d=0;d<7;d++)cfg.days[d].kids.splice(k,1);
+          prog.done.splice(k,1);prog.celebrated.am.splice(k,1);prog.celebrated.pm.splice(k,1);
+          view=-1;save('qb_cfg',cfg);save('qb_prog',prog);renderSettings();
+        });
+        r.appendChild(rm);
+      }
+      kc.appendChild(r);
     });
+    var addk=el('button',{'class':'btn primary'},'+ Add a child');
+    addk.addEventListener('click',function(){
+      var used=cfg.kids.map(function(x){return x.emoji;});
+      var em=AVATARS.filter(function(a){return used.indexOf(a)<0;})[0]||'⭐';
+      cfg.kids.push({name:'Child '+(nKids()+1),emoji:em,mode:'grid',reads:{count:0,last:'',prev:''},stars:{count:0,last:'',prev:''}});
+      for(var d=0;d<7;d++){var src=cfg.days[d].kids[0]||[];cfg.days[d].kids.push(src.slice());}
+      normalize();ensureProg();save('qb_cfg',cfg);renderSettings();
+    });
+    kc.appendChild(addk);
+    kc.appendChild(el('p',{'class':'hint'},'A new child starts with the same quests as the first child. Change them under Daily quests.'));
     sBody.appendChild(kc);
+
+    // Reading & star jar
+    var rcd=el('div',{'class':'card'});rcd.appendChild(el('h3',null,'📚 Reading & ⭐ Star jar'));
+    rcd.appendChild(el('p',{'class':'hint',style:'margin-bottom:8px'},'Set where each child is up to. Ticking 📖 Reading adds a day (once per day) and it is announced, with a big celebration every 50 days. A star goes in the jar when every morning and afternoon quest is done.'));
+    cfg.kids.forEach(function(kid){
+      var r=el('div',{'class':'row'});
+      r.appendChild(el('span',{style:'font-size:19px;min-width:150px;font-weight:700'},kid.emoji+' '+kid.name));
+      r.appendChild(el('span',{style:'font-size:18px'},'Days read:'));
+      var ri=el('input',{type:'number',min:'0',value:String(kid.reads.count||0),style:'width:110px'});
+      ri.addEventListener('change',function(){var v=parseInt(ri.value,10);if(!isNaN(v)&&v>=0){kid.reads.count=v;save('qb_cfg',cfg);}});
+      r.appendChild(ri);
+      r.appendChild(el('span',{style:'font-size:18px'},'Stars in jar:'));
+      var si=el('input',{type:'number',min:'0',value:String(kid.stars.count||0),style:'width:110px'});
+      si.addEventListener('change',function(){var v=parseInt(si.value,10);if(!isNaN(v)&&v>=0){kid.stars.count=v;save('qb_cfg',cfg);}});
+      r.appendChild(si);
+      rcd.appendChild(r);
+    });
+    sBody.appendChild(rcd);
 
     // Days
     var dc=el('div',{'class':'card'});dc.appendChild(el('h3',null,'📅 Daily quests'));
@@ -645,7 +742,7 @@
     var nl=el('label',{'class':'chk','for':'norush'});nl.appendChild(noRush);nl.appendChild(document.createTextNode('No countdown (relaxed day)'));
     lr.appendChild(t);lr.appendChild(nl);dc.appendChild(lr);
     var ar2=el('div',{'class':'row'});
-    ar2.appendChild(el('span',{style:'font-size:18px'},'Arvo quests start at (every day):'));
+    ar2.appendChild(el('span',{style:'font-size:18px'},'Afternoon quests start at (every day):'));
     var at=el('input',{type:'time',value:cfg.arvoStart||'12:00'});
     at.addEventListener('change',function(){if(at.value){cfg.arvoStart=at.value;selPeriod=null;save('qb_cfg',cfg);}});
     ar2.appendChild(at);dc.appendChild(ar2);
@@ -653,7 +750,7 @@
     var cols=el('div',{'class':'kidcols'});
     cfg.kids.forEach(function(kid,k){
       var col=el('div',{'class':'kidcol'});col.appendChild(el('h4',null,kid.emoji+' '+kid.name));
-      [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(per){
+      [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(per){
       col.appendChild(el('div',{'class':'pergrp'},per[1]));
       cfg.steps.filter(function(s){return stepPeriod(s)===per[0];}).forEach(function(s){
         var lab=el('label',{'class':'chk'});
@@ -692,11 +789,11 @@
       var del=el('button',{'class':'btn danger'},'✕');
       del.addEventListener('click',function(){
         cfg.steps.splice(idx,1);
-        for(var d=0;d<7;d++)for(var k=0;k<2;k++){var a=cfg.days[d].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
+        for(var d=0;d<7;d++)for(var k=0;k<nKids();k++){var a=cfg.days[d].kids[k],i=a.indexOf(s.id);if(i>-1)a.splice(i,1);}
         save('qb_cfg',cfg);renderSettings();
       });
       var ps=el('select');
-      [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if(stepPeriod(s)===p[0])o.selected=true;ps.appendChild(o);});
+      [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if(stepPeriod(s)===p[0])o.selected=true;ps.appendChild(o);});
       ps.addEventListener('change',function(){s.period=ps.value;save('qb_cfg',cfg);renderSettings();});
       r.appendChild(e1);r.appendChild(l1);r.appendChild(ps);r.appendChild(up);r.appendChild(del);sc.appendChild(r);
     });
@@ -704,7 +801,7 @@
     var ne=el('input',{type:'text','class':'emo',placeholder:'🍎',maxlength:'4',style:'width:64px;text-align:center'});
     var nlb=el('input',{type:'text',placeholder:'New quest (e.g. Fruit for kinder)',maxlength:'28',style:'flex:1'});
     var nps=el('select');
-    [['am','🌅 Morning'],['pm','☀️ Arvo']].forEach(function(p){nps.appendChild(el('option',{value:p[0]},p[1]));});
+    [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(p){nps.appendChild(el('option',{value:p[0]},p[1]));});
     var ab=el('button',{'class':'btn primary'},'Add');
     ab.addEventListener('click',function(){
       if(!nlb.value.trim())return;
@@ -804,17 +901,15 @@
     oc.appendChild(el('p',{'class':'hint'},'Voices come from the tablet itself. For better ones: Android Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia), then pick a voice there.'));
     var br=el('div',{'class':'row',style:'margin-top:16px'});
     var rt=el('button',{'class':'btn'},'Clear today\'s ticks');
-    rt.addEventListener('click',function(){prog={date:today(),done:[[],[]],celebrated:{am:[false,false],pm:[false,false]}};save('qb_prog',prog);rt.textContent='Cleared ✓';});
-    var rs=el('button',{'class':'btn'},'Reset streaks');
-    rs.addEventListener('click',function(){streaks=[{count:0,last:''},{count:0,last:''}];save('qb_streaks',streaks);rs.textContent='Reset ✓';});
+    rt.addEventListener('click',function(){prog=null;ensureProg();rt.textContent='Cleared ✓';});
     var rd=el('button',{'class':'btn danger'},'Restore default quests');
     var armed=false;
     rd.addEventListener('click',function(){
       if(!armed){armed=true;rd.textContent='Tap again to confirm';return;}
       var names=cfg.kids;cfg=defaults();cfg.kids=names;save('qb_cfg',cfg);renderSettings();
     });
-    br.appendChild(rt);br.appendChild(rs);br.appendChild(rd);oc.appendChild(br);
-    oc.appendChild(el('p',{'class':'hint'},'Settings and streaks are saved on this device only.'));
+    br.appendChild(rt);br.appendChild(rd);oc.appendChild(br);
+    oc.appendChild(el('p',{'class':'hint'},'Settings, reading days and stars are saved on this device only. Other families using the same link keep their own.'));
     sBody.appendChild(oc);
   }
 
@@ -936,6 +1031,7 @@
     // small print for grown-ups only
     var sub=(cfg.loc.name?cfg.loc.name.split(',')[0]+' · ':'')+Math.round(wx.min)+'°→'+Math.round(wx.max)+'°';
     if(wx.rain>=20)sub+=' · rain '+wx.rain+'%';
+    if(windWord(wx))sub+=' · gusts '+Math.round(wx.gust||wx.wind)+' km/h';
     var pk=uvPeakAhead();if(pk>=1)sub+=' · UV '+Math.round(pk);
     var pt=protectionTimes();if(pt)sub+=' ('+fmtH(pt.from)+'–'+fmtH(pt.to)+')';
     document.getElementById('wxSub').textContent=sub;
@@ -944,26 +1040,40 @@
       var d=el('div',{'class':'wear'});d.appendChild(el('div',{'class':'e'},x[0]));d.appendChild(el('div',{'class':'t'},x[1]));wr.appendChild(d);
     });
   }
+  function feelWord(t){
+    if(t>=35)return 'very hot';if(t>=28)return 'hot';if(t>=22)return 'warm';if(t>=17)return 'mild';
+    if(t>=11)return 'cool';if(t>=6)return 'cold';return 'very cold';
+  }
+  function windWord(w){if((w.gust||0)>=60||(w.wind||0)>=40)return 'very windy';if((w.gust||0)>=40||(w.wind||0)>=25)return 'windy';return '';}
+  function weatherSpeech(){
+    var o=outfit(wx),parts=[];
+    var feel=feelWord(wx.max),wnd=windWord(wx);
+    parts.push('Today will be '+feel+(wnd?' and '+wnd:'')+'.');
+    if(wx.rain>=70)parts.push('It will rain, so take your raincoat.');
+    else if(wx.rain>=40)parts.push('It might rain, so take your raincoat.');
+    var items=o.wear.filter(function(x){return ['Raincoat','Hat','Sunscreen'].indexOf(x[1])<0;}).map(function(x){return x[1].toLowerCase();});
+    if(items.length){var last=items.pop();parts.push('Wear '+(items.length?items.join(', ')+' and ':'')+last+'.');}
+    if(uvPeakAhead()>=uvLimit())parts.push('The sun will be strong today, so wear sunscreen and try and play in the shade. Don\'t forget your hat!');
+    return parts.join(' ');
+  }
   function speakWx(){
     keepAwake();
     if(!wx||wx.date!==today()){say('Sorry, I can\'t see the weather right now.');return;}
-    var o=outfit(wx);
-    var items=o.wear.map(function(x){return x[1].toLowerCase();});
-    var last=items.pop();
-    say('Today, wear '+(items.length?items.join(', ')+' and ':'')+last+'.');
+    say(weatherSpeech());
   }
   document.getElementById('wx').addEventListener('click',speakWx);
   var wxErr='';
   function fetchWx(){
     var L=cfg.loc;
     var url='https://api.open-meteo.com/v1/forecast?latitude='+L.lat+'&longitude='+L.lon+
-      '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,weather_code'+
+      '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,weather_code,wind_speed_10m_max,wind_gusts_10m_max'+
       '&hourly=uv_index&timezone=auto&forecast_days=2';
     try{
       fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){
         var d=j.daily;
         wx={date:today(),now:j.current.temperature_2m,code:d.weather_code[0],max:d.temperature_2m_max[0],min:d.temperature_2m_min[0],
             rain:d.precipitation_probability_max[0]||0,uv:d.uv_index_max[0]||0,at:Date.now(),
+            wind:(d.wind_speed_10m_max&&d.wind_speed_10m_max[0])||0,gust:(d.wind_gusts_10m_max&&d.wind_gusts_10m_max[0])||0,
             hours:(j.hourly&&j.hourly.time)||[],uvh:(j.hourly&&j.hourly.uv_index)||[]};
         wxErr='';save('qb_wx',wx);render();renderWx();
       }).catch(function(){wxErr='Open this board from its own web address to get live weather';renderWx();});
