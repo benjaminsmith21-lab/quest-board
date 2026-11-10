@@ -15,7 +15,9 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
   html,body{margin:0;height:100%;background:radial-gradient(circle at 20% 0%,#2f3670 0%,var(--bg) 60%);color:var(--ink);font-family:'Baloo 2',system-ui,sans-serif;overflow:hidden}
   #app{display:flex;flex-direction:column;height:100%;padding:10px 14px 14px;gap:10px}
-  header{display:flex;align-items:center;gap:14px}
+  header{display:flex;align-items:center;gap:14px;position:relative;min-height:56px}
+  header.centred .countdown{visibility:hidden}
+  header.centred .dt{position:absolute;left:50%;transform:translateX(-50%);text-align:center;display:flex;align-items:baseline;gap:14px;white-space:nowrap}
   .day{font-size:clamp(20px,3.2vw,34px);font-weight:800;line-height:1}
   .clock{font-size:clamp(16px,2.4vw,26px);color:var(--muted);font-weight:700}
   .countdown{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -188,7 +190,7 @@
 <body>
 <div id="app">
   <header>
-    <div>
+    <div class="dt" id="dt">
       <div class="day" id="dayName">Monday</div>
       <div class="clock" id="clock">7:30</div>
     </div>
@@ -233,7 +235,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · star jar + reading';
+  var BOARD_VERSION='10 Nov 2026 · centred header';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -602,8 +604,9 @@
       fill.style.width=pct+'%';
       mover.style.left='calc('+pct+'% * 0.86)';
     }
-    lbl.classList.remove('big');
-    if(!leave){road.style.display='none';lbl.classList.add('big');lbl.textContent='🌈 Relaxed day';return;}
+    var hdr=document.querySelector('header');
+    lbl.classList.remove('big');hdr.classList.remove('centred');
+    if(!leave){hdr.classList.add('centred');return;}
     var parts=leave.split(':');
     var lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+parts[0],+parts[1]);
     var mins=Math.ceil((lt-now)/60000);
@@ -611,11 +614,7 @@
     if(mins>window_){setRoad(0);lbl.textContent='Leave at '+fmt(leave);}
     else if(mins>0){setRoad((window_-mins)/window_*100);lbl.textContent='Leave at '+fmt(leave)+' · '+mins+' min';}
     else if(mins>-90){setRoad(100);lbl.classList.add('big');lbl.textContent='Time to go! 🚗';}
-    else{
-      road.style.display='none';
-      var td=(now.getDay()+1)%7,tl=cfg.days[td].leave,dn=SHORT[td];
-      lbl.textContent=tl?'🌙 Tomorrow ('+dn+'): leave at '+fmt(tl):'🌙 Tomorrow ('+dn+'): relaxed day 🌈';
-    }
+    else hdr.classList.add('centred'); // after the morning rush: just the day and time, centred
   }
   var lastDay=today();
   setInterval(function(){
