@@ -182,6 +182,7 @@
   .steprow input.emo{width:64px;text-align:center}
   .steprow input.lbl{flex:1}
   .hint{color:var(--muted);font-size:16px;margin:4px 0 0}
+  .sayrow{margin:-4px 0 12px 74px}
   .pergrp{font-weight:800;color:var(--warn);margin:8px 0 2px;font-size:17px}
   .locresults{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:6px}
   .locbtn{font-size:17px;text-align:left}
@@ -235,11 +236,78 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · no countdown in voice';
+  var BOARD_VERSION='10 Nov 2026 · you brushed your teeth';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
-  var PRAISE=['Great job!','Awesome!','You did it!','Super star!','Nice one!','Brilliant!'];
+  var PRAISE=['superstar','champ','legend','great job','well done','nice work'];
+  // ----- "You brushed your teeth, superstar!" -----
+  // Hand-written lines for the built-in quests (used while their label is unchanged)
+  var DEFAULT_SAY={
+    toilet:['Toilet & wash hands','You went to the toilet and washed your hands'],
+    dress:['Get dressed','You got dressed'],
+    breakfast:['Eat breakfast','You ate your breakfast'],
+    teeth:['Brush teeth','You brushed your teeth'],
+    hair:['Brush hair','You brushed your hair'],
+    sunscreen:['Sunscreen','You put on your sunscreen'],
+    bag:['Pack bag','You packed your bag'],
+    shoes:['Shoes & hat','You put on your shoes and hat'],
+    swim:['Swim bag','You packed your swim bag'],
+    library:['Library bag','You packed your library bag'],
+    sport:['Sports uniform','You put on your sports uniform'],
+    bed:['Make bed','You made your bed'],
+    tidy:['Tidy one thing','You tidied something up'],
+    reading:['Reading','You did your reading']
+  };
+  var IRREG={get:'got',eat:'ate',make:'made',put:'put',take:'took',go:'went','do':'did',feed:'fed',read:'read',write:'wrote',
+    give:'gave',bring:'brought',have:'had',drink:'drank',hang:'hung',find:'found',set:'set',sweep:'swept',wear:'wore',say:'said',
+    sit:'sat',run:'ran',swim:'swam',ride:'rode',draw:'drew',sing:'sang',buy:'bought',teach:'taught',throw:'threw',shut:'shut',
+    sleep:'slept',wake:'woke',lay:'laid',let:'let',hold:'held',keep:'kept',leave:'left',send:'sent',spend:'spent',build:'built',
+    stand:'stood',tell:'told',think:'thought',fold:'folded',feed:'fed',blow:'blew',grab:'grabbed',hug:'hugged',mop:'mopped',
+    wipe:'wiped','pick':'picked',plan:'planned',stop:'stopped',drop:'dropped',chop:'chopped',scrub:'scrubbed',
+    practice:'practised',practise:'practised'};
+  // Common action words, so custom quests like "Feed the cat" or "Unpack lunchbox" are recognised as actions
+  var VERBS=('brush wash pack unpack clean tidy empty fill water change pull flush help finish check call play walk dress '+
+    'comb pour clear load unload carry fix count spell learn listen look open close turn switch pack collect sort match '+
+    'charge cook bake stretch jump dance kick climb hop skip tie zip button hang fold put get eat make take go do feed read '+
+    'write give bring have drink find set sweep wear say sit run swim ride draw sing buy throw shut sleep wake lay hold keep '+
+    'leave send build stand tell blow grab hug mop wipe pick stop drop chop scrub practice practise').split(' ');
+  var PARTICLES=['on','off','up','away','out','in','down','back','over'];
+  var DETS=['a','an','the','my','your','his','her','their','our','one','two','three','some','all','every','this','that','these','those','any','each'];
+  function pastOf(v){
+    v=v.toLowerCase();
+    if(IRREG[v])return IRREG[v];
+    if(/e$/.test(v))return v+'d';
+    if(/[^aeiou]y$/.test(v))return v.slice(0,-1)+'ied';
+    if(/^[^aeiou]*[aeiou][bdgmnprt]$/.test(v)&&v.length<=4)return v+v.slice(-1)+'ed';
+    return v+'ed';
+  }
+  function yourify(words){ // "teeth" -> "your teeth", "the cat" stays, "my bag" -> "your bag"
+    if(!words.length)return '';
+    var w0=words[0].toLowerCase();
+    if(w0==='my')return ['your'].concat(words.slice(1)).join(' ');
+    var PREPS=['to','with','for','at','into','onto','outside','inside','home','around','by','from','through'];
+    if(DETS.indexOf(w0)>-1||PREPS.indexOf(w0)>-1||/ed$/.test(w0)||/^[A-Z]/.test(words[0]))return words.join(' ');
+    return 'your '+words.join(' ');
+  }
+  function pastPhrase(s){
+    if(s.say&&s.say.trim())return s.say.trim().replace(/[.!]+$/,'');
+    var d=DEFAULT_SAY[s.id];
+    if(d&&d[0]===s.label)return d[1];
+    var label=s.label.replace(/&/g,' and ').replace(/\s+/g,' ').trim().replace(/[.!]+$/,'');
+    var parts=label.split(' ');
+    var verb=parts[0].toLowerCase();
+    if(VERBS.indexOf(verb)<0&&!IRREG[verb]){ // a thing, not an action: "Fruit for kinder" -> "You remembered your fruit for kinder"
+      var lw=label.split(' ');lw[0]=lw[0].toLowerCase();return 'You remembered '+yourify(lw);
+    }
+    var rest=parts.slice(1),out=['You',pastOf(verb)];
+    if(rest.length&&PARTICLES.indexOf(rest[0].toLowerCase())>-1){out.push(rest[0].toLowerCase());rest=rest.slice(1);}
+    // "Brush teeth and hair" -> "your teeth and your hair" is overkill: only the first noun gets "your"
+    var obj=yourify(rest.map(function(w){return w;}));
+    if(obj)out.push(obj);
+    return out.join(' ');
+  }
+  function praiseLine(s){return pastPhrase(s)+', '+PRAISE[Math.floor(Math.random()*PRAISE.length)]+'!';}
 
   function defaults(){
     var steps=[
@@ -542,10 +610,11 @@
       if(s.id==='reading'&&kd.reads.last!==t){
         kd.reads.prev=kd.reads.last;kd.reads.last=t;kd.reads.count=(kd.reads.count||0)+1;
         var rc=kd.reads.count;
-        if(rc%50===0){milestone=rc;lines.push('Wow! '+kd.name+', that is '+rc+' days of reading! That is amazing!');}
-        else lines.push(rc+(rc===1?' day':' days')+' of reading! Great job!');
+        if(rc%50===0){milestone=rc;lines.push(pastPhrase(s)+'! Wow! '+kd.name+', that is '+rc+' days of reading! That is amazing!');}
+        else lines.push(pastPhrase(s)+'! That is '+rc+(rc===1?' day':' days')+' of reading. Great job!');
       }
-      else if(left>0){lines.push(s.label+'! '+PRAISE[Math.floor(Math.random()*PRAISE.length)]);}
+      else if(left>0){lines.push(praiseLine(s));}
+      else lines.push(pastPhrase(s)+'!');
       if(left===0){
         big=true;
         lines.push('Hooray '+kd.name+'! All done'+(per==='pm'?' for the afternoon':' for the morning')+'!');
@@ -777,7 +846,7 @@
 
     // Steps library
     var sc=el('div',{'class':'card'});sc.appendChild(el('h3',null,'🧩 Quest list'));
-    sc.appendChild(el('p',{'class':'hint'},'Edit the emoji and words. The order here is the order on the board.'));
+    sc.appendChild(el('p',{'class':'hint'},'Edit the emoji and words. The order here is the order on the board. "Says" is what the voice says when it is ticked: leave it blank to use the suggestion shown, or type your own (e.g. "You fed the dog"). Press ▶ to hear it.'));
     cfg.steps.forEach(function(s,idx){
       var r=el('div',{'class':'row steprow'});
       var e1=el('input',{type:'text','class':'emo',value:s.emoji,maxlength:'4'});
@@ -796,6 +865,13 @@
       [['am','🌅 Morning'],['pm','☀️ Afternoon']].forEach(function(p){var o=el('option',{value:p[0]},p[1]);if(stepPeriod(s)===p[0])o.selected=true;ps.appendChild(o);});
       ps.addEventListener('change',function(){s.period=ps.value;save('qb_cfg',cfg);renderSettings();});
       r.appendChild(e1);r.appendChild(l1);r.appendChild(ps);r.appendChild(up);r.appendChild(del);sc.appendChild(r);
+      var sr=el('div',{'class':'row sayrow'});
+      sr.appendChild(el('span',{style:'font-size:16px;color:var(--muted)'},'🗣️ Says:'));
+      var sy=el('input',{type:'text',value:s.say||'',placeholder:pastPhrase({id:s.id,label:s.label})+', superstar!',style:'flex:1;font-size:16px'});
+      sy.addEventListener('input',function(){s.say=sy.value.replace(/,?\s*(superstar|champ|legend|great job|well done|nice work)!?$/i,'');save('qb_cfg',cfg);});
+      var tst=el('button',{'class':'btn'},'▶');
+      tst.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say(praiseLine(s));cfg.voice=v;});
+      sr.appendChild(sy);sr.appendChild(tst);sc.appendChild(sr);
     });
     var add=el('div',{'class':'row'});
     var ne=el('input',{type:'text','class':'emo',placeholder:'🍎',maxlength:'4',style:'width:64px;text-align:center'});
@@ -896,7 +972,7 @@
     oc.appendChild(slider('Speed','rate',0.6,1.4,0.05,0.95));
     oc.appendChild(slider('Pitch','pitch',0.5,2,0.05,1.25));
     var tb=el('button',{'class':'btn primary'},'▶ Test voice');
-    tb.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say('Brush teeth! Great job, '+cfg.kids[0].name+'!');cfg.voice=v;});
+    tb.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say('You brushed your teeth, superstar!');cfg.voice=v;});
     oc.appendChild(tb);
     oc.appendChild(el('p',{'class':'hint'},'Voices come from the tablet itself. For better ones: Android Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia), then pick a voice there.'));
     var br=el('div',{'class':'row',style:'margin-top:16px'});
