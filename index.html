@@ -107,8 +107,8 @@
   @keyframes mileIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 
   /* upcoming events strip */
-  .events{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  .evchip{display:flex;align-items:center;gap:10px;background:var(--bg2);border:3px solid #444b8a;border-radius:18px;padding:4px 14px 4px 8px;color:#fff;font-family:inherit;cursor:pointer}
+  .events{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;padding:6px 0 4px}
+  .evchip{display:flex;align-items:center;gap:14px;background:var(--bg2);border:3px solid #444b8a;border-radius:20px;padding:10px 22px 10px 14px;color:#fff;font-family:inherit;cursor:pointer;min-width:170px}
   .evchip.today{border-color:#ffd23f;box-shadow:0 0 18px rgba(255,210,63,.5)}
   .evemo{font-size:clamp(28px,3.6vw,40px);line-height:1}
   .evtxt{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1}
@@ -242,6 +242,30 @@
     .s-saved{display:none}
   }
 
+  /* special-day themes */
+  body{transition:background .8s}
+  #fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  #app{position:relative;z-index:1}
+  .fxp{position:absolute;line-height:1;will-change:transform}
+  .fx-up{bottom:-12vh;animation:fxUp linear infinite}
+  .fx-down{top:-12vh;animation:fxDown linear infinite}
+  .fx-float{bottom:-12vh;animation:fxFloat ease-in-out infinite}
+  .fx-twinkle{animation:fxTwinkle ease-in-out infinite}
+  @keyframes fxUp{0%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(4vw,-60vh) rotate(6deg)}100%{transform:translate(-2vw,-125vh) rotate(-6deg)}}
+  @keyframes fxDown{0%{transform:translate(0,0)}50%{transform:translate(3vw,60vh)}100%{transform:translate(-2vw,125vh)}}
+  @keyframes fxFloat{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(5vw,-30vh) rotate(10deg)}50%{transform:translate(-3vw,-62vh) rotate(-8deg)}75%{transform:translate(4vw,-92vh) rotate(6deg)}100%{transform:translate(0,-125vh) rotate(0)}}
+  @keyframes fxTwinkle{0%,100%{transform:scale(.4);opacity:0}50%{transform:scale(1.2);opacity:.9}}
+  .tbanner{display:flex;align-items:center;justify-content:center;background:var(--accent);color:#1b1f3b;border-radius:22px;padding:10px 20px;font-size:clamp(22px,3.4vw,40px);font-weight:800;text-align:center;cursor:pointer;box-shadow:0 0 30px color-mix(in srgb,var(--accent) 60%,transparent);animation:bannerPop 3s ease-in-out infinite}
+  @keyframes bannerPop{0%,100%{transform:scale(1)}50%{transform:scale(1.015)}}
+  body.themed .kcard,body.themed .lane,body.themed .wx,body.themed .evchip{background:rgba(20,22,52,.72);backdrop-filter:blur(2px)}
+  body.themed .road{background:rgba(10,12,40,.6)}
+  .kcard.bday{border-color:#ffd23f;box-shadow:0 0 40px rgba(255,210,63,.6),0 8px 0 #9c7d10}
+  .kcard.bday .ring{background:conic-gradient(#ffd23f,#ff6fb5,#5aa9ff,#2ecc71,#ffd23f) !important}
+  .crown{position:absolute;top:10px;left:50%;transform:translateX(-50%) rotate(-8deg);font-size:clamp(40px,6vw,64px);animation:bounce 1.6s infinite}
+  .swatches{display:flex;gap:10px;flex-wrap:wrap}
+  .sw{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.25);cursor:pointer}
+  .sw.sel{border-color:#fff;box-shadow:0 0 0 3px #2ecc71}
+
   /* time clock overlay */
   #clockOv{position:fixed;inset:0;z-index:70;background:rgba(10,12,40,.85);display:none;align-items:center;justify-content:center}
   #clockOv.show{display:flex;animation:mileIn .4s cubic-bezier(.3,1.6,.6,1)}
@@ -297,6 +321,7 @@
 </style>
 </head>
 <body>
+<div id="fx"></div>
 <div id="app">
   <header>
     <div class="dt" id="dt">
@@ -304,7 +329,7 @@
       <div class="clock" id="clock">7:30</div>
     </div>
     <div class="countdown" id="countdown">
-      <div class="road" id="road"><div class="road-fill" id="cdFill"></div><div class="mover" id="mover">🏃</div><div class="car">🚗</div></div>
+      <div class="road" id="road"><div class="road-fill" id="cdFill"></div><div class="mover" id="mover">🏃</div><div class="car" id="dest">🚗</div></div>
       <div class="cd-label" id="cdLabel"></div>
     </div>
     <button class="iconbtn" id="fsBtn" title="Full screen">⛶</button>
@@ -321,6 +346,7 @@
     <div class="uv-text"><div class="uv-title" id="uvTitle">Sun check…</div><div class="uv-sub" id="uvSub"></div></div>
     <div class="uv-strip" id="uvStrip"></div>
   </div>
+  <div class="tbanner" id="themeBanner" style="display:none"><span></span></div>
   <main id="lanes"></main>
   <div class="events" id="events"></div>
 </div>
@@ -345,7 +371,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · tap for the time';
+  var BOARD_VERSION='11 Nov 2026 · special days';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -660,6 +686,7 @@
     var showBars=split||view===-1;
     document.getElementById('wx').style.display=showBars?'':'none';
     document.getElementById('uv').style.display='none'; // UV detail is grown-up info: it lives in the small print and drives sunscreen/hat
+    applyTheme();
     renderEvents(showBars);
     if(view>=nKids())view=-1;
     lanesEl.className=nKids()>3?'many':'';
@@ -689,6 +716,7 @@
     ring.style.background='conic-gradient(var(--c) '+(steps.length?count/steps.length*360:0)+'deg, #0e1130 0deg)';
     ring.appendChild(el('div',{'class':'ring-inner'},kid.emoji));
     c.appendChild(ring);
+    if(birthdayKid(currentTheme())===k){c.classList.add('bday');c.appendChild(el('div',{'class':'crown'},'👑'));}
     c.appendChild(el('div',{'class':'kname'},kid.name));
     if(!steps.length)c.appendChild(el('div',{'class':'knext'},'No quests today 🎉'));
     else if(complete)c.appendChild(el('div',{'class':'knext'},'⭐ All done! ⭐'));
@@ -907,7 +935,8 @@
     var parts=leave.split(':');
     var lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+parts[0],+parts[1]);
     var mins=Math.ceil((lt-now)/60000);
-    var window_=60; // the runner travels to the car over the last 60 minutes
+    var window_=cfg.leave.window||60; // the runner travels to the destination over this many minutes
+    var destEl=document.getElementById('dest');if(destEl.textContent!==cfg.leave.dest)destEl.textContent=cfg.leave.dest;
     if(mins>window_){setRoad(0);lbl.textContent='Leave at '+fmt(leave);}
     else if(mins>0){setRoad((window_-mins)/window_*100);lbl.textContent='Leave at '+fmt(leave)+' · '+mins+' min';}
     else if(mins>-90){setRoad(100);lbl.classList.add('big');lbl.textContent='Time to go! 🚗';}
@@ -953,20 +982,20 @@
       out+=' We have to leave at '+lp+'.';
       if(L.mins<=5)out+=' That\'s in just '+durPhrase(L.mins)+', so it\'s nearly time to go!';
       else out+=' That\'s in '+durPhrase(L.mins)+'.';
-    } else if(L&&L.mins<=0&&L.mins>-60)out+=' It\'s time to go! Shoes on and into the car!';
+    } else if(L&&L.mins<=0&&L.mins>-60)out+=' It\'s time to go! Shoes on and '+destPhrase()+'!';
     return out;
   }
   function clockSVG(){
     var n=new Date(),hh=n.getHours(),mm=n.getMinutes(),ss=n.getSeconds(),R=100,C=110,sv='';
     function pt(angleDeg,rad){var a=(angleDeg-90)*Math.PI/180;return [C+rad*Math.cos(a),C+rad*Math.sin(a)];}
     sv+='<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">';
-    sv+='<circle cx="110" cy="110" r="104" fill="#ffffff" stroke="#2f3670" stroke-width="8"/>';
+    sv+='<circle cx="110" cy="110" r="104" fill="'+(cfg.leave.face||'#ffffff')+'" stroke="#2f3670" stroke-width="8"/>';
     // time left until leaving, shown as a red wedge (like a Time Timer) when it is within the hour
     var L=leaveInfo();
-    if(L&&L.mins>0&&L.mins<=60){
+    if(cfg.leave.showWedge!==false&&L&&L.mins>0&&L.mins<=60){
       var a1=(mm+ss/60)*6,a2=a1+L.mins*6,p1=pt(a1,R-6),p2=pt(a2,R-6),large=(a2-a1)>180?1:0;
-      sv+='<path d="M110 110 L'+p1[0]+' '+p1[1]+' A'+(R-6)+' '+(R-6)+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' Z" fill="#ff6b6b" opacity=".55"/>';
-      var cp=pt(a2,R+2);sv+='<text x="'+cp[0]+'" y="'+cp[1]+'" font-size="22" text-anchor="middle" dominant-baseline="central">🚗</text>';
+      sv+='<path d="M110 110 L'+p1[0]+' '+p1[1]+' A'+(R-6)+' '+(R-6)+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' Z" fill="'+(cfg.leave.wedge||'#ff6b6b')+'" opacity=".6"/>';
+      var cp=pt(a2,R+2);sv+='<text x="'+cp[0]+'" y="'+cp[1]+'" font-size="22" text-anchor="middle" dominant-baseline="central">'+cfg.leave.dest+'</text>';
     }
     for(var i=0;i<60;i++){var o=pt(i*6,R-2),q=pt(i*6,i%5===0?R-12:R-7);sv+='<line x1="'+o[0]+'" y1="'+o[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#1b1f3b" stroke-width="'+(i%5===0?3:1.2)+'"/>';}
     for(var k=1;k<=12;k++){var t=pt(k*30,R-27);sv+='<text x="'+t[0]+'" y="'+t[1]+'" font-size="20" font-weight="800" font-family="Baloo 2,sans-serif" fill="#1b1f3b" text-anchor="middle" dominant-baseline="central">'+k+'</text>';}
@@ -981,14 +1010,14 @@
     keepAwake();
     var ov=document.getElementById('clockOv'),n=new Date(),h=n.getHours();
     document.getElementById('clockSvg').innerHTML=clockSVG();
-    document.getElementById('clockDig').textContent=((h%12)||12)+':'+pad(n.getMinutes())+(h<12?' am':' pm');
+    var dg=document.getElementById('clockDig');dg.textContent=((h%12)||12)+':'+pad(n.getMinutes())+(h<12?' am':' pm');dg.style.display=cfg.leave.digital===false?'none':'';
     var L=leaveInfo(),lv=document.getElementById('clockLeave');
-    if(L&&L.mins>0&&L.mins<=180)lv.textContent='🚗 Leave at '+((L.h%12)||12)+':'+pad(L.m)+' · '+(L.mins>=60?Math.floor(L.mins/60)+' hr '+(L.mins%60)+' min':L.mins+' min');
-    else if(L&&L.mins<=0&&L.mins>-60)lv.textContent='🚗 Time to go!';
+    if(L&&L.mins>0&&L.mins<=180)lv.textContent=cfg.leave.dest+' Leave at '+((L.h%12)||12)+':'+pad(L.m)+' · '+(L.mins>=60?Math.floor(L.mins/60)+' hr '+(L.mins%60)+' min':L.mins+' min');
+    else if(L&&L.mins<=0&&L.mins>-60)lv.textContent=cfg.leave.dest+' Time to go!';
     else lv.textContent='';
     ov.classList.add('show');
-    say(timeSpeech());
-    clearTimeout(clockT);clockT=setTimeout(function(){ov.classList.remove('show');},9000);
+    if(cfg.leave.speak!==false)say(timeSpeech());
+    clearTimeout(clockT);clockT=setTimeout(function(){ov.classList.remove('show');},(cfg.leave.secs||9)*1000);
   }
   document.getElementById('clockOv').addEventListener('click',function(){this.classList.remove('show');});
   document.getElementById('countdown').addEventListener('click',showClock);
@@ -1033,7 +1062,7 @@
 
   // ================= SETTINGS (sectioned layout) =================
   var sTab='children',sQuestView='days',openAvatar=-1;
-  var S_TABS=[['children','👧','Children'],['quests','✅','Quests'],['events','📅','Events'],['weather','🌤️','Weather'],['sound','🔊','Sound'],['device','📱','This device']];
+  var S_TABS=[['children','👧','Children'],['quests','✅','Quests'],['leaving','🚗','Leaving'],['events','📅','Events'],['weather','🌤️','Weather'],['sound','🔊','Sound'],['device','📱','This device']];
   function sCard(title,desc){var c=el('div',{'class':'scard'});if(title)c.appendChild(el('h3',null,title));if(desc)c.appendChild(el('p',{'class':'desc'},desc));return c;}
   function sField(label,help,controls){
     var f=el('div',{'class':'field'}),l=el('div',{'class':'fl'});l.appendChild(el('b',null,label));if(help)l.appendChild(el('span',null,help));
@@ -1067,7 +1096,7 @@
     });
     sBody.innerHTML='';
     var inner=el('div',{'class':'s-inner'});sBody.appendChild(inner);
-    ({children:setChildren,quests:setQuests,events:setEvents,weather:setWeather,sound:setSound,device:setDevice})[sTab](inner);
+    ({children:setChildren,quests:setQuests,leaving:setLeaving,events:setEvents,weather:setWeather,sound:setSound,device:setDevice})[sTab](inner);
   }
   function sHead(inner,title,sub){inner.appendChild(el('h2',{'class':'stitle'},title));if(sub)inner.appendChild(el('p',{'class':'ssub'},sub));}
 
@@ -1123,10 +1152,6 @@
     var order=[1,2,3,4,5,6,0],td=new Date().getDay();
     dayCard.appendChild(sSeg(order.map(function(d){return [String(d),SHORT[d]+(d===td?' •':'')];}),String(sDay),function(v){sDay=+v;renderSettings();}));
     var day=cfg.days[sDay];
-    var tm=el('input',{type:'time',value:day.leave||'08:15'});tm.disabled=!day.leave;
-    tm.addEventListener('change',function(){if(tm.value){day.leave=tm.value;sv();}});
-    dayCard.appendChild(sField('Leaving countdown on '+DAYS[sDay],'Shows a runner heading to the car in the hour before you leave. Turn off for relaxed days.',
-      [tm,sSwitch(!!day.leave,function(on){day.leave=on?(tm.value||'08:15'):'';tm.disabled=!on;sv();})]));
     // grid: quests x children
     var tbl=el('table',{'class':'qtable'}),thead=el('tr');
     thead.appendChild(el('th',{'class':'ql'},''));
@@ -1157,8 +1182,7 @@
     var at=el('input',{type:'time',value:cfg.arvoStart||'12:00'});
     at.addEventListener('change',function(){if(at.value){cfg.arvoStart=at.value;selPeriod=null;sv();}});
     tcard.appendChild(sField('Afternoon starts at','The board switches from Morning to Afternoon quests at this time, every day.',[at]));
-    tcard.appendChild(sField('Runner on the leaving countdown','Who runs to the car.',[sSeg([['🏃','🏃 Person'],['🏃‍♀️','🏃‍♀️ Girl'],['🏃‍♂️','🏃‍♂️ Boy'],['kids','Our characters']],cfg.runner.fig,function(v){cfg.runner.fig=v;sv();})]));
-    tcard.appendChild(sField('Flip the runner','Turn on if they look like they\'re running away from the car.',[sSwitch(cfg.runner.flip,function(v){cfg.runner.flip=v;sv();})]));
+    tcard.appendChild(el('p',{'class':'hint'},'Leaving times and the countdown are in 🚗 Leaving.'));
     inner.appendChild(tcard);
   }
   function setQuestList(inner){
@@ -1200,6 +1224,42 @@
       });
       inner.appendChild(c);
     });
+  }
+
+  // ---------- Leaving ----------
+  function swatches(options,value,onChange){
+    var g=el('div',{'class':'swatches'});
+    options.forEach(function(o){var b=el('button',{'class':'sw'+(o[0]===value?' sel':''),title:o[1],'aria-label':o[1]});b.style.background=o[0];
+      b.addEventListener('click',function(){[].forEach.call(g.children,function(x){x.classList.remove('sel');});b.classList.add('sel');onChange(o[0]);});g.appendChild(b);});
+    return g;
+  }
+  function setLeaving(inner){
+    sHead(inner,'Leaving','The countdown to getting out the door, and the talking clock.');
+    var tc=sCard('Leaving times','Turn off days with no rush, like weekends.');
+    [1,2,3,4,5,6,0].forEach(function(d){
+      var day=cfg.days[d];
+      var tm=el('input',{type:'time',value:day.leave||'08:15'});tm.disabled=!day.leave;
+      tm.addEventListener('change',function(){if(tm.value){day.leave=tm.value;sv();}});
+      tc.appendChild(sField(DAYS[d]+(d===new Date().getDay()?' (today)':''),day.leave?'':'No countdown',[tm,sSwitch(!!day.leave,function(on){day.leave=on?(tm.value||'08:15'):'';tm.disabled=!on;sv();renderSettings();})]));
+    });
+    inner.appendChild(tc);
+    var cc=sCard('Countdown at the top of the board');
+    cc.appendChild(sField('Starts','How long before leaving the runner sets off.',[sSeg([['30','30 min'],['45','45 min'],['60','1 hour'],['90','1½ hours']],String(cfg.leave.window||60),function(v){cfg.leave.window=+v;sv();})]));
+    cc.appendChild(sField('Who runs','',[sSeg([['🏃','🏃 Person'],['🏃‍♀️','🏃‍♀️ Girl'],['🏃‍♂️','🏃‍♂️ Boy'],['kids','Our characters']],cfg.runner.fig,function(v){cfg.runner.fig=v;sv();})]));
+    cc.appendChild(sField('Flip the runner','Turn on if they look like they\'re running away.',[sSwitch(cfg.runner.flip,function(v){cfg.runner.flip=v;sv();})]));
+    var custom=el('input',{type:'text','class':'emo',maxlength:'4',placeholder:'✏️',value:DESTS.some(function(x){return x[0]===cfg.leave.dest;})?'':cfg.leave.dest});
+    custom.addEventListener('input',function(){if(custom.value.trim()){cfg.leave.dest=custom.value.trim();sv();}});
+    cc.appendChild(sField('Running to','Also used on the clock and in "Shoes on and into the car!". Or type any emoji.',[sSeg(DESTS.map(function(x){return [x[0],x[0]+' '+x[1]];}),cfg.leave.dest,function(v){cfg.leave.dest=v;custom.value='';sv();}),custom]));
+    inner.appendChild(cc);
+    var kc=sCard('Talking clock','Pops up when a child taps the countdown or the time at the top.');
+    kc.appendChild(sField('Say the time out loud','"It\'s twenty past seven. We have to leave at quarter past eight…"',[sSwitch(cfg.leave.speak!==false,function(v){cfg.leave.speak=v;sv();})]));
+    kc.appendChild(sField('Show the time left','A coloured slice on the clock that shrinks as leaving gets closer (in the last hour).',[sSwitch(cfg.leave.showWedge!==false,function(v){cfg.leave.showWedge=v;sv();})]));
+    kc.appendChild(sField('Time-left colour','',[swatches([['#ff6b6b','Red'],['#ff9f43','Orange'],['#2ecc71','Green'],['#5aa9ff','Blue'],['#b98cff','Purple']],cfg.leave.wedge||'#ff6b6b',function(v){cfg.leave.wedge=v;sv();})]));
+    kc.appendChild(sField('Clock face colour','',[swatches([['#ffffff','White'],['#fff4c2','Yellow'],['#d8ecff','Sky blue'],['#ffe0ef','Pink'],['#dff7e5','Mint']],cfg.leave.face||'#ffffff',function(v){cfg.leave.face=v;sv();})]));
+    kc.appendChild(sField('Show the digital time too','Handy for older kids learning to match the two.',[sSwitch(cfg.leave.digital!==false,function(v){cfg.leave.digital=v;sv();})]));
+    kc.appendChild(sField('Stays on screen for','',[sSeg([['5','5 sec'],['9','10 sec'],['20','20 sec']],String(cfg.leave.secs||9),function(v){cfg.leave.secs=+v;sv();})]));
+    kc.appendChild(sField('Try it','',[sBtn('Show the clock','primary',function(){showClock();})]));
+    inner.appendChild(kc);
   }
 
   // ---------- Events ----------
@@ -1254,6 +1314,12 @@
       cc.appendChild(sField(x[1]+' '+x[2],'',[sNum(sp.lead,0,function(v){sp.lead=v;sv();},80),sSwitch(sp.on,function(v){sp.on=v;sv();})]));
     });
     inner.appendChild(cc);
+    var pc=sCard('Preview a special day','On the day of an event, the whole board changes to match it. Pick one to see it for 30 seconds.');
+    pc.appendChild(sSeg([['birthday','🎂 Birthday'],['christmas','🎄 Christmas'],['easter','🐣 Easter'],['halloween','🎃 Halloween'],['newyear','🎆 New Year'],['holiday','🏖️ Holiday'],['party','🎈 Party']],'',function(v){
+      previewTheme=v;themeKeyShown='';sv();document.getElementById('settings').classList.remove('open');render();renderWx();
+      setTimeout(function(){previewTheme=null;themeKeyShown='';render();},30000);
+    }));
+    inner.appendChild(pc);
     var dc=sCard();
     dc.appendChild(sField('Default countdown for your events','How many days before an event its countdown appears, unless the event says otherwise.',[sNum(cfg.eventLead,0,function(v){cfg.eventLead=v;sv();})]));
     inner.appendChild(dc);
@@ -1378,6 +1444,9 @@
 
   // ---------- upcoming events ----------
   if(!cfg.runner)cfg.runner={fig:'🏃',flip:false};
+  if(!cfg.leave)cfg.leave={dest:'🚗',window:60,face:'#ffffff',wedge:'#ff6b6b',digital:true,speak:true,secs:9,showWedge:true};
+  var DESTS=[['🚗','Car','into the car'],['🚌','Bus','onto the bus'],['🏫','School','off to school'],['🚲','Bike','onto your bike'],['🛴','Scooter','onto your scooter'],['🚶','Walk','out the door'],['🚆','Train','off to the train']];
+  function destPhrase(){var d=DESTS.filter(function(x){return x[0]===cfg.leave.dest;})[0];return d?d[2]:'out the door';}
   if(!cfg.events)cfg.events=[];
   if(cfg.eventLead==null)cfg.eventLead=30;
   if(!cfg.holidays)cfg.holidays={on:true,state:'VIC',lead:14};
@@ -1439,11 +1508,13 @@
   }
   function upcoming(){
     var t=today0(),y=t.getFullYear(),out=[],specialDays={};
-    function add(emoji,name,start,end,lead,speakName,extra){
+    function add(emoji,name,start,end,lead,speakName,meta){
       var d=daysBetween(t,start),endD=end?daysBetween(t,end):d;
       if(endD<0)return false;
       if(d>lead&&d>0)return true;
-      out.push({emoji:emoji,name:name,days:Math.max(d,0),on:d<=0&&endD>=0&&end&&endD>0,speak:speakName||name,extra:extra||''});
+      var it={emoji:emoji,name:name,days:Math.max(d,0),on:d<=0&&endD>=0&&end&&endD>0,speak:speakName||name};
+      if(meta)for(var mk in meta)it[mk]=meta[mk];
+      out.push(it);
       return true;
     }
     // built-in celebrations
@@ -1451,14 +1522,14 @@
       var sp=cfg.specials[x[0]];if(!sp||!sp.on)return;
       var dt=specialDate(x[0],y);if(daysBetween(t,dt)<0)dt=specialDate(x[0],y+1);
       specialDays[ymd(dt)]=1;
-      add(x[1],x[2],dt,null,sp.lead,x[2]);
+      add(x[1],x[2],dt,null,sp.lead,x[2],{kind:'special',key:x[0]});
     });
     // public holidays for the chosen state
     if(cfg.holidays.on){
       holidaysFor(y).concat(holidaysFor(y+1)).forEach(function(h){
         if(specialDays[h.date])return;
         var dt=parseD(h.date),d=daysBetween(t,dt);if(d<0||d>cfg.holidays.lead)return;
-        out.push({emoji:holEmoji(h.name),name:h.name,days:d,on:false,speak:h.name+' public holiday'});
+        out.push({emoji:holEmoji(h.name),name:h.name,days:d,on:false,speak:h.name+' public holiday',kind:'public',key:h.name});
       });
     }
     // the family's own events
@@ -1470,11 +1541,98 @@
         var occ=new Date(y,st.getMonth(),st.getDate());if(daysBetween(t,occ)<0)occ=new Date(y+1,st.getMonth(),st.getDate());
         var nm=ev.name,sp=ev.name;
         if(ev.repeat==='birthday'){var age=occ.getFullYear()-st.getFullYear();if(age>0&&age<120){nm=ev.name+' ('+age+')';sp=ev.name+'! Turning '+age;}}
-        add(ev.emoji||'🎂',nm,occ,null,lead,sp);
-      } else add(ev.emoji||'📅',ev.name,st,en,lead,ev.name);
+        add(ev.emoji||'🎂',nm,occ,null,lead,sp,{kind:ev.repeat==='birthday'?'birthday':'event',raw:ev.name,age:ev.repeat==='birthday'?occ.getFullYear()-st.getFullYear():null});
+      } else add(ev.emoji||'📅',ev.name,st,en,lead,ev.name,{kind:'event',raw:ev.name});
     });
+    out.forEach(function(it){it.key2=(it.kind||'')+':'+(it.raw||it.key||it.name);});
     out.sort(function(a,b){return a.days-b.days;});
     return out;
+  }
+  // ----- Special-day themes -----
+  var THEMES={
+    birthday:{bg:'radial-gradient(circle at 20% 0%,#7a2fa3 0%,#3a1a5e 65%)',accent:'#ff6fb5',fx:['🎈','🎉','🎊','⭐','🎂','🎁'],motion:'up'},
+    party:{bg:'radial-gradient(circle at 80% 0%,#a3422f 0%,#4a1a3e 65%)',accent:'#ffb347',fx:['🎈','🎉','🎊','🥳','✨'],motion:'up'},
+    playdate:{bg:'linear-gradient(160deg,#1f7a7a,#1b3b5c)',accent:'#ffd23f',fx:['🧸','🪁','⭐','🎨','🧩'],motion:'float'},
+    christmas:{bg:'linear-gradient(165deg,#0f5132 0%,#0b2e1f 55%,#5a0f18 100%)',accent:'#e63946',fx:['❄️','❄️','❄️','✨','⭐','🎄','🎁'],motion:'down'},
+    newyear:{bg:'radial-gradient(circle at 50% 0%,#2b2d6e 0%,#0a0b24 70%)',accent:'#ffd23f',fx:['🎆','✨','🎇','⭐','🥳'],motion:'twinkle'},
+    easter:{bg:'linear-gradient(160deg,#6a59b3,#3d7a74)',accent:'#ffd6e8',fx:['🐣','🥚','🐰','🌷','🍫','🐥'],motion:'up'},
+    halloween:{bg:'radial-gradient(circle at 50% 0%,#4a1d6b 0%,#160a24 70%)',accent:'#ff8c1a',fx:['🎃','🦇','👻','🕸️','🍬','🌙'],motion:'float'},
+    mothers:{bg:'linear-gradient(160deg,#9a3f73,#4a2a5e)',accent:'#ffb3d1',fx:['💐','🌸','💖','🌷','🌼'],motion:'up'},
+    fathers:{bg:'linear-gradient(160deg,#1d5a9a,#16325c)',accent:'#7cc4ff',fx:['👔','⭐','💙','🏆','🛠️'],motion:'up'},
+    holiday:{bg:'linear-gradient(170deg,#1388a8 0%,#0b3b5c 70%)',accent:'#ffd23f',fx:['☀️','🌊','🐚','🏖️','🍦','🐠'],motion:'float'},
+    anzac:{bg:'linear-gradient(160deg,#3a2f2a,#1d1a17)',accent:'#d9b38c',fx:[],motion:'none'},
+    celebrate:{bg:'radial-gradient(circle at 30% 0%,#5b3aa8 0%,#24164f 70%)',accent:'#ffd23f',fx:['✨','🎉','⭐'],motion:'up'}
+  };
+  var previewTheme=null,themeKeyShown='';
+  function themeOf(e){
+    var n=(e.raw||e.name||'').toLowerCase();
+    if(e.kind==='birthday')return 'birthday';
+    if(e.kind==='special')return e.key;
+    if(e.kind==='public'){
+      if(/anzac/.test(n))return 'anzac';
+      if(/christmas|boxing/.test(n))return 'christmas';
+      if(/new year/.test(n))return 'newyear';
+      if(/easter|good friday/.test(n))return 'easter';
+      return 'holiday';
+    }
+    if(/birthday/.test(n))return 'birthday';
+    if(e.emoji==='🎈'||/party/.test(n))return 'party';
+    if(e.emoji==='🧸'||/play ?date|sleepover/.test(n))return 'playdate';
+    if(['🏖️','✈️','⛺','🏕️','🌊'].indexOf(e.emoji)>-1||/holiday|camp|trip|beach/.test(n))return 'holiday';
+    if(/christmas/.test(n))return 'christmas';if(/halloween/.test(n))return 'halloween';if(/easter/.test(n))return 'easter';
+    return 'celebrate';
+  }
+  function bannerFor(key,e){
+    var nm=e.raw||e.name||'';
+    if(key==='birthday'){var who=nm.replace(/'s birthday.*$/i,'').replace(/ birthday.*$/i,'').trim()||'you';
+      return {text:'🎂 Happy birthday, '+who+'!'+(e.age>0?' '+e.age+' today!':'')+' 🎉',speak:'Happy birthday '+who+'!'+(e.age>0?' You are '+e.age+' today!':'')+' Hooray!',who:who};}
+    var T={christmas:['🎄 Merry Christmas! 🎅','Merry Christmas everyone!'],newyear:[(/day/i.test(nm)?'🎆 Happy New Year! 🥳':'🎆 Happy New Year\'s Eve! 🥳'),'Happy New Year!'],
+      easter:['🐣 Happy Easter! 🐰','Happy Easter!'],halloween:['🎃 Happy Halloween! 👻','Happy Halloween! Boo!'],
+      mothers:['💐 Happy Mother\'s Day! 💖','Happy Mother\'s Day!'],fathers:['👔 Happy Father\'s Day! 💙','Happy Father\'s Day!'],
+      anzac:['🎖️ Anzac Day · Lest we forget','Today is Anzac Day, when we remember people who served our country.']};
+    if(T[key])return {text:T[key][0],speak:T[key][1]};
+    if(e.kind==='public')return {text:e.emoji+' '+nm+' · public holiday',speak:'Today is '+nm+'. It\'s a public holiday!'};
+    if(e.on)return {text:e.emoji+' '+nm+' · on now!',speak:nm+' is on now!'};
+    return {text:e.emoji+' '+nm+' today! 🎉',speak:'Today is '+nm+'! Hooray!'};
+  }
+  function currentTheme(){
+    if(previewTheme)return {key:previewTheme,banner:bannerFor(previewTheme,{name:'Preview',raw:previewTheme==='birthday'?cfg.kids[0].name+'\'s birthday':'Preview',age:7,emoji:'🎉',kind:previewTheme==='birthday'?'birthday':'special'}),item:null};
+    var today=upcoming().filter(function(e){return e.days===0||e.on;});
+    if(!today.length)return null;
+    var rank={birthday:0,special:1,event:2,public:3};
+    today.sort(function(a,b){return (rank[a.kind]||9)-(rank[b.kind]||9);});
+    var e=today[0],key=themeOf(e);
+    return {key:key,banner:bannerFor(key,e),item:e.key2,e:e};
+  }
+  function birthdayKid(th){
+    if(!th||th.key!=='birthday'||!th.banner.who)return -1;
+    var w=th.banner.who.toLowerCase();
+    for(var k=0;k<nKids();k++)if(cfg.kids[k].name.toLowerCase()===w)return k;
+    return -1;
+  }
+  function applyTheme(){
+    var th=currentTheme(),key=th?th.key:'';
+    var T=key?THEMES[key]:null,app=document.getElementById('app'),bn=document.getElementById('themeBanner');
+    document.body.classList.toggle('themed',!!T);
+    document.body.style.background=T?T.bg:'';
+    document.documentElement.style.setProperty('--accent',T?T.accent:'#ffd23f');
+    if(th){bn.style.display='';bn.firstChild.textContent=th.banner.text;bn.onclick=function(){keepAwake();say(th.banner.speak);};}
+    else bn.style.display='none';
+    if(key===themeKeyShown)return;
+    themeKeyShown=key;
+    var fx=document.getElementById('fx');fx.innerHTML='';
+    if(!T||!T.fx.length)return;
+    var n=T.motion==='twinkle'?22:26;
+    for(var i=0;i<n;i++){
+      var sp=el('span',{'class':'fxp fx-'+T.motion},T.fx[i%T.fx.length]);
+      sp.style.left=(Math.random()*100)+'%';
+      if(T.motion==='twinkle')sp.style.top=(Math.random()*90)+'%';
+      sp.style.fontSize=(22+Math.random()*30)+'px';
+      sp.style.animationDuration=(T.motion==='twinkle'?(2.5+Math.random()*3):(14+Math.random()*16))+'s';
+      sp.style.animationDelay=(-Math.random()*20)+'s';
+      sp.style.opacity=String(T.motion==='down'?0.5+Math.random()*0.4:0.35+Math.random()*0.35);
+      fx.appendChild(sp);
+    }
   }
   function sleepsText(e){
     if(e.on)return 'On now!';
@@ -1484,7 +1642,8 @@
   }
   function renderEvents(show){
     var box=document.getElementById('events');box.innerHTML='';
-    var list=show?upcoming().slice(0,4):[];
+    var themed=currentTheme();
+    var list=show?upcoming().filter(function(e){return !(themed&&themed.item===e.key2);}).slice(0,4):[];
     box.style.display=list.length?'':'none';
     list.forEach(function(e){
       var c=el('button',{'class':'evchip'+(e.days===0||e.on?' today':'')});
