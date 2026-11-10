@@ -385,7 +385,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · auto-update';
+  var BOARD_VERSION='11 Nov 2026 · slower clock';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -1078,9 +1078,11 @@
     var m1=m0+exact*6,h1=h0+exact*0.5;
     var gm=document.getElementById('ckGM'),gh=document.getElementById('ckGH'),wg=document.getElementById('ckWedge'),ds=document.getElementById('ckDest');
     var showW=cfg.leave.showWedge!==false&&exact<=60;
-    var dur=Math.min(4200,1600+exact*35),t0=null; // simple: about 2–4 seconds
+    // slow and steady so kids can follow the minute hand (about 6–7 seconds for half an hour on "Slow")
+    var sp=cfg.leave.sweep||'slow';
+    var dur=sp==='fast'?Math.min(4200,1600+exact*35):sp==='medium'?Math.min(7000,2500+exact*70):Math.min(10000,3500+exact*120),t0=null;
     gm.setAttribute('opacity','.95');gh.setAttribute('opacity','.6');
-    function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+    function ease(t){return -(Math.cos(Math.PI*t)-1)/2;} // gentle start and finish, steady in the middle
     function frame(ts){
       if(run!==clockRun)return;
       if(t0==null)t0=ts;var t=Math.min(1,(ts-t0)/dur),e=ease(t);
@@ -1116,7 +1118,7 @@
       if(upcomingLeave){
         // step 2: say when we leave while the hands travel round to that time
         if(speak&&parts[1])say(parts[1]);
-        sweepToLeave(L,run,finish);
+        setTimeout(function(){if(run===clockRun)sweepToLeave(L,run,finish);},500);
       } else {if(speak&&parts[1])say(parts[1]);finish();}
     }
     if(speak)say(parts[0],step2);else setTimeout(step2,1800);
@@ -1401,6 +1403,7 @@
     kc.appendChild(sField('Time-left colour','',[swatches([['#ff6b6b','Red'],['#ff9f43','Orange'],['#2ecc71','Green'],['#5aa9ff','Blue'],['#b98cff','Purple']],cfg.leave.wedge||'#ff6b6b',function(v){cfg.leave.wedge=v;sv();})]));
     kc.appendChild(sField('Clock face colour','',[swatches([['#ffffff','White'],['#fff4c2','Yellow'],['#d8ecff','Sky blue'],['#ffe0ef','Pink'],['#dff7e5','Mint']],cfg.leave.face||'#ffffff',function(v){cfg.leave.face=v;sv();})]));
     kc.appendChild(sField('Show the digital time too','Handy for older kids learning to match the two.',[sSwitch(cfg.leave.digital!==false,function(v){cfg.leave.digital=v;sv();})]));
+    kc.appendChild(sField('Hand speed','How fast the hands travel round to the leaving time.',[sSeg([['slow','Slow'],['medium','Medium'],['fast','Fast']],cfg.leave.sweep||'slow',function(v){cfg.leave.sweep=v;sv();})]));
     kc.appendChild(sField('Stays on screen for','',[sSeg([['5','5 sec'],['9','10 sec'],['20','20 sec']],String(cfg.leave.secs||9),function(v){cfg.leave.secs=+v;sv();})]));
     kc.appendChild(sField('Try it','',[sBtn('Show the clock','primary',function(){showClock();})]));
     inner.appendChild(kc);
