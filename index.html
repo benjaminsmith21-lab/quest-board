@@ -235,7 +235,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · daytime weather icon';
+  var BOARD_VERSION='10 Nov 2026 · no countdown in voice';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -545,7 +545,7 @@
         if(rc%50===0){milestone=rc;lines.push('Wow! '+kd.name+', that is '+rc+' days of reading! That is amazing!');}
         else lines.push(rc+(rc===1?' day':' days')+' of reading! Great job!');
       }
-      else if(left>0){lines.push(s.label+'! '+PRAISE[Math.floor(Math.random()*PRAISE.length)]+' '+left+' more!');}
+      else if(left>0){lines.push(s.label+'! '+PRAISE[Math.floor(Math.random()*PRAISE.length)]);}
       if(left===0){
         big=true;
         lines.push('Hooray '+kd.name+'! All done'+(per==='pm'?' for the afternoon':' for the morning')+'!');
@@ -896,7 +896,7 @@
     oc.appendChild(slider('Speed','rate',0.6,1.4,0.05,0.95));
     oc.appendChild(slider('Pitch','pitch',0.5,2,0.05,1.25));
     var tb=el('button',{'class':'btn primary'},'▶ Test voice');
-    tb.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say('Brush your teeth! Great job, '+cfg.kids[0].name+'! Two more to go.');cfg.voice=v;});
+    tb.addEventListener('click',function(){var v=cfg.voice;cfg.voice=true;say('Brush teeth! Great job, '+cfg.kids[0].name+'!');cfg.voice=v;});
     oc.appendChild(tb);
     oc.appendChild(el('p',{'class':'hint'},'Voices come from the tablet itself. For better ones: Android Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia), then pick a voice there.'));
     var br=el('div',{'class':'row',style:'margin-top:16px'});
