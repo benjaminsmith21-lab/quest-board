@@ -8,6 +8,10 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1b1f3b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quest Board">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -255,7 +259,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='10 Nov 2026 · upcoming events';
+  var BOARD_VERSION='10 Nov 2026 · installable app';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -1142,6 +1146,18 @@
     });
     br.appendChild(rt);br.appendChild(rd);oc.appendChild(br);
     oc.appendChild(el('p',{'class':'hint'},'Settings, reading days and stars are saved on this device only. Other families using the same link keep their own.'));
+    var ic=el('div',{'class':'card',style:'background:#0e1130;margin-top:14px'});
+    ic.appendChild(el('h3',null,'📲 Install as an app'));
+    if(isInstalled())ic.appendChild(el('p',{'class':'hint'},'✅ Installed. The board opens full screen from its own icon and works without internet (weather and holidays update when back online).'));
+    else{
+      if(installEvt){
+        var ib=el('button',{'class':'btn primary'},'Install Quest Board');
+        ib.addEventListener('click',function(){installEvt.prompt();installEvt.userChoice.then(function(){installEvt=null;renderSettings();});});
+        ic.appendChild(ib);
+      }
+      ic.appendChild(el('p',{'class':'hint'},'Android / Chrome: tap the button above, or Chrome menu ⋮ → "Install app" (or "Add to Home screen"). iPhone / iPad: open in Safari → Share → "Add to Home Screen". It then opens full screen from its own icon and keeps working offline.'));
+    }
+    oc.appendChild(ic);
     var bk=el('div',{'class':'card',style:'background:#0e1130;margin-top:14px'});
     bk.appendChild(el('h3',null,'💾 Backup & move to another device'));
     var sa=0;try{sa=+localStorage.getItem('qb_saved_at')||0;}catch(e){}
@@ -1498,6 +1514,12 @@
   render();
   renderWx();
   fetchWx();
+  // Offline support + install as an app
+  try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js');}catch(e){}
+  var installEvt=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installEvt=e;});
+  window.addEventListener('appinstalled',function(){installEvt=null;});
+  function isInstalled(){try{return matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;}catch(e){return false;}}
   fetchHolidays();setInterval(fetchHolidays,6*3600000);
 })();
 </script>

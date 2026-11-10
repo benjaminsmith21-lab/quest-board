@@ -23,5 +23,13 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "id": "./",
+  "description": "Morning and afternoon routines for kids, with weather, reading days and a star jar.",
+  "orientation": "any",
+  "categories": [
+    "kids",
+    "lifestyle",
+    "productivity"
   ]
 }
