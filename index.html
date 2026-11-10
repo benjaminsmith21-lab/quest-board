@@ -376,7 +376,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · drag to reorder';
+  var BOARD_VERSION='11 Nov 2026 · make lunch';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -400,7 +400,8 @@
     reading:['Reading','You did your reading'],
     lunchbox:['Put lunchbox away','You put your lunchbox away'],
     dishes:['Put dishes away','You put your dishes away'],
-    pyjamas:['Get pyjamas ready','You got your pyjamas ready']
+    pyjamas:['Get pyjamas ready','You got your pyjamas ready'],
+    lunch:['Make lunch','You made your lunch']
   };
   var IRREG={get:'got',eat:'ate',make:'made',put:'put',take:'took',go:'went','do':'did',feed:'fed',read:'read',write:'wrote',
     give:'gave',bring:'brought',have:'had',drink:'drank',hang:'hung',find:'found',set:'set',sweep:'swept',wear:'wore',say:'said',
@@ -457,6 +458,7 @@
       {id:'toilet',emoji:'🚽',label:'Toilet & wash hands'},
       {id:'dress',emoji:'👕',label:'Get dressed'},
       {id:'breakfast',emoji:'🥣',label:'Eat breakfast'},
+      {id:'lunch',emoji:'🥪',label:'Make lunch'},
       {id:'teeth',emoji:'🪥',label:'Brush teeth'},
       {id:'hair',emoji:'🪮',label:'Brush hair'},
       {id:'sunscreen',emoji:'🧴',label:'Sunscreen'},
@@ -534,6 +536,15 @@
     });
     cfg.kids.forEach(function(kd){kd.clothes=kd.clothes||'shorts';});
     cfg.v=5;save('qb_cfg',cfg);
+  }
+  // v6: "Make lunch" quest, available but switched off on every day
+  if(cfg.v<6){
+    if(!cfg.steps.some(function(x){return x.id==='lunch';})){
+      var bi=-1;cfg.steps.forEach(function(x,i){if(x.id==='breakfast')bi=i;});
+      var lunch={id:'lunch',emoji:'🥪',label:'Make lunch',period:'am'};
+      if(bi>-1)cfg.steps.splice(bi+1,0,lunch);else cfg.steps.push(lunch);
+    }
+    cfg.v=6;save('qb_cfg',cfg);
   }
   var PALETTE=[['#ff9f43','#a85d14'],['#2ecc9a','#167a5b'],['#5aa9ff','#2b5f99'],['#ff6fb5','#a33a6f'],['#b98cff','#6a45a8'],['#ffd23f','#9c7d10']];
   function kidColour(node,k){var c=PALETTE[k%PALETTE.length];node.style.setProperty('--c',c[0]);node.style.setProperty('--cd',c[1]);}
