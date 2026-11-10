@@ -446,7 +446,12 @@
     if(mins>90){lbl.textContent='🌅 Good morning!';fill.style.width='100%';}
     else if(mins>0)lbl.textContent='🚗 Leave in '+mins+' min';
     else if(mins>-90)lbl.textContent='🚗 Time to go!';
-    else lbl.textContent='👋 See you tomorrow!';
+    else{
+      var td=(now.getDay()+1)%7,tl=cfg.days[td].leave,dn=SHORT[td];
+      if(tl){var tp=tl.split(':'),th=+tp[0];lbl.textContent='🌙 Tomorrow ('+dn+'): leave at '+((th%12)||12)+':'+tp[1]+(th<12?' am':' pm');}
+      else lbl.textContent='🌙 Tomorrow ('+dn+'): relaxed day 🌈';
+      fill.style.width='100%';fill.style.background='#7d6bff';
+    }
   }
   var lastDay=today();
   setInterval(function(){
