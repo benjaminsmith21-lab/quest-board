@@ -540,7 +540,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='13 Nov 2026 · tidy header';
+  var BOARD_VERSION='13 Nov 2026 · phone or tablet';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -792,7 +792,17 @@
   function blip(){tone(660,0,0.12);tone(990,0.08,0.18);}
   function undoSound(){tone(400,0,0.15,'sine');tone(300,0.1,0.2,'sine');}
   function fanfare(){[523,659,784,1047,784,1047].forEach(function(f,i){tone(f,i*0.12,0.25,'square');});}
-  // ----- Natural AI voice (Piper, runs on the device; falls back to the tablet voice) -----
+  // Phone or tablet? Used so messages name the right thing. Unknown (e.g. a laptop) = "device".
+  function devWord(){
+    var ua=navigator.userAgent||'';
+    if(/iPhone|iPod/.test(ua))return 'phone';
+    if(/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1))return 'tablet';
+    if(/Android/.test(ua))return /Mobile/.test(ua)?'phone':'tablet';
+    var m=Math.min(screen.width||0,screen.height||0);
+    if(navigator.maxTouchPoints>0&&m)return m<600?'phone':'tablet';
+    return 'device';
+  }
+  // ----- Natural AI voice (Piper, runs on the device; falls back to the built-in voice) -----
   var AI_VOICES=[
     ['en_GB-jenny_dioco-medium','Jenny (British, female)'],['en_GB-cori-medium','Cori (British, female)'],
     ['en_GB-alba-medium','Alba (Scottish, female)'],['en_GB-southern_english_female-low','Southern English (female, smaller download)'],
@@ -803,10 +813,10 @@
   var AI={state:'off',pct:0,voice:null,sess:null,cache:{},order:[],audio:null,token:0,err:''};
   function aiStatus(){
     var e=document.getElementById('aiStatus');if(!e)return;
-    if(!cfg.ai.on)e.textContent='Off: using the tablet voice.';
+    if(!cfg.ai.on)e.textContent='Off: using the '+devWord()+'\'s own voice.';
     else if(AI.state==='ready')e.textContent='✅ Natural voice ready (saved on this device, works offline).';
-    else if(AI.state==='loading')e.textContent='⏳ Downloading the voice… '+(AI.pct?AI.pct+'%':'')+' (the tablet voice is used until it is ready)';
-    else if(AI.state==='error')e.textContent='⚠️ Couldn\'t load the natural voice, so the tablet voice is being used. ('+AI.err+')';
+    else if(AI.state==='loading')e.textContent='⏳ Downloading the voice… '+(AI.pct?AI.pct+'%':'')+' (the '+devWord()+'\'s own voice is used until it is ready)';
+    else if(AI.state==='error')e.textContent='⚠️ Couldn\'t load the natural voice, so the '+devWord()+'\'s own voice is being used. ('+AI.err+')';
     else e.textContent='Will download the first time it is needed.';
   }
   function aiLoad(){
@@ -1392,14 +1402,14 @@
     box.appendChild(head);
     var stage=el('div',{'class':'pfstage'});box.appendChild(stage);
     if(s.proof==='photo'&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)proofCamera(stage,k,s);
-    else proofParent(stage,k,s,s.proof==='photo'?'This tablet can\'t take photos, so':'');
+    else proofParent(stage,k,s,s.proof==='photo'?'This '+devWord()+' can\'t take photos, so':'');
   }
   function proofCamera(stage,k,s){
     stopCam();stage.innerHTML='';
     var wrap=el('div',{'class':'pfcam'}),vid=el('video',{autoplay:'',playsinline:''});vid.muted=true;
     var cd=el('div',{'class':'pfcount'});wrap.appendChild(vid);wrap.appendChild(cd);stage.appendChild(wrap);
     var row=el('div',{'class':'pfrow'}),shot=el('button',{'class':'pfshot',title:'Take the photo'});shot.appendChild(el('span',null,'📸'));row.appendChild(shot);stage.appendChild(row);
-    say('Show me! Point the tablet at it, then press the big button.');
+    say('Show me! Point the camera at it, then press the big button.');
     var run=proofRun;
     navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false}).then(function(st){
       if(proofRun!==run){st.getTracks().forEach(function(t){t.stop();});return;}
@@ -1460,7 +1470,7 @@
     photoDel(photoKey(date,kid,stepId));render();
   }
   function proofCard(inner){
-    var c=sCard('📸 Proof check','Ticks with a photo or a grown-up OK from the last '+PHOTO_DAYS+' days. Not good enough? Tap it and untick it. Photos stay on this tablet only and delete themselves after '+PHOTO_DAYS+' days.');
+    var c=sCard('📸 Proof check','Ticks with a photo or a grown-up OK from the last '+PHOTO_DAYS+' days. Not good enough? Tap it and untick it. Photos stay on this '+devWord()+' only and delete themselves after '+PHOTO_DAYS+' days.');
     var items=[],t0=today0();
     for(var n=0;n<PHOTO_DAYS;n++){var ds=ymd(addDays(t0,-n));
       for(var k=0;k<nKids();k++){var r=histRec(ds,kidId(k));if(r&&r.proof)for(var id in r.proof)if(r.done.indexOf(id)>-1)items.push({date:ds,k:k,id:id,type:r.proof[id]});}}
@@ -2466,7 +2476,7 @@
     mc.appendChild(sField('Try it','',[sBtn('▶ Play a sample','primary',function(){var v=cfg.voice;cfg.voice=true;say('You brushed your teeth, superstar!');cfg.voice=v;})]));
     inner.appendChild(mc);
     var ac=sCard('✨ Natural voice','A free AI voice made on this device, so nothing is sent anywhere. The first time it downloads about 100 MB (use Wi-Fi), then works offline.');
-    ac.appendChild(sField('Use the natural voice','If it can\'t load, the tablet\'s own voice is used instead.',[sSwitch(cfg.ai.on,function(v){cfg.ai.on=v;sv();AI.failedAt=0;if(AI.state==='error')AI.state='off';if(v)aiLoad();aiStatus();})]));
+    ac.appendChild(sField('Use the natural voice','If it can\'t load, the '+devWord()+'\'s own voice is used instead.',[sSwitch(cfg.ai.on,function(v){cfg.ai.on=v;sv();AI.failedAt=0;if(AI.state==='error')AI.state='off';if(v)aiLoad();aiStatus();})]));
     var avs=el('select');AI_VOICES.forEach(function(v){var o=el('option',{value:v[0]},v[1]);if(v[0]===cfg.ai.voice)o.selected=true;avs.appendChild(o);});
     avs.addEventListener('change',function(){cfg.ai.voice=avs.value;sv();AI.state='off';AI.failedAt=0;if(cfg.ai.on)aiLoad();aiStatus();});
     ac.appendChild(sField('Which voice','Each new voice is another download.',[avs]));
@@ -2474,13 +2484,13 @@
     setTimeout(aiStatus,0);
     inner.appendChild(ac);
     var tc=sCard();
-    var d=el('details',{'class':'item'});d.appendChild(el('summary',null,'Tablet voice (backup) settings'));var b=el('div',{'class':'body'});
+    var d=el('details',{'class':'item'});d.appendChild(el('summary',null,'Built-in voice (backup) settings'));var b=el('div',{'class':'body'});
     var vsel=el('select',{style:'max-width:260px'});
     function fillVoices(){
       var vs=[];try{vs=speechSynthesis.getVoices()||[];}catch(e){}
       var en=vs.filter(function(v){return /^en/i.test(v.lang);});if(!en.length)en=vs;
       en.sort(function(a,b){return ((b.lang==='en-AU')-(a.lang==='en-AU'))||a.name.localeCompare(b.name);});
-      vsel.innerHTML='';vsel.appendChild(el('option',{value:''},'Tablet default'));
+      vsel.innerHTML='';vsel.appendChild(el('option',{value:''},'Default voice'));
       en.forEach(function(v){var o=el('option',{value:v.name},v.name+' ('+v.lang+')');if(v.name===cfg.voiceName)o.selected=true;vsel.appendChild(o);});
     }
     fillVoices();try{speechSynthesis.addEventListener('voiceschanged',fillVoices);}catch(e){}
@@ -2493,8 +2503,8 @@
     }
     var sp=slider('rate',0.6,1.4,0.05,0.95),pi=slider('pitch',0.5,2,0.05,1.25);
     b.appendChild(sField('Speed','Also affects the natural voice.',sp));
-    b.appendChild(sField('Pitch','Tablet voice only.',pi));
-    b.appendChild(el('p',{'class':'hint'},'Better tablet voices on Android: Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia).'));
+    b.appendChild(sField('Pitch','Built-in voice only.',pi));
+    b.appendChild(el('p',{'class':'hint'},'Better built-in voices on Android: Settings → search "Text-to-speech" → Preferred engine: Speech Services by Google → install voice data → English (Australia).'));
     d.appendChild(b);tc.appendChild(d);inner.appendChild(tc);
   }
 
