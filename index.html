@@ -360,6 +360,73 @@
   .pergrp{font-weight:800;color:var(--warn);margin:8px 0 2px;font-size:17px}
   .locresults{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-bottom:6px}
   .locbtn{font-size:17px;text-align:left}
+  /* ---- trophy case ---- */
+  .pill.troph{cursor:pointer;position:relative;background:#3d2f12;color:#ffd96a}
+  .pill.troph.new::after{content:'';position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#ff4d6d;box-shadow:0 0 0 3px var(--bg2);animation:tpulse 1.4s infinite}
+  @keyframes tpulse{50%{transform:scale(1.35)}}
+  #trophyOv{position:fixed;inset:0;z-index:65;background:#171b45;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #trophyOv.show{display:block;animation:mileIn .4s cubic-bezier(.3,1.4,.6,1)}
+  .tbox{max-width:1100px;margin:0 auto;padding:18px 20px 60px}
+  .thead{display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:2;padding:10px 20px 14px;margin:0 -20px;background:rgba(23,27,69,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .tav{font-size:64px;line-height:1;width:92px;height:92px;border-radius:50%;background:#0e1130;border:5px solid var(--c);display:flex;align-items:center;justify-content:center;flex:none}
+  .thn{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+  .tname{font-size:clamp(26px,3.6vw,40px);font-weight:800;line-height:1.05}
+  .tlevel{display:flex;align-items:center;gap:12px;background:#0e1130;border:none;border-radius:18px;padding:8px 14px;color:#fff;font-family:inherit;text-align:left;cursor:pointer;max-width:460px}
+  .tlem{font-size:38px;line-height:1}
+  .tlt{flex:1;min-width:0}.tlname{font-size:20px;font-weight:800}
+  .tlbar{height:10px;border-radius:99px;background:#2a2f63;margin:5px 0 3px;overflow:hidden}.tlfill{height:100%;border-radius:99px;background:linear-gradient(90deg,#ffd23f,#ff8a3d)}
+  .tlsub{font-size:13px;color:var(--muted);font-weight:700}
+  .tclose{width:64px;height:64px;border-radius:50%;border:none;background:#2f3670;color:#fff;font-size:30px;font-weight:800;cursor:pointer;flex:none}
+  .tsec{margin-top:18px}.tsec h3{font-size:22px;color:#ffd96a;margin:0 0 12px}
+  .trow{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px}
+  .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .ttile{position:relative;background:#232858;border:none;border-radius:22px;padding:14px 10px 12px;color:#fff;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:140px;box-shadow:0 5px 0 #12153a}
+  .ttile:active{transform:translateY(3px);box-shadow:0 2px 0 #12153a}
+  .ttn{font-size:17px;font-weight:800;text-align:center;line-height:1.15;margin-top:4px}
+  .tts{font-size:13px;color:var(--muted);font-weight:700}
+  .tpb{width:80%;height:8px;border-radius:99px;background:#12153a;overflow:hidden;margin-top:4px}.tpf{height:100%;background:var(--c);border-radius:99px}
+  .tpn{font-size:12px;color:var(--muted);font-weight:700}.tpn.max{color:#ffd96a}
+  .tnew{position:absolute;top:8px;right:8px;background:#ff4d6d;color:#fff;font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px;animation:tpulse 1.4s infinite}
+  .tmonth{max-width:100%;box-sizing:border-box;display:flex;align-items:center;gap:16px;background:#232858;border:none;border-radius:22px;padding:12px 22px 12px 12px;color:#fff;font-family:inherit;text-align:left;cursor:pointer;flex:none;box-shadow:0 5px 0 #12153a}
+  .tring{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;padding:0}
+  .tring .medal{background:#232858;border-radius:50%;width:104px;height:104px;--s:78px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;box-sizing:border-box}
+  .tring .medal .face{left:13px;bottom:8px}
+  .tring .medal .rib{top:2px}
+  .tmt{min-width:0}.tmn{font-size:22px;font-weight:800}.tms{font-size:15px;color:var(--muted);font-weight:700}.tmc{font-size:30px;font-weight:800;color:#ffd96a}
+  /* medals */
+  .medal{--s:96px;width:var(--s);height:calc(var(--s)*1.2);position:relative;flex:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+  .medal.sm{--s:78px}.medal.big{--s:min(190px,40vw)}.medal.xs{--s:42px}
+  .medal .rib{position:absolute;top:0;left:50%;width:calc(var(--s)*.46);height:calc(var(--s)*.5);transform:translateX(-50%);background:linear-gradient(90deg,var(--r1) 0 30%,var(--r2) 30% 70%,var(--r1) 70%);clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)}
+  .medal .face{position:absolute;bottom:0;left:0;width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle at 34% 28%,var(--a) 0%,var(--b) 78%);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .medal .fin{width:70%;height:70%;border-radius:50%;background:rgba(0,0,0,.16);box-shadow:inset 0 0 0 calc(var(--s)*.035) rgba(255,255,255,.5),0 0 0 calc(var(--s)*.03) rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:calc(var(--s)*.4);line-height:1}
+  .medal .sheen{position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.65) 48%,transparent 60%);transform:translateX(-120%);animation:sheen 3.2s ease-in-out infinite}
+  @keyframes sheen{60%,100%{transform:translateX(120%)}}
+  .medal.t0{--a:#ffcf9e;--b:#a5551f;--r1:#b8322b;--r2:#ef6b5f}
+  .medal.t1{--a:#ffffff;--b:#8391b3;--r1:#2d5bc4;--r2:#7fa3ff}
+  .medal.t2{--a:#fff4a8;--b:#d79a00;--r1:#1f8f5a;--r2:#5fe39d}
+  .medal.t3{--a:#e3fdff;--b:#2f9fd9;--r1:#5b3fc4;--r2:#b39dff}
+  .medal.t4{--a:#ffd0f4;--b:#7b35f0;--r1:#e8327f;--r2:#ffd23f;animation:tglow 2.6s ease-in-out infinite}
+  @keyframes tglow{50%{filter:drop-shadow(0 4px 0 rgba(0,0,0,.35)) drop-shadow(0 0 18px #ff8af0)}}
+  .medal.tm{--a:#b8fff0;--b:#14a38b;--r1:#ff8a3d;--r2:#ffd23f}
+  .medal.tm .face{border-radius:30%}
+  .medal.secretwon{--a:#ffe0a8;--b:#ff5e7a;--r1:#2a2f63;--r2:#ffd23f}
+  .medal.locked{filter:none}
+  .medal.locked .rib{--r1:#30366e;--r2:#3b4280}
+  .medal.locked .face{background:#1a1e46;box-shadow:inset 0 0 0 calc(var(--s)*.04) #3b4280}
+  .medal.locked .fin{filter:grayscale(1);opacity:.35;box-shadow:none;background:transparent}
+  .medal.locked.secret .fin{filter:none;opacity:1;color:#8f84ff;font-weight:800;font-size:calc(var(--s)*.5)}
+  .tdetail{position:fixed;inset:0;z-index:3;background:rgba(8,10,30,.8);display:none;align-items:center;justify-content:center;padding:16px}
+  .tdetail.show{display:flex;animation:mileIn .4s cubic-bezier(.3,1.6,.6,1)}
+  .tdcard{background:#232858;border-radius:30px;padding:26px 24px 20px;max-width:560px;width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border:4px solid var(--c)}
+  .tdn{font-size:clamp(26px,4vw,38px);font-weight:800}.tds{font-size:17px;color:var(--muted);font-weight:700}
+  .tdp{font-size:20px;font-weight:800;color:#ffd96a;margin-top:4px}
+  .tladder{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+  .tstep{display:flex;flex-direction:column;align-items:center;width:62px;opacity:.6}.tstep.got{opacity:1}
+  .tsn{font-size:11px;font-weight:800;margin-top:2px}.tsv{font-size:12px;color:var(--muted);font-weight:700}
+  .tdok{margin-top:10px;font-size:34px;width:120px;height:64px;border-radius:20px;border:none;background:#2ecc71;cursor:pointer;box-shadow:0 5px 0 #1e9e55}
+  .mile-big .medal{--s:min(220px,40vw);margin:0 auto}
+  @media (max-width:600px){.tbox{padding:10px 12px 60px}.thead{padding:8px 12px 12px;margin:0 -12px;gap:10px}.tname{font-size:24px}.tlevel{padding:6px 10px;gap:8px}.tlem{font-size:28px}.tlname{font-size:16px}.tring{width:96px;height:96px}.tring .medal{width:84px;height:84px;--s:62px}.tring .medal .face{left:11px}.tmonth{padding:10px 14px 10px 10px;gap:10px}.tmn{font-size:18px}.tms{font-size:13px}.tmc{font-size:24px}.tgrid{grid-template-columns:repeat(2,1fr)}.ttile{min-width:0}.medal{--s:80px}.tav{width:70px;height:70px;font-size:46px}.tclose{width:54px;height:54px}}
+  @media (prefers-reduced-motion:reduce){.medal .sheen,.medal.t4,.tnew,.pill.troph.new::after{animation:none}}
 </style>
 </head>
 <body>
@@ -378,6 +445,7 @@
     <button class="iconbtn" id="fsBtn" title="Full screen">⛶</button>
     <button class="iconbtn" id="gearBtn" title="Settings">⚙️</button>
   </header>
+  <div id="trophyOv"></div>
   <div id="clockOv"><div class="clockbox"><div id="clockSvg"></div><div class="clockdig" id="clockDig"></div><div class="clockleave" id="clockLeave"></div></div></div>
   <div class="wx" id="wx" title="Tap to hear today's clothes">
     <div class="wx-badge" id="wxBadge"><span id="wxIcon">🌤️</span><span id="wxTemp">--°</span></div>
@@ -414,7 +482,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='13 Nov 2026 · progress + rewards';
+  var BOARD_VERSION='13 Nov 2026 · trophy case';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -780,6 +848,7 @@
     applyTheme();
     renderEvents(showBars);
     recordToday();
+    if(trophOn())for(var tk=0;tk<nKids();tk++)updTrophies(tk);
     if(view>=nKids())view=-1;
     lanesEl.className=nKids()>3?'many':'';
     if(split){for(var k=0;k<nKids();k++)lanesEl.appendChild(renderLane(k,false));}
@@ -830,6 +899,11 @@
     if(earned)b.appendChild(el('span',{'class':'pill reward earned',title:earned.rw.prize},'🎁 Reward!'));
     else if(rws.length){rws.sort(function(a,b){return (b.p.count/b.p.n)-(a.p.count/a.p.n);});var r0=rws[0];
       b.appendChild(el('span',{'class':'pill reward',title:r0.rw.prize},(r0.rw.emoji||'🎁')+' '+r0.p.count+'/'+r0.p.n));}
+    if(trophOn()){
+      var tp=el('span',{'class':'pill troph'+(trophUnseen(k)?' new':''),title:'Trophy case'},'🏆 '+trophCount(k));
+      tp.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();openTrophies(k);});
+      b.appendChild(tp);
+    }
     return b;
   }
   function hasReading(k){for(var d=0;d<7;d++)if(cfg.days[d].kids[k].indexOf('reading')>-1)return true;return false;}
@@ -874,8 +948,18 @@
       var kd=cfg.kids[k];
       var rec={am:todaysSteps(k,'am').map(function(s){return s.id;}),pm:todaysSteps(k,'pm').map(function(s){return s.id;}),
         done:(prog.done[k]||[]).slice(),star:kd.stars.last===t,read:kd.reads.last===t};
+      // when they started, and when the morning was finished (for Early Bird / Rocket badges)
+      var prev=day[kd.id]||{},nowM=new Date().getHours()*60+new Date().getMinutes();
+      if(prev.t0!=null)rec.t0=prev.t0;else if(rec.done.length===1&&!(prev.done&&prev.done.length))rec.t0=nowM;
+      if(recStats(rec).amAll){if(prev.amAt!=null)rec.amAt=prev.amAt;else if(rec.t0!=null&&prev.am&&!recStats(prev).amAll)rec.amAt=nowM;}
       var j=JSON.stringify(rec);if(JSON.stringify(day[kd.id])!==j){day[kd.id]=rec;changed=true;}
     }
+    // the day's weather and any special day (for Sun Smart, Rain Ranger and the secret badges)
+    var meta={};
+    if(wx&&wx.date===t)meta._wx={uv:Math.round(wx.uv||0),rain:wx.rain||0};
+    if(!previewTheme){var th=null;try{th=currentTheme();}catch(e){}
+      if(th){meta._th=th.key;var bk=birthdayKid(th);if(bk>-1)meta._bk=kidId(bk);}}
+    ['_wx','_th','_bk'].forEach(function(key){if(JSON.stringify(day[key])!==JSON.stringify(meta[key])){if(meta[key]===undefined)delete day[key];else day[key]=meta[key];changed=true;}});
     if(changed){
       hist[t]=day;
       var keys=Object.keys(hist).sort();if(keys.length>420)keys.slice(0,keys.length-420).forEach(function(x){delete hist[x];});
@@ -943,6 +1027,275 @@
     return cfg.rewards.filter(function(rw){return rw.prize&&rwKids(rw).indexOf(kid)>-1;}).map(function(rw){return {rw:rw,p:rwProgress(rw,kid)};});
   }
   function earnedRewardIds(k){return rewardsFor(k).filter(function(x){return x.p.earned;}).map(function(x){return x.rw.id;});}
+
+  // ================= Trophy case =================
+  // Badges worked out from the history log. Most have five tiers (Bronze → Legend) like Strava / Garmin,
+  // there's a new challenge every month, and a few are secret until found.
+  var troph=load('qb_troph',{});   // {kidId:{badgeId:{t:tier, d:[date each tier was reached], seen:bool}}}
+  var TIERS=['Bronze','Silver','Gold','Diamond','Legend'];
+  var TIER_PTS=[1,3,6,10,15];     // level points for reaching each tier (running total)
+  var MONTH_EM=['🎆','💝','🍀','🐣','🍂','⛄','🧣','🪁','🌸','🎃','🌻','🎄'];
+  var MONTH_NM=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var HELP_IDS=['dishes','lunchbox','tidy','bed'];
+  var LEVELS=[[0,'Rookie','🐣'],[3,'Explorer','🧭'],[8,'Adventurer','🎒'],[15,'Ranger','🏕️'],[25,'Hero','🦸'],[40,'Champion','🏅'],[60,'Superstar','🌟'],[85,'Legend','🐉'],[120,'Mythic','🦄'],[170,'Galaxy Master','🚀']];
+  function trophOn(){return cfg.trophies!==false;}
+  function monthGoal(){return Math.max(1,+cfg.monthGoal||15);}
+  function onPlan(k,id){for(var d=0;d<7;d++)if((cfg.days[d].kids[k]||[]).indexOf(id)>-1)return true;return false;}
+  var BADGES=[
+    {id:'stars',em:'⭐',name:'Star Collector',tiers:[5,20,50,100,200],unit:'stars',v:'stars',say:'You have {n} stars in your star jar.'},
+    {id:'streak',em:'🔥',name:'On Fire',tiers:[3,7,14,30,60],unit:'days in a row',v:'best',say:'You finished every quest {n} days in a row.'},
+    {id:'quests',em:'🗡️',name:'Quest Master',tiers:[25,100,300,700,1500],unit:'quests',v:'quests',say:'You have done {n} quests.'},
+    {id:'reads',em:'📚',name:'Bookworm',tiers:[10,25,50,100,200],unit:'reading days',v:'reads',on:function(k){return hasReading(k);},say:'You have read on {n} days.'},
+    {id:'early',em:'🐦',name:'Early Bird',tiers:[5,15,40,80,150],unit:'early mornings',v:'early',say:'You were ready early {n} times.'},
+    {id:'speedy',em:'🚀',name:'Rocket Mornings',tiers:[3,10,25,50,100],unit:'speedy mornings',v:'speedy',say:'You zoomed through your morning quests {n} times.'},
+    {id:'weeks',em:'📅',name:'Perfect Week',tiers:[1,4,10,26,52],unit:'perfect weeks',v:'weeks',say:'You had {n} perfect weeks.'},
+    {id:'weekend',em:'🦸',name:'Weekend Hero',tiers:[2,8,20,50,100],unit:'weekend days',v:'weekend',say:'You finished every quest on {n} weekend days.'},
+    {id:'comeback',em:'💪',name:'Comeback Kid',tiers:[1,5,15,30,60],unit:'comebacks',v:'comeback',say:'You bounced back after a tricky day {n} times.'},
+    {id:'teeth',em:'🦷',name:'Sparkle Smile',tiers:[7,30,100,200,365],unit:'brushing days',v:'teeth',on:function(k){return onPlan(k,'teeth');},say:'You brushed your teeth on {n} days.'},
+    {id:'helper',em:'🧽',name:'Super Helper',tiers:[10,30,75,150,300],unit:'helping jobs',v:'helper',on:function(k){return HELP_IDS.some(function(id){return onPlan(k,id);});},say:'You have done {n} helping jobs.'},
+    {id:'sun',em:'😎',name:'Sun Smart',tiers:[5,20,50,100,200],unit:'sunny days',v:'sun',on:function(k){return onPlan(k,'sunscreen');},say:'You put sunscreen on, on {n} sunny days.'},
+    {id:'rain',em:'☔',name:'Rain Ranger',tiers:[1,5,15,30,60],unit:'rainy days',v:'rain',say:'You finished every quest on {n} rainy days.'},
+    {id:'tried',em:'🧭',name:'Explorer',tiers:[3,6,10,15,20],unit:'different quests',v:'triedN',say:'You have done {n} different quests.'},
+    {id:'team',em:'🤝',name:'Team Quest',tiers:[1,10,30,60,120],unit:'team days',v:'team',on:function(){return nKids()>1;},say:'Everyone finished every quest together on {n} days.'},
+    // secrets: shown as "?" until found
+    {id:'bday',em:'🎂',name:'Birthday Quest',secret:1,tiers:[1],v:'bday',say:'You finished every quest on your birthday!'},
+    {id:'holiday',em:'🏖️',name:'Holiday Hero',secret:1,tiers:[1],v:'holiday',say:'You finished every quest on a special day!'},
+    {id:'fri13',em:'👻',name:'Spooky Friday',secret:1,tiers:[1],v:'fri13',say:'You finished every quest on Friday the thirteenth! Spooky!'},
+    {id:'sunrise',em:'🌅',name:'Up With the Sun',secret:1,tiers:[1],v:'sunrise',say:'You started your quests before half past six!'},
+    {id:'lightning',em:'⚡',name:'Lightning',secret:1,tiers:[1],v:'lightning',say:'You did all your morning quests in ten minutes!'},
+    {id:'perfmonth',em:'🌈',name:'Perfect Month',secret:1,tiers:[1],v:'perfMonth',say:'You finished every quest for a whole month!'},
+    {id:'ny',em:'🎆',name:'New Year Champ',secret:1,tiers:[1],v:'ny',say:'You finished every quest on New Year\'s Day!'}
+  ];
+  function minsOf(hhmm){if(!hhmm)return null;var p=String(hhmm).split(':');return (+p[0])*60+(+p[1]||0);}
+  function kidStats(k){
+    var kid=kidId(k),kd=cfg.kids[k],t=today();
+    var s={quests:0,full:0,best:0,cur:0,early:0,speedy:0,lightning:0,weekend:0,comeback:0,sun:0,rain:0,team:0,helper:0,teeth:0,
+      tried:{},weeks:0,bday:0,holiday:0,fri13:0,sunrise:0,ny:0,perfMonth:0,months:{}};
+    var dates=Object.keys(hist).sort();
+    if(dates.length){
+      var run=0,prevFull=null,weekOk=true,weekDays=0,end=today0();
+      for(var d=parseD(dates[0]);d<=end;d=addDays(d,1)){
+        var ds=ymd(d),day=hist[ds],r=day&&day[kid],st=recStats(r),dow=d.getDay();
+        if(dow===1){weekOk=true;weekDays=0;}
+        if(st&&st.total>0){
+          var ym=ds.slice(0,7),m=s.months[ym]=s.months[ym]||{days:0,full:0};m.days++;weekDays++;
+          s.quests+=st.done;
+          r.done.forEach(function(id){if(r.am.indexOf(id)>-1||r.pm.indexOf(id)>-1)s.tried[id]=1;});
+          if(r.done.indexOf('teeth')>-1)s.teeth++;
+          HELP_IDS.forEach(function(id){if(r.done.indexOf(id)>-1)s.helper++;});
+          if(r.done.indexOf('sunscreen')>-1&&day._wx&&day._wx.uv>=3)s.sun++;
+          if(r.t0!=null&&r.t0<390)s.sunrise++;
+          if(st.amAll&&r.amAt!=null){
+            var lv=minsOf(cfg.days[dow].leave),limit=lv!=null?lv-10:510;   // ready 10 min before leaving (8:30 if no leave time)
+            if(r.amAt<=limit)s.early++;
+            if(r.t0!=null&&r.am.length>=3&&r.amAt-r.t0<=20)s.speedy++;
+            if(r.t0!=null&&r.am.length>=4&&r.amAt-r.t0<=10)s.lightning++;
+          }
+          if(st.allDone){
+            s.full++;m.full++;run++;if(run>s.best)s.best=run;
+            if(dow===0||dow===6)s.weekend++;
+            if(prevFull===false)s.comeback++;
+            if(day._wx&&day._wx.rain>=60)s.rain++;
+            if(day._bk===kid)s.bday++;else if(day._th&&day._th!=='birthday')s.holiday++;
+            if(dow===5&&d.getDate()===13)s.fri13++;
+            if(d.getMonth()===0&&d.getDate()===1)s.ny++;
+            var together=nKids()>1;
+            for(var j=0;j<nKids()&&together;j++){var o=recStats(day[kidId(j)]);if(!o||!o.allDone)together=false;}
+            if(together)s.team++;
+            prevFull=true;
+          } else if(ds!==t){run=0;prevFull=false;weekOk=false;}   // today isn't over yet, so it can't break anything
+        }
+        if(dow===0&&weekOk&&weekDays>=5&&(ds!==t||(st&&st.allDone)))s.weeks++;
+      }
+      s.cur=run;
+      var curYm=t.slice(0,7);
+      for(var y in s.months){var mm=s.months[y];if(y<curYm&&mm.days>=20&&mm.full===mm.days)s.perfMonth++;}
+    }
+    s.stars=kd.stars.count||0;s.reads=kd.reads.count||0;s.triedN=Object.keys(s.tried).length;
+    return s;
+  }
+  function tierFor(b,val){var t=-1;for(var i=0;i<b.tiers.length;i++)if(val>=b.tiers[i])t=i;return t;}
+  function kidTroph(k){var id=kidId(k);return troph[id]||(troph[id]={});}
+  // Work out what's newly earned. Earned badges are kept for good, even if a count later drops.
+  function updTrophies(k){
+    var s=kidStats(k),store=kidTroph(k),news=[],t=today();
+    BADGES.forEach(function(b){
+      var tier=tierFor(b,s[b.v]||0),cur=store[b.id];
+      if(tier>=0&&(!cur||tier>cur.t)){
+        var e=cur||{t:-1,d:[]};for(var i=e.t+1;i<=tier;i++)e.d[i]=t;e.t=tier;e.seen=false;store[b.id]=e;
+        news.push({b:b,t:tier});
+      }
+    });
+    var g=monthGoal();
+    for(var ym in s.months){
+      if(s.months[ym].full>=g&&!store['m:'+ym]){store['m:'+ym]={t:0,d:[t],seen:false};news.push({month:ym});}
+    }
+    if(news.length)save('qb_troph',troph);
+    return {news:news,s:s};
+  }
+  function newsTitle(x){
+    if(x.month){var mi=+x.month.slice(5,7)-1;return MONTH_NM[mi]+' Challenge';}
+    return x.b.name+(x.b.tiers.length>1?' '+TIERS[x.t]:'');
+  }
+  function trophCount(k){var st=kidTroph(k),n=0;for(var id in st)n++;return n;}
+  function trophUnseen(k){var st=kidTroph(k);for(var id in st)if(!st[id].seen)return true;return false;}
+  function trophPoints(k){
+    var st=kidTroph(k),p=0;
+    for(var id in st){
+      if(id.indexOf('m:')===0){p+=4;continue;}
+      var b=BADGES.filter(function(x){return x.id===id;})[0];if(!b)continue;
+      p+=b.secret?5:TIER_PTS[Math.min(st[id].t,4)];
+    }
+    return p;
+  }
+  function levelOf(p){var i=0;while(i+1<LEVELS.length&&p>=LEVELS[i+1][0])i++;return {i:i,lv:LEVELS[i],next:LEVELS[i+1]||null};}
+  function badgeSound(){[784,988,1175,1568,1976,2349].forEach(function(f,i){tone(f,i*0.09,0.4,'triangle');});}
+  // ---- drawing ----
+  function burst(points,inner,rot){
+    var out=[];for(var i=0;i<points*2;i++){var a=(i/(points*2))*Math.PI*2+(rot||0),r=i%2?inner:50;
+      out.push((50+r*Math.sin(a)).toFixed(1)+'% '+(50-r*Math.cos(a)).toFixed(1)+'%');}
+    return 'polygon('+out.join(',')+')';
+  }
+  (function(){
+    var css='.medal.t2 .face{clip-path:'+burst(16,44.5)+'}'+
+      '.medal.t3 .face{clip-path:polygon(50% 0,93.3% 25%,93.3% 75%,50% 100%,6.7% 75%,6.7% 25%)}'+
+      '.medal.t4 .face{clip-path:'+burst(10,40)+'}';
+    var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  })();
+  function medalEl(em,tier,cls){ // tier -1 = locked, 'm' = monthly, 'q' = secret not found
+    var m=el('div',{'class':'medal '+(tier===-1?'locked':tier==='q'?'locked secret':tier==='m'?'tm':'t'+tier)+(cls?' '+cls:'')});
+    m.appendChild(el('div',{'class':'rib'}));
+    var face=el('div',{'class':'face'});
+    face.appendChild(el('div',{'class':'fin'},tier==='q'?'?':em));
+    if(tier>=2||tier==='m')face.appendChild(el('div',{'class':'sheen'}));
+    m.appendChild(face);
+    return m;
+  }
+  function fmtDay(ds){if(!ds)return '';var d=parseD(ds);return d.getDate()+' '+MONTH_NM[d.getMonth()].slice(0,3)+' '+d.getFullYear();}
+  // ---- the trophy case screen ----
+  var trophKid=-1;
+  function openTrophies(k,parent){ // parent: a grown-up peeking from settings, so keep NEW labels and stay quiet
+    keepAwake();bumpIdle();trophKid=k;
+    updTrophies(k);
+    var ov=document.getElementById('trophyOv');ov.innerHTML='';kidColour(ov,k);
+    var kd=cfg.kids[k],st=kidTroph(k),s=kidStats(k);
+    var box=el('div',{'class':'tbox'});
+    // header: who + level
+    var head=el('div',{'class':'thead'});
+    head.appendChild(el('div',{'class':'tav'},kd.emoji));
+    var hn=el('div',{'class':'thn'});hn.appendChild(el('div',{'class':'tname'},kd.name+'\'s Trophies'));
+    var pts=trophPoints(k),L=levelOf(pts);
+    var lv=el('button',{'class':'tlevel'});
+    lv.appendChild(el('span',{'class':'tlem'},L.lv[2]));
+    var lt=el('div',{'class':'tlt'});lt.appendChild(el('div',{'class':'tlname'},'Level '+(L.i+1)+' · '+L.lv[1]));
+    var bar=el('div',{'class':'tlbar'}),fill=el('div',{'class':'tlfill'});
+    fill.style.width=(L.next?Math.round((pts-L.lv[0])/(L.next[0]-L.lv[0])*100):100)+'%';bar.appendChild(fill);lt.appendChild(bar);
+    lt.appendChild(el('div',{'class':'tlsub'},L.next?(L.next[0]-pts)+' more points to '+L.next[1]+' '+L.next[2]:'Top level!'));
+    lv.appendChild(lt);
+    lv.addEventListener('click',function(){bumpIdle();say('You are level '+(L.i+1)+'. '+L.lv[1]+'! '+(L.next?'Win more badges to become a '+L.next[1]+'.':'That is the top level. Wow!'));});
+    hn.appendChild(lv);head.appendChild(hn);
+    var x=el('button',{'class':'tclose',title:'Close'},'✕');x.addEventListener('click',closeTrophies);head.appendChild(x);
+    box.appendChild(head);
+    // monthly challenge
+    var now=new Date(),ym=today().slice(0,7),g=monthGoal(),mi=now.getMonth();
+    var mfull=(s.months[ym]||{full:0}).full;
+    var ms=el('div',{'class':'tsec'});ms.appendChild(el('h3',null,'This month\'s challenge'));
+    var mrow=el('div',{'class':'trow'});
+    var mc=el('button',{'class':'tmonth'});
+    var ring=el('div',{'class':'tring'});ring.style.background='conic-gradient(var(--c) '+Math.min(360,mfull/g*360)+'deg,#0e1130 0deg)';
+    ring.appendChild(medalEl(MONTH_EM[mi],st['m:'+ym]?'m':-1,'sm'));mc.appendChild(ring);
+    var mt=el('div',{'class':'tmt'});mt.appendChild(el('div',{'class':'tmn'},MONTH_NM[mi]+' Challenge'));
+    mt.appendChild(el('div',{'class':'tms'},st['m:'+ym]?'Done! ✅':'Finish every quest on '+g+' days'));
+    mt.appendChild(el('div',{'class':'tmc'},Math.min(mfull,g)+' / '+g));
+    mc.appendChild(mt);
+    mc.addEventListener('click',function(){bumpIdle();say(st['m:'+ym]?'You did the '+MONTH_NM[mi]+' challenge! Hooray!':'The '+MONTH_NM[mi]+' challenge! Finish all your quests on '+g+' days this month. You have done '+mfull+'. '+(g-mfull)+' to go!');});
+    mrow.appendChild(mc);
+    var past=Object.keys(st).filter(function(id){return id.indexOf('m:')===0&&id!=='m:'+ym;}).sort().reverse();
+    past.forEach(function(id){
+      var m2=+id.slice(7,9)-1,tile=tTile(medalEl(MONTH_EM[m2],'m'),MONTH_NM[m2].slice(0,3)+' '+id.slice(2,6),'Challenge',!st[id].seen);
+      tile.addEventListener('click',function(){showDetail({month:id.slice(2)});});mrow.appendChild(tile);
+    });
+    ms.appendChild(mrow);box.appendChild(ms);
+    // main badges
+    var bs=el('div',{'class':'tsec'});bs.appendChild(el('h3',null,'Badges'));
+    var grid=el('div',{'class':'tgrid'});
+    BADGES.filter(function(b){return !b.secret&&(st[b.id]||!b.on||b.on(k));}).forEach(function(b){
+      var e=st[b.id],tier=e?e.t:-1,val=s[b.v]||0,nxt=b.tiers[tier+1];
+      var tile=tTile(medalEl(b.em,tier),b.name,tier>=0?TIERS[tier]:'Locked',e&&!e.seen);
+      if(nxt!=null){var pb=el('div',{'class':'tpb'}),pf=el('div',{'class':'tpf'});var lo=tier>=0?b.tiers[tier]:0;
+        pf.style.width=Math.max(4,Math.min(100,Math.round((val-lo)/(nxt-lo)*100)))+'%';pb.appendChild(pf);tile.appendChild(pb);
+        tile.appendChild(el('div',{'class':'tpn'},Math.min(val,nxt)+' / '+nxt));}
+      else tile.appendChild(el('div',{'class':'tpn max'},'MAX ✨'));
+      tile.addEventListener('click',function(){showDetail({b:b});});
+      grid.appendChild(tile);
+    });
+    bs.appendChild(grid);box.appendChild(bs);
+    // secrets
+    var ss=el('div',{'class':'tsec'});
+    var found=BADGES.filter(function(b){return b.secret&&st[b.id];}).length,all=BADGES.filter(function(b){return b.secret;}).length;
+    ss.appendChild(el('h3',null,'Secret badges · '+found+' of '+all+' found'));
+    var sg=el('div',{'class':'tgrid'});
+    BADGES.filter(function(b){return b.secret;}).forEach(function(b){
+      var e=st[b.id];
+      var tile=tTile(medalEl(b.em,e?0:'q',e?'secretwon':''),e?b.name:'Secret',e?fmtDay(e.d[0]):'???',e&&!e.seen);
+      tile.addEventListener('click',function(){showDetail({b:b});});sg.appendChild(tile);
+    });
+    ss.appendChild(sg);box.appendChild(ss);
+    ov.appendChild(box);
+    ov.appendChild(el('div',{'class':'tdetail',id:'tDetail'}));
+    ov.classList.add('show');
+    var n=trophCount(k),nNew=Object.keys(st).filter(function(id){return !st[id].seen;}).length;
+    if(parent)return;
+    say(kd.name+'\'s trophy case! You have '+n+(n===1?' badge':' badges')+'.'+(nNew?' '+nNew+' new! Look for the new ones.':' Tap a badge to hear about it.'));
+    for(var id in st)st[id].seen=true;   // NEW labels show this time only
+    save('qb_troph',troph);render();
+  }
+  function tTile(medal,name,sub,isNew){
+    var t=el('button',{'class':'ttile'});t.appendChild(medal);
+    t.appendChild(el('div',{'class':'ttn'},name));t.appendChild(el('div',{'class':'tts'},sub));
+    if(isNew)t.appendChild(el('div',{'class':'tnew'},'NEW'));
+    return t;
+  }
+  function showDetail(o){
+    bumpIdle();var k=trophKid,st=kidTroph(k),s=kidStats(k),d=document.getElementById('tDetail');d.innerHTML='';
+    var card=el('div',{'class':'tdcard'}),words='';
+    if(o.month){
+      var mi=+o.month.slice(5,7)-1,e=st['m:'+o.month];
+      card.appendChild(medalEl(MONTH_EM[mi],'m','big'));
+      card.appendChild(el('div',{'class':'tdn'},MONTH_NM[mi]+' Challenge '+o.month.slice(0,4)));
+      card.appendChild(el('div',{'class':'tds'},'Earned '+fmtDay(e.d[0])));
+      words='The '+MONTH_NM[mi]+' challenge! You finished all your quests on lots of days that month.';
+    } else {
+      var b=o.b,e2=st[b.id],tier=e2?e2.t:-1,val=s[b.v]||0;
+      if(b.secret&&!e2){
+        card.appendChild(medalEl('?','q','big'));card.appendChild(el('div',{'class':'tdn'},'Secret badge'));
+        card.appendChild(el('div',{'class':'tds'},'Nobody knows how to get this one… keep doing your quests and you might find it!'));
+        words='This is a secret badge! Keep doing your quests and you might find it.';
+      } else {
+        card.appendChild(medalEl(b.em,tier,'big'));
+        card.appendChild(el('div',{'class':'tdn'},b.name));
+        if(tier>=0)card.appendChild(el('div',{'class':'tds'},(b.tiers.length>1?TIERS[tier]+' · ':'')+'earned '+fmtDay(e2.d[tier])));
+        var txt=b.say.replace('{n}',val);
+        if(b.tiers.length>1){
+          var lad=el('div',{'class':'tladder'});
+          b.tiers.forEach(function(th,i){var c=el('div',{'class':'tstep'+(i<=tier?' got':'')});c.appendChild(medalEl(b.em,i<=tier?i:-1,'xs'));
+            c.appendChild(el('div',{'class':'tsn'},TIERS[i]));c.appendChild(el('div',{'class':'tsv'},th+''));lad.appendChild(c);});
+          card.appendChild(lad);
+          var nxt=b.tiers[tier+1];
+          card.appendChild(el('div',{'class':'tdp'},tier<0?'Get '+nxt+' '+b.unit+' to unlock it. You have '+val+'.':nxt!=null?(nxt-val)+' more '+b.unit+' for '+TIERS[tier+1]+'!':'You reached the very top! 🏆'));
+          words=b.name+'! '+(tier>=0?TIERS[tier]+'! ':'')+(val?txt+' ':'')+(tier<0?'Get '+nxt+' to win it!':nxt!=null?(nxt-val)+' more for '+TIERS[tier+1]+'!':'That is the very top!');
+        } else {
+          card.appendChild(el('div',{'class':'tdp'},txt));words=b.name+'! '+txt;
+        }
+      }
+    }
+    var ok=el('button',{'class':'tdok'},'👍');ok.addEventListener('click',function(e){e.stopPropagation();d.classList.remove('show');});
+    card.appendChild(ok);d.appendChild(card);d.classList.add('show');
+    d.onclick=function(e){if(e.target===d)d.classList.remove('show');};
+    say(words);
+  }
+  function closeTrophies(){var ov=document.getElementById('trophyOv');ov.classList.remove('show');ov.innerHTML='';trophKid=-1;stopSpeaking();bumpIdle();}
+  setInterval(function(){if(trophKid>-1&&Date.now()-lastTouch>120000)closeTrophies();},15000);
 
   // A quest tile. Tap to tick. Ticked tiles need a 1.5s hold to undo, so little fingers can't untick by accident.
   function makeTile(k,s,isDone,extra){
@@ -1063,8 +1416,13 @@
       recordToday();
       var newRw=rewardsFor(k).filter(function(x){return x.p.earned&&rwBefore.indexOf(x.rw.id)<0;})[0];
       if(newRw)lines.push('And you earned a reward: '+newRw.rw.prize+'! Tell a grown-up!');
+      var newB=trophOn()?updTrophies(k).news:[];
+      if(newB.length)lines.push('You won a new badge: '+newsTitle(newB[0])+'!'+(newB.length>1?' And '+(newB.length-1)+' more!':'')+' Look in your trophy case.');
       if(newRw&&!milestone){bigFanfare();confetti(k,['🎁','🎉','⭐','🏆','✨']);showBanner((newRw.rw.emoji||'🎁'),kd.name+' earned: '+newRw.rw.prize+'!');}
       else if(milestone){bigFanfare();confetti(k,['📚','🏆','⭐','🎉','✨']);showBanner('📚 '+milestone+'!',kd.name+' — '+milestone+' days of reading!');}
+      else if(newB.length){badgeSound();var nb=newB[0];
+        confetti(k,['🏆','🏅','✨','⭐','🎖️']);
+        showBanner(nb.month?medalEl(MONTH_EM[+nb.month.slice(5,7)-1],'m'):medalEl(nb.b.em,nb.b.secret?0:nb.t,nb.b.secret?'secretwon':''),kd.name+' won: '+newsTitle(nb)+'!');}
       else if(star){fanfare();confetti(k,['⭐','🌟','✨','⭐']);showBanner('⭐','A star for '+kd.name+'\'s jar! ('+kd.stars.count+')');}
       else if(big){fanfare();confetti(k);}
       else blip();
@@ -1075,7 +1433,7 @@
     render();
   }
   function showBanner(bigText,small){
-    var o=el('div',{'class':'mile'});o.appendChild(el('div',{'class':'mile-big'},bigText));o.appendChild(el('div',{'class':'mile-small'},small));
+    var o=el('div',{'class':'mile'}),mb=el('div',{'class':'mile-big'});if(typeof bigText==='string')mb.textContent=bigText;else mb.appendChild(bigText);o.appendChild(mb);o.appendChild(el('div',{'class':'mile-small'},small));
     document.body.appendChild(o);setTimeout(function(){o.classList.add('out');},3600);setTimeout(function(){o.remove();},4300);
   }
   function bigFanfare(){[523,659,784,1047,784,1047,1319,1568].forEach(function(f,i){tone(f,i*0.13,0.3,'square');});}
@@ -1151,7 +1509,7 @@
   function applyUpdate(){location.reload();}
   function idleUpdate(){
     if(!updateReady)return;
-    var busy=document.getElementById('settings').classList.contains('open')||document.getElementById('clockOv').classList.contains('show')||document.getElementById('gate').classList.contains('open');
+    var busy=document.getElementById('settings').classList.contains('open')||document.getElementById('clockOv').classList.contains('show')||document.getElementById('gate').classList.contains('open')||trophKid>-1;
     if(!busy&&view===-1&&Date.now()-lastTouch>90000)applyUpdate(); // quietly refresh after 1½ minutes untouched
   }
   setTimeout(checkUpdate,8000);
@@ -1756,6 +2114,17 @@
     lc.appendChild(ideas);
     inner.appendChild(lc);
     inner.appendChild(el('p',{'class':'ssub'},'Rewards count from the day you create them, using what the board records each day.'));
+    // trophy case
+    var tc=sCard('🏆 Trophy case','Badges the board gives out by itself: Bronze → Silver → Gold → Diamond → Legend, a new challenge every month, and secret badges to discover. Kids tap 🏆 on their card to see them.');
+    tc.appendChild(sField('Show the trophy case','',[sSwitch(trophOn(),function(v){cfg.trophies=v;sv();render();renderSettings();})]));
+    if(trophOn()){
+      tc.appendChild(sField('Monthly challenge','Days with every quest finished needed to win the month\'s badge.',[sNum(monthGoal(),1,function(v){cfg.monthGoal=Math.min(31,v);sv();render();}),el('span',{'class':'muted'},'days')]));
+      var ob=el('div',{'class':'row'});
+      cfg.kids.forEach(function(kd,k){ob.appendChild(sBtn(kd.emoji+' '+kd.name+'\'s trophies ('+trophCount(k)+')','',function(){document.getElementById('closeSettings').click();openTrophies(k,true);}));});
+      tc.appendChild(sField('Have a look','',[ob]));
+      tc.appendChild(sField('Reset trophies','Takes every badge away. They\'ll be won again from the history.',[sConfirm('Reset','Tap again to reset','btn danger',function(){troph={};save('qb_troph',troph);render();renderSettings();})]));
+    }
+    inner.appendChild(tc);
   }
 
   // ---------- Progress dashboard ----------
@@ -1933,19 +2302,19 @@
     var lc=sCard();
     lc.appendChild(sField('Home screen layout','',[sSeg([['hybrid','Card per child'],['split','All children side by side']],cfg.layout||'hybrid',function(v){cfg.layout=v;view=-1;sv();})]));
     inner.appendChild(lc);
-    var bk=sCard('💾 Backup','Keep a copy of children, quests, reading days and stars. Use it to move to a new device, or give another family your setup.');
+    var bk=sCard('💾 Backup','Keep a copy of children, quests, reading days, stars, history and trophies. Use it to move to a new device, or give another family your setup.');
     var sa=0;try{sa=+localStorage.getItem('qb_saved_at')||0;}catch(e){}
     bk.appendChild(el('p',{'class':'muted'},'Last saved: '+(sa?new Date(sa).toLocaleString():'not yet')));
     var ta=el('textarea',{rows:'3','class':'codebox',placeholder:'Tap "Make backup code", or paste a code here to restore'});
     bk.appendChild(ta);
     var brow=el('div',{'class':'row',style:'margin-top:8px'});
     var mk=sBtn('Make backup code','primary',function(){
-      ta.value='QB2:'+btoa(unescape(encodeURIComponent(JSON.stringify({cfg:cfg,hist:hist}))));
+      ta.value='QB2:'+btoa(unescape(encodeURIComponent(JSON.stringify({cfg:cfg,hist:hist,troph:troph}))));
       try{ta.select();if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(function(){mk.textContent='Copied ✓ (email it to yourself)';},function(){mk.textContent='Select and copy the code';});}catch(e){}
     });
     var rs=sBtn('Restore from code','',function(){
       try{var v=ta.value.trim(),fmt=v.slice(0,4);if(fmt!=='QB1:'&&fmt!=='QB2:')throw 0;var c=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));
-        if(fmt==='QB2:'){if(c.hist){hist=c.hist;save('qb_hist',hist);}c=c.cfg;}
+        if(fmt==='QB2:'){if(c.hist){hist=c.hist;save('qb_hist',hist);}if(c.troph){troph=c.troph;save('qb_troph',troph);}c=c.cfg;}
         if(!c||!c.kids||!c.steps||!c.days)throw 0;cfg=c;normalize();sv();prog=null;ensureProg();renderSettings();
       }catch(e){rs.textContent='That code didn\'t work';}
     });
