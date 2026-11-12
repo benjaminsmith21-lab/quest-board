@@ -177,7 +177,7 @@
   .s-nav button .ni{font-size:22px}
   .s-nav button.sel{background:#2f3670;color:#fff}
   .s-body{flex:1;overflow-y:auto;padding:20px 22px 40px;display:block}
-  .s-inner{max-width:860px;margin:0 auto}
+  .s-inner{max-width:860px;width:100%;min-width:0;margin:0 auto}
   .stitle{margin:0 0 4px;font-size:28px}
   .ssub{color:var(--muted);font-size:16px;margin:0 0 16px}
   .scard{background:var(--bg2);border-radius:18px;padding:16px 18px;margin-bottom:14px}
@@ -271,6 +271,31 @@
   .chip{border:2px solid #444b8a;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:16px;padding:6px 12px;border-radius:99px;cursor:pointer}
   .chip.on{background:#fff;border-color:#fff;color:#1b1f3b}
   .chip.day{min-width:52px}
+  .pill.reward{background:#3a2f6e}
+  .pill.earned{background:#ffd23f;color:#1b1f3b;animation:bannerPop 1.6s ease-in-out infinite}
+  .pbar{width:min(260px,40vw);height:12px;border-radius:99px;background:#0e1130;overflow:hidden}
+  .pfill{height:100%;border-radius:99px;background:#36c47f}
+  .phead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .pav{font-size:38px;line-height:1}.pname{font-size:24px;font-weight:800;border-bottom:4px solid var(--c);padding-bottom:2px}
+  .ptiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .ptile{background:#0e1130;border-radius:14px;padding:10px 12px}
+  .pv{font-size:28px;font-weight:800;line-height:1.1}.pl{font-size:14px;color:var(--muted);font-weight:700}.ps{font-size:12px;color:var(--muted)}
+  .heat{display:grid;gap:4px;align-items:center}
+  .hl{font-size:12px;color:var(--muted);font-weight:700}
+  .hc{aspect-ratio:1/1;max-height:34px;border-radius:5px;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .hc.none{background:transparent;border:1.5px dashed #444b8a}
+  .hc.out{visibility:hidden}
+  .hc.today{outline:2px solid #fff;outline-offset:1px}
+  .hstar{font-size:11px;line-height:1}
+  .hlegend{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+  .hsw{width:14px;height:14px;border-radius:3px;display:inline-block}.hsw.none{border:1.5px dashed #444b8a}
+  .qrow{display:flex;align-items:center;gap:10px;padding:5px 0}
+  .qri{font-size:22px;width:30px;text-align:center}.qrn{flex:1;min-width:0;font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qrv{font-size:14px;color:var(--muted);min-width:90px;text-align:right}
+  .qrow .pbar{flex:none}
+  @media (max-width:560px){.qrow .pbar{width:22vw}.qrv{min-width:44px}.qrv .qfr{display:none}}
+  .ptip{position:fixed;z-index:200;background:#fff;color:#1b1f3b;font-size:14px;font-weight:700;padding:6px 10px;border-radius:8px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;max-width:300px}
+  @media (max-width:700px){.ptiles{grid-template-columns:repeat(2,1fr)}}
   .swatches{display:flex;gap:10px;flex-wrap:wrap}
   .sw{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.25);cursor:pointer}
   .sw.sel{border-color:#fff;box-shadow:0 0 0 3px #2ecc71}
@@ -389,7 +414,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='11 Nov 2026 · recurring events';
+  var BOARD_VERSION='13 Nov 2026 · progress + rewards';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -574,13 +599,15 @@
     addAfter({id:'cream_pm',emoji:'svg:cream',label:'Put cream on',period:'pm'},'dishes');
     cfg.v=7;save('qb_cfg',cfg);
   }
+  // v8: every child gets a permanent id (so history and rewards follow them, not their position)
+  if(cfg.v<8){cfg.kids.forEach(function(kd){if(!kd.id)kd.id='k'+Math.random().toString(36).slice(2,9);});cfg.v=8;save('qb_cfg',cfg);}
   var PALETTE=[['#ff9f43','#a85d14'],['#2ecc9a','#167a5b'],['#5aa9ff','#2b5f99'],['#ff6fb5','#a33a6f'],['#b98cff','#6a45a8'],['#ffd23f','#9c7d10']];
   function kidColour(node,k){var c=PALETTE[k%PALETTE.length];node.style.setProperty('--c',c[0]);node.style.setProperty('--cd',c[1]);}
   function nKids(){return cfg.kids.length;}
   function normalize(){
     var n=nKids();
     for(var d=0;d<7;d++){var a=cfg.days[d].kids;while(a.length<n)a.push([]);if(a.length>n)a.length=n;}
-    cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';kd.clothes=kd.clothes||'shorts';});
+    cfg.kids.forEach(function(kd){kd.reads=kd.reads||{count:0,last:'',prev:''};kd.stars=kd.stars||{count:0,last:'',prev:''};kd.mode=kd.mode||'grid';kd.clothes=kd.clothes||'shorts';if(!kd.id)kd.id='k'+Math.random().toString(36).slice(2,9);});
   }
   normalize();
   function stepByIdRaw(id){for(var i=0;i<cfg.steps.length;i++)if(cfg.steps[i].id===id)return cfg.steps[i];return null;}
@@ -752,6 +779,7 @@
     document.getElementById('uv').style.display='none'; // UV detail is grown-up info: it lives in the small print and drives sunscreen/hat
     applyTheme();
     renderEvents(showBars);
+    recordToday();
     if(view>=nKids())view=-1;
     lanesEl.className=nKids()>3?'many':'';
     if(split){for(var k=0;k<nKids();k++)lanesEl.appendChild(renderLane(k,false));}
@@ -797,6 +825,11 @@
     var kd=cfg.kids[k],b=el('div',{'class':cls});
     b.appendChild(el('span',{'class':'pill',title:'Stars in the star jar'},'⭐ '+(kd.stars.count||0)));
     if(hasReading(k))b.appendChild(el('span',{'class':'pill',title:'Days of reading'},'📚 '+(kd.reads.count||0)));
+    var rws=rewardsFor(k).filter(function(x){return x.rw.show!==false&&!x.p.finished&&!x.p.weekClaimed;});
+    var earned=rws.filter(function(x){return x.p.earned;})[0];
+    if(earned)b.appendChild(el('span',{'class':'pill reward earned',title:earned.rw.prize},'🎁 Reward!'));
+    else if(rws.length){rws.sort(function(a,b){return (b.p.count/b.p.n)-(a.p.count/a.p.n);});var r0=rws[0];
+      b.appendChild(el('span',{'class':'pill reward',title:r0.rw.prize},(r0.rw.emoji||'🎁')+' '+r0.p.count+'/'+r0.p.n));}
     return b;
   }
   function hasReading(k){for(var d=0;d<7;d++)if(cfg.days[d].kids[k].indexOf('reading')>-1)return true;return false;}
@@ -831,6 +864,86 @@
     else d.textContent=ch;
     return d;
   }
+  // ================= Progress history =================
+  // One small record per child per day: what was on their list, what they ticked, star and reading.
+  var hist=load('qb_hist',{});
+  function kidId(k){return cfg.kids[k]&&cfg.kids[k].id;}
+  function recordToday(){
+    var t=today(),day=hist[t]||{},changed=false;
+    for(var k=0;k<nKids();k++){
+      var kd=cfg.kids[k];
+      var rec={am:todaysSteps(k,'am').map(function(s){return s.id;}),pm:todaysSteps(k,'pm').map(function(s){return s.id;}),
+        done:(prog.done[k]||[]).slice(),star:kd.stars.last===t,read:kd.reads.last===t};
+      var j=JSON.stringify(rec);if(JSON.stringify(day[kd.id])!==j){day[kd.id]=rec;changed=true;}
+    }
+    if(changed){
+      hist[t]=day;
+      var keys=Object.keys(hist).sort();if(keys.length>420)keys.slice(0,keys.length-420).forEach(function(x){delete hist[x];});
+      save('qb_hist',hist);
+    }
+  }
+  function histRec(date,kid){return hist[date]&&hist[date][kid]||null;}
+  function recStats(r){
+    if(!r)return null;
+    var all=r.am.concat(r.pm),done=all.filter(function(id){return r.done.indexOf(id)>-1;}).length;
+    return {total:all.length,done:done,allDone:all.length>0&&done===all.length,
+      amAll:r.am.length>0&&r.am.every(function(id){return r.done.indexOf(id)>-1;})};
+  }
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
+  function mondayOf(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
+
+  // ================= Rewards (rules) =================
+  // "If [child] does [thing] [N] times [timeframe], they get [reward]."
+  if(!cfg.rewards)cfg.rewards=[];
+  var RW_TYPES=[['quest','Do a quest'],['allday','Finish every quest for the day'],['mornings','Finish their morning quests'],['stars','Earn stars'],['reading','Do their reading']];
+  function rwKids(rw){return (rw.kids&&rw.kids.length?rw.kids:cfg.kids.map(function(x){return x.id;}));}
+  function rwSatisfied(rw,r){
+    if(!r)return false;var st=recStats(r);
+    if(rw.type==='quest')return r.done.indexOf(rw.quest)>-1;
+    if(rw.type==='allday')return st.allDone;
+    if(rw.type==='mornings')return st.amAll;
+    if(rw.type==='stars')return !!r.star;
+    if(rw.type==='reading')return !!r.read||r.done.indexOf('reading')>-1;
+    return false;
+  }
+  function rwProgress(rw,kid){ // {count, n, earned, from}
+    var t=today0(),n=Math.max(1,+rw.n||1),created=parseD(rw.created||today()),from=created;
+    var since=rw.since&&rw.since[kid];if(since&&parseD(since)>from)from=parseD(since);
+    var count=0;
+    if(rw.frame==='week'){var mon=mondayOf(t);if(mon>from)from=mon;}
+    if(rw.frame==='row'){
+      var d=new Date(t);
+      if(!rwSatisfied(rw,histRec(ymd(d),kid)))d=addDays(d,-1); // today isn't over yet, so it can't break the run
+      while(d>=from&&rwSatisfied(rw,histRec(ymd(d),kid))){count++;d=addDays(d,-1);}
+    } else {
+      for(var x=new Date(from);x<=t;x=addDays(x,1))if(rwSatisfied(rw,histRec(ymd(x),kid)))count++;
+    }
+    var finished=rw.repeat==='once'&&rw.done&&rw.done[kid];
+    var weekClaimed=rw.frame==='week'&&rw.claimedWeek&&rw.claimedWeek[kid]===ymd(mondayOf(t));
+    return {count:Math.min(count,n),raw:count,n:n,earned:!finished&&!weekClaimed&&count>=n,finished:!!finished,weekClaimed:!!weekClaimed};
+  }
+  function rwGive(rw,kid){
+    var t=today0();
+    rw.given=rw.given||{};(rw.given[kid]=rw.given[kid]||[]).push(today());
+    if(rw.repeat==='once'){rw.done=rw.done||{};rw.done[kid]=true;}
+    else if(rw.frame==='week'){rw.claimedWeek=rw.claimedWeek||{};rw.claimedWeek[kid]=ymd(mondayOf(t));}
+    else {rw.since=rw.since||{};rw.since[kid]=ymd(addDays(t,1));} // start counting again from tomorrow
+    sv();
+  }
+  function rwSummary(rw){
+    var ql=((stepByIdRaw(rw.quest)||{}).label||'a quest');
+    var what={quest:'do "'+ql+'"',allday:'finish every quest for the day',mornings:'finish their morning quests',stars:'earn',reading:'do their reading'}[rw.type]||'';
+    var n=+rw.n||1,times=rw.type==='stars'?(n===1?'1 star':n+' stars'):(n===1?'once':n+' times');
+    var frame={since:'',week:' in one week',row:' in a row'}[rw.frame||'since'];
+    if(rw.frame==='row')times=(n===1?'1 day':n+' days');
+    return 'If they '+what+' '+times+frame+(rw.repeat==='once'?' (one time only)':'');
+  }
+  function rewardsFor(k){ // rules that apply to this child, with progress
+    var kid=kidId(k);
+    return cfg.rewards.filter(function(rw){return rw.prize&&rwKids(rw).indexOf(kid)>-1;}).map(function(rw){return {rw:rw,p:rwProgress(rw,kid)};});
+  }
+  function earnedRewardIds(k){return rewardsFor(k).filter(function(x){return x.p.earned;}).map(function(x){return x.rw.id;});}
+
   // A quest tile. Tap to tick. Ticked tiles need a 1.5s hold to undo, so little fingers can't untick by accident.
   function makeTile(k,s,isDone,extra){
     var b=el('button',{'class':'tile'+(isDone?' done':'')+(extra?' '+extra:'')});
@@ -913,6 +1026,7 @@
   function toggle(k,s){
     keepAwake();bumpIdle();
     var kd=cfg.kids[k],done=prog.done[k],i=done.indexOf(s.id),t=today();
+    var rwBefore=earnedRewardIds(k);
     if(i>-1){
       done.splice(i,1);undoSound();
       // undo today's reading day and star if they were just earned
@@ -946,7 +1060,11 @@
         lines.push('You earned a star for your star jar! You have '+kd.stars.count+(kd.stars.count===1?' star!':' stars!'));
       }
       save('qb_cfg',cfg);
-      if(milestone){bigFanfare();confetti(k,['📚','🏆','⭐','🎉','✨']);showBanner('📚 '+milestone+'!',kd.name+' — '+milestone+' days of reading!');}
+      recordToday();
+      var newRw=rewardsFor(k).filter(function(x){return x.p.earned&&rwBefore.indexOf(x.rw.id)<0;})[0];
+      if(newRw)lines.push('And you earned a reward: '+newRw.rw.prize+'! Tell a grown-up!');
+      if(newRw&&!milestone){bigFanfare();confetti(k,['🎁','🎉','⭐','🏆','✨']);showBanner((newRw.rw.emoji||'🎁'),kd.name+' earned: '+newRw.rw.prize+'!');}
+      else if(milestone){bigFanfare();confetti(k,['📚','🏆','⭐','🎉','✨']);showBanner('📚 '+milestone+'!',kd.name+' — '+milestone+' days of reading!');}
       else if(star){fanfare();confetti(k,['⭐','🌟','✨','⭐']);showBanner('⭐','A star for '+kd.name+'\'s jar! ('+kd.stars.count+')');}
       else if(big){fanfare();confetti(k);}
       else blip();
@@ -1202,7 +1320,7 @@
 
   // ================= SETTINGS (sectioned layout) =================
   var sTab='children',sQuestView='days',openAvatar=-1,openEvent=null;
-  var S_TABS=[['children','👧','Children'],['quests','✅','Quests'],['leaving','🚗','Leaving'],['events','📅','Events'],['weather','🌤️','Weather'],['sound','🔊','Sound'],['device','📱','This device']];
+  var S_TABS=[['children','👧','Children'],['quests','✅','Quests'],['leaving','🚗','Leaving'],['events','📅','Events'],['rewards','🏆','Rewards'],['progress','📊','Progress'],['weather','🌤️','Weather'],['sound','🔊','Sound'],['device','📱','This device']];
   function sCard(title,desc){var c=el('div',{'class':'scard'});if(title)c.appendChild(el('h3',null,title));if(desc)c.appendChild(el('p',{'class':'desc'},desc));return c;}
   function sField(label,help,controls){
     var f=el('div',{'class':'field'}),l=el('div',{'class':'fl'});l.appendChild(el('b',null,label));if(help)l.appendChild(el('span',null,help));
@@ -1236,7 +1354,7 @@
     });
     sBody.innerHTML='';
     var inner=el('div',{'class':'s-inner'});sBody.appendChild(inner);
-    ({children:setChildren,quests:setQuests,leaving:setLeaving,events:setEvents,weather:setWeather,sound:setSound,device:setDevice})[sTab](inner);
+    ({children:setChildren,quests:setQuests,leaving:setLeaving,events:setEvents,rewards:setRewards,progress:setProgress,weather:setWeather,sound:setSound,device:setDevice})[sTab](inner);
   }
   function sHead(inner,title,sub){inner.appendChild(el('h2',{'class':'stitle'},title));if(sub)inner.appendChild(el('p',{'class':'ssub'},sub));}
 
@@ -1272,7 +1390,7 @@
     add.addEventListener('click',function(){
       var used=cfg.kids.map(function(x){return x.emoji;});
       var em=AVATARS.filter(function(a){return used.indexOf(a)<0;})[0]||'⭐';
-      cfg.kids.push({name:'Child '+(nKids()+1),emoji:em,mode:'grid',clothes:'shorts',reads:{count:0,last:'',prev:''},stars:{count:0,last:'',prev:''}});
+      cfg.kids.push({id:'k'+Math.random().toString(36).slice(2,9),name:'Child '+(nKids()+1),emoji:em,mode:'grid',clothes:'shorts',reads:{count:0,last:'',prev:''},stars:{count:0,last:'',prev:''}});
       for(var d=0;d<7;d++){var src=cfg.days[d].kids[0]||[];cfg.days[d].kids.push(src.slice());}
       normalize();ensureProg();sv();renderSettings();
     });
@@ -1565,6 +1683,162 @@
     inner.appendChild(dc);
   }
 
+  // ---------- Rewards ----------
+  var openReward=null;
+  function setRewards(inner){
+    sHead(inner,'Rewards','Set up rules like "If Ava brushes her teeth 10 times, she gets a sticker." The board counts it for you and celebrates when it\'s earned.');
+    var kidOf=function(id){return cfg.kids.filter(function(x){return x.id===id;})[0];};
+    // anything waiting to be handed over goes first
+    var waiting=[];
+    cfg.rewards.forEach(function(rw){rwKids(rw).forEach(function(id){var kd=kidOf(id);if(kd&&rw.prize&&rwProgress(rw,id).earned)waiting.push([rw,kd]);});});
+    if(waiting.length){
+      var wc=sCard('🎁 Ready to hand over','Tap "Given" once they have it. The count then starts again (or the reward finishes, if it\'s one-time only).');
+      waiting.forEach(function(x){
+        wc.appendChild(sField(x[1].emoji+' '+x[1].name+' earned '+(x[0].emoji||'🎁')+' '+x[0].prize,rwSummary(x[0]),[sBtn('Given ✓','primary',function(){rwGive(x[0],x[1].id);renderSettings();render();})]));
+      });
+      inner.appendChild(wc);
+    }
+    var lc=sCard('Your rewards','Tap a reward to edit it.');
+    cfg.rewards.forEach(function(rw,idx){
+      var d=el('details',{'class':'item'}),sm=el('summary');
+      sm.appendChild(el('span',{'class':'iic'},rw.emoji||'🎁'));sm.appendChild(el('span',{'class':'iname'},rw.prize||'New reward'));
+      sm.appendChild(el('span',{'class':'tag'},rwSummary(rw)));
+      if(!rw.prize||openReward===rw.id)d.open=true;
+      d.addEventListener('toggle',function(){if(d.open)openReward=rw.id;else if(openReward===rw.id)openReward=null;});
+      d.appendChild(sm);var b=el('div',{'class':'body'});
+      function redraw(){openReward=rw.id;sv();renderSettings();}
+      var em=el('input',{type:'text','class':'emo',value:rw.emoji||'',maxlength:'4',placeholder:'🎁'});em.addEventListener('input',function(){rw.emoji=em.value;sv();});
+      var pz=el('input',{type:'text',value:rw.prize||'',placeholder:'e.g. Choose what\'s for dinner',style:'flex:1;min-width:180px'});pz.addEventListener('input',function(){rw.prize=pz.value;sv();});
+      b.appendChild(sField('They get','What the reward is.',[em,pz]));
+      var who=el('div',{'class':'chips'});
+      cfg.kids.forEach(function(kd){
+        var on=!rw.kids||!rw.kids.length||rw.kids.indexOf(kd.id)>-1;
+        var c=el('button',{'class':'chip'+(on?' on':'')},kd.emoji+' '+kd.name);
+        c.addEventListener('click',function(){var cur=rwKids(rw).slice(),i=cur.indexOf(kd.id);if(i>-1){if(cur.length>1)cur.splice(i,1);}else cur.push(kd.id);
+          rw.kids=cur.length===nKids()?[]:cur;redraw();});
+        who.appendChild(c);
+      });
+      b.appendChild(sField('Who','Each child counts separately.',[who]));
+      b.appendChild(sField('If they…',null,[sSeg(RW_TYPES,rw.type||'quest',function(v){rw.type=v;redraw();})]));
+      if((rw.type||'quest')==='quest'){
+        var qs=el('select');cfg.steps.forEach(function(st){var o=el('option',{value:st.id},(/^svg:/.test(st.emoji)?'':st.emoji+' ')+st.label);if(rw.quest===st.id)o.selected=true;qs.appendChild(o);});
+        if(!rw.quest&&cfg.steps[0]){rw.quest=cfg.steps[0].id;}
+        qs.addEventListener('change',function(){rw.quest=qs.value;redraw();});
+        b.appendChild(sField('Which quest',null,[qs]));
+      }
+      b.appendChild(sField(rw.frame==='row'?'How many days':'How many times',null,[sNum(+rw.n||5,1,function(v){rw.n=v;redraw();},80)]));
+      b.appendChild(sField('Counting',{since:'Adds up over time. Starts again after you mark it as given.',week:'Has to happen within one week (Monday to Sunday). Starts fresh each Monday.',row:'Days in a row. Missing a day starts it again.'}[rw.frame||'since'],
+        [sSeg([['since','Over time'],['week','In one week'],['row','In a row']],rw.frame||'since',function(v){rw.frame=v;redraw();})]));
+      b.appendChild(sField('Repeats',null,[sSeg([['every','Every time it\'s earned'],['once','One time only']],rw.repeat||'every',function(v){rw.repeat=v;redraw();})]));
+      b.appendChild(sField('Show progress on the board','e.g. "🎁 3/5" on their card. Seeing it grow keeps kids keen.',[sSwitch(rw.show!==false,function(v){rw.show=v;sv();})]));
+      b.appendChild(el('p',{'class':'status'},'🏆 '+(rw.prize?rw.prize+': ':'')+rwSummary(rw)+'.'));
+      rwKids(rw).forEach(function(id){
+        var kd=kidOf(id);if(!kd)return;var pr=rwProgress(rw,id);
+        var bar=el('div',{'class':'pbar'});var fill=el('div',{'class':'pfill'});fill.style.width=Math.round(pr.count/pr.n*100)+'%';bar.appendChild(fill);
+        var ctl=[bar,el('span',{'class':'muted',style:'min-width:56px;text-align:right'},pr.count+' / '+pr.n)];
+        if(pr.earned)ctl.push(sBtn('Given ✓','primary',function(){rwGive(rw,id);redraw();render();}));
+        if(pr.finished)ctl=[el('span',{'class':'muted'},'✅ Given')];
+        if(pr.weekClaimed)ctl=[el('span',{'class':'muted'},'✅ Given this week')];
+        b.appendChild(sField(kd.emoji+' '+kd.name,pr.earned?'🎁 Earned! Ready to hand over.':(rw.given&&rw.given[id]?'Given '+rw.given[id].length+'× so far':''),ctl));
+      });
+      var acts=el('div',{'class':'row',style:'justify-content:flex-end;margin-top:6px'});
+      acts.appendChild(sConfirm('Delete reward','Tap again to delete','linkbtn',function(){cfg.rewards.splice(idx,1);sv();renderSettings();render();}));
+      b.appendChild(acts);d.appendChild(b);lc.appendChild(d);
+    });
+    if(!cfg.rewards.length)lc.appendChild(el('p',{'class':'muted'},'No rewards yet. Start with one of the ideas below.'));
+    var adds=el('div',{'class':'row',style:'margin-top:10px'});
+    adds.appendChild(sBtn('+ New reward','primary',function(){var r={id:'r'+Date.now(),emoji:'🎁',prize:'',kids:[],type:'quest',quest:'teeth',n:10,frame:'since',repeat:'every',show:true,created:today()};cfg.rewards.push(r);openReward=r.id;sv();renderSettings();}));
+    lc.appendChild(adds);
+    var ideas=el('div',{'class':'row',style:'margin-top:4px'});ideas.appendChild(el('span',{'class':'muted'},'Ideas:'));
+    [['🍕','Choose what\'s for dinner','allday',5,'week'],['🏞️','Trip to the park','stars',10,'since'],['📕','A new book','reading',20,'since'],['🦷','Sticker','quest',7,'row','teeth'],['🎬','Movie night','mornings',5,'week']].forEach(function(x){
+      ideas.appendChild(sBtn(x[0]+' '+x[1],'',function(){var r={id:'r'+Date.now(),emoji:x[0],prize:x[1],kids:[],type:x[2],quest:x[5]||'',n:x[3],frame:x[4],repeat:'every',show:true,created:today()};cfg.rewards.push(r);openReward=r.id;sv();renderSettings();render();}));
+    });
+    lc.appendChild(ideas);
+    inner.appendChild(lc);
+    inner.appendChild(el('p',{'class':'ssub'},'Rewards count from the day you create them, using what the board records each day.'));
+  }
+
+  // ---------- Progress dashboard ----------
+  var sRange=30,pTip=null;
+  var HEAT=['#2c3158','#1f4d3a','#23704f','#2a9a66','#36c47f','#5fe39d']; // sequential: one hue, dark → bright
+  function heatColour(st){if(!st||!st.total)return null;if(st.done===0)return HEAT[0];var f=st.done/st.total;return f>=1?HEAT[5]:f>=.75?HEAT[4]:f>=.5?HEAT[3]:f>=.25?HEAT[2]:HEAT[1];}
+  function showTip(e,text){
+    if(!pTip){pTip=el('div',{'class':'ptip'});document.body.appendChild(pTip);}
+    pTip.textContent=text;pTip.style.display='block';
+    var x=Math.min(window.innerWidth-pTip.offsetWidth-10,Math.max(10,e.clientX-pTip.offsetWidth/2)),y=e.clientY-pTip.offsetHeight-14;
+    pTip.style.left=x+'px';pTip.style.top=(y<10?e.clientY+18:y)+'px';
+  }
+  function hideTip(){if(pTip)pTip.style.display='none';}
+  function setProgress(inner){
+    sHead(inner,'Progress','How each child is going over time. Tap a square for that day\'s details.');
+    inner.appendChild(sSeg([['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days']],String(sRange),function(v){sRange=+v;renderSettings();}));
+    inner.appendChild(el('div',{style:'height:12px'}));
+    var keys=Object.keys(hist).sort();
+    if(keys.length<3)inner.appendChild(el('p',{'class':'status',style:'margin-bottom:14px'},'📈 Tracking started '+(keys[0]?fmtDate(keys[0]):'today')+'. The dashboard fills in as the days go by.'));
+    var t=today0(),from=addDays(t,-(sRange-1));
+    cfg.kids.forEach(function(kd,k){
+      var c=sCard();kidColour(c,k);
+      var hd=el('div',{'class':'phead'});hd.appendChild(el('span',{'class':'pav'},kd.emoji));hd.appendChild(el('span',{'class':'pname'},kd.name));c.appendChild(hd);
+      var tot=0,dn=0,full=0,stars=0,reads=0,days=0,amT=0,amD=0,pmT=0,pmD=0,per={};
+      for(var x=new Date(from);x<=t;x=addDays(x,1)){
+        var r=histRec(ymd(x),kd.id);if(!r)continue;var st=recStats(r);if(!st.total)continue;
+        days++;tot+=st.total;dn+=st.done;if(st.allDone)full++;if(r.star)stars++;if(r.read||r.done.indexOf('reading')>-1)reads++;
+        r.am.forEach(function(id){amT++;if(r.done.indexOf(id)>-1)amD++;});r.pm.forEach(function(id){pmT++;if(r.done.indexOf(id)>-1)pmD++;});
+        r.am.concat(r.pm).forEach(function(id){per[id]=per[id]||[0,0];per[id][1]++;if(r.done.indexOf(id)>-1)per[id][0]++;});
+      }
+      // headline numbers
+      var tiles=el('div',{'class':'ptiles'});
+      [[tot?Math.round(dn/tot*100)+'%':'–','Quests done',tot?dn+' of '+tot:'No data yet'],[String(full),'Full days',days?'of '+days+' tracked':''],
+       ['⭐ '+stars,'Stars earned',''],['📚 '+reads,'Reading days','']].forEach(function(x){
+        var tl=el('div',{'class':'ptile'});tl.appendChild(el('div',{'class':'pv'},x[0]));tl.appendChild(el('div',{'class':'pl'},x[1]));if(x[2])tl.appendChild(el('div',{'class':'ps'},x[2]));tiles.appendChild(tl);
+      });
+      c.appendChild(tiles);
+      // calendar heatmap: a row per weekday, a column per week
+      var start=mondayOf(from),weeks=Math.ceil((daysBetween(start,t)+1)/7);
+      var hm=el('div',{'class':'heat'});hm.style.gridTemplateColumns='34px repeat('+weeks+',1fr)';
+      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(lbl,row){
+        hm.appendChild(el('div',{'class':'hl'},row%2===0?lbl:''));
+        for(var w=0;w<weeks;w++){
+          var day=addDays(start,w*7+row),key=ymd(day),r=histRec(key,kd.id),st=recStats(r),cell=el('div',{'class':'hc'});
+          if(day<from||day>t)cell.classList.add('out');
+          else{
+            var col=heatColour(st);
+            if(col)cell.style.background=col;else cell.classList.add('none');
+            if(st&&st.allDone)cell.appendChild(el('span',{'class':'hstar'},'⭐'));
+            if(key===today())cell.classList.add('today');
+            (function(day,st,r){
+              var txt=DAYS[day.getDay()]+' '+fmtDate(ymd(day))+': '+(!st||!st.total?'no quests recorded':st.done+' of '+st.total+' quests ('+Math.round(st.done/st.total*100)+'%)'+(st.allDone?' · ⭐ full day':'')+(r&&(r.read||r.done.indexOf('reading')>-1)?' · 📚 read':''));
+              cell.addEventListener('pointerenter',function(e){showTip(e,txt);});cell.addEventListener('pointerleave',hideTip);
+              cell.addEventListener('click',function(e){showTip(e,txt);setTimeout(hideTip,2500);});
+            })(day,st,r);
+          }
+          hm.appendChild(cell);
+        }
+      });
+      c.appendChild(hm);
+      var lg=el('div',{'class':'hlegend'});lg.appendChild(el('span',null,'Fewer done'));
+      HEAT.forEach(function(h){var sw=el('span',{'class':'hsw'});sw.style.background=h;lg.appendChild(sw);});
+      lg.appendChild(el('span',null,'All done ⭐'));var nn=el('span',{'class':'hsw none'});lg.appendChild(nn);lg.appendChild(el('span',null,'No quests'));
+      c.appendChild(lg);
+      // morning vs afternoon
+      if(amT||pmT)c.appendChild(sField('Morning vs afternoon','Share of quests done in each part of the day.',[
+        el('span',{'class':'pill'},'🌅 '+(amT?Math.round(amD/amT*100)+'%':'–')),el('span',{'class':'pill'},'☀️ '+(pmT?Math.round(pmD/pmT*100)+'%':'–'))]));
+      // quest by quest, least done first
+      var rows=Object.keys(per).map(function(id){return [id,per[id][0],per[id][1]];}).filter(function(x){return stepByIdRaw(x[0]);});
+      rows.sort(function(a,b){return (a[1]/a[2])-(b[1]/b[2])||b[2]-a[2];});
+      if(rows.length){
+        c.appendChild(el('div',{'class':'pergrp',style:'margin-top:10px'},'Quest by quest (least done first)'));
+        rows.slice(0,10).forEach(function(x){
+          var s0=stepByIdRaw(x[0]),pct=Math.round(x[1]/x[2]*100);
+          var row=el('div',{'class':'qrow'});row.appendChild(iconEl(s0.emoji,'qri'));row.appendChild(el('span',{'class':'qrn'},s0.label));
+          var bar=el('div',{'class':'pbar'});var f=el('div',{'class':'pfill'});f.style.width=pct+'%';bar.appendChild(f);row.appendChild(bar);
+          var qv=el('span',{'class':'qrv'});qv.appendChild(el('span',{'class':'qfr'},x[1]+'/'+x[2]+' · '));qv.appendChild(document.createTextNode(pct+'%'));row.appendChild(qv);c.appendChild(row);
+        });
+      }
+      inner.appendChild(c);
+    });
+  }
+
   // ---------- Weather ----------
   function setWeather(inner){
     sHead(inner,'Weather','Powers "What should I wear?" and the automatic sunscreen reminder.');
@@ -1666,17 +1940,19 @@
     bk.appendChild(ta);
     var brow=el('div',{'class':'row',style:'margin-top:8px'});
     var mk=sBtn('Make backup code','primary',function(){
-      ta.value='QB1:'+btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+      ta.value='QB2:'+btoa(unescape(encodeURIComponent(JSON.stringify({cfg:cfg,hist:hist}))));
       try{ta.select();if(navigator.clipboard)navigator.clipboard.writeText(ta.value).then(function(){mk.textContent='Copied ✓ (email it to yourself)';},function(){mk.textContent='Select and copy the code';});}catch(e){}
     });
     var rs=sBtn('Restore from code','',function(){
-      try{var v=ta.value.trim();if(v.indexOf('QB1:')!==0)throw 0;var c=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));
+      try{var v=ta.value.trim(),fmt=v.slice(0,4);if(fmt!=='QB1:'&&fmt!=='QB2:')throw 0;var c=JSON.parse(decodeURIComponent(escape(atob(v.slice(4)))));
+        if(fmt==='QB2:'){if(c.hist){hist=c.hist;save('qb_hist',hist);}c=c.cfg;}
         if(!c||!c.kids||!c.steps||!c.days)throw 0;cfg=c;normalize();sv();prog=null;ensureProg();renderSettings();
       }catch(e){rs.textContent='That code didn\'t work';}
     });
     brow.appendChild(mk);brow.appendChild(rs);bk.appendChild(brow);inner.appendChild(bk);
     var rc=sCard('Reset');
     rc.appendChild(sField('Clear today\'s ticks','Unticks everything for today. Stars and reading days stay.',[sConfirm('Clear','Tap again to clear','btn',function(){prog=null;ensureProg();renderSettings();})]));
+    rc.appendChild(sField('Clear progress history','Empties the Progress dashboard and restarts reward counts. Stars and reading days stay.',[sConfirm('Clear history','Tap again to clear','btn danger',function(){hist={};save('qb_hist',hist);recordToday();renderSettings();})]));
     rc.appendChild(sField('Restore the default quests','Replaces your quests and week plan. Children, stars and reading days stay.',[sConfirm('Restore','Tap again to restore','btn danger',function(){var names=cfg.kids;cfg=defaults();cfg.kids=names;normalize();sv();renderSettings();})]));
     inner.appendChild(rc);
     var uc=sCard('Updates','The board checks for a new version every 10 minutes and refreshes itself when nobody has touched it for a minute or two.');
