@@ -427,6 +427,44 @@
   .mile-big .medal{--s:min(220px,40vw);margin:0 auto}
   @media (max-width:600px){.tbox{padding:10px 12px 60px}.thead{padding:8px 12px 12px;margin:0 -12px;gap:10px}.tname{font-size:24px}.tlevel{padding:6px 10px;gap:8px}.tlem{font-size:28px}.tlname{font-size:16px}.tring{width:96px;height:96px}.tring .medal{width:84px;height:84px;--s:62px}.tring .medal .face{left:11px}.tmonth{padding:10px 14px 10px 10px;gap:10px}.tmn{font-size:18px}.tms{font-size:13px}.tmc{font-size:24px}.tgrid{grid-template-columns:repeat(2,1fr)}.ttile{min-width:0}.medal{--s:80px}.tav{width:70px;height:70px;font-size:46px}.tclose{width:54px;height:54px}}
   @media (prefers-reduced-motion:reduce){.medal .sheen,.medal.t4,.tnew,.pill.troph.new::after{animation:none}}
+  /* ---- proof ---- */
+  .pfbadge{position:absolute;top:8px;left:10px;font-size:22px;line-height:1;background:#0e1130;border-radius:99px;padding:4px 6px;pointer-events:none}
+  .tile.mini .pfbadge{font-size:13px;top:3px;left:3px;padding:2px 3px}
+  #proofOv{position:fixed;inset:0;z-index:68;background:#171b45;display:none}
+  #proofOv.show{display:block;animation:mileIn .35s cubic-bezier(.3,1.4,.6,1)}
+  .pfbox{height:100%;display:flex;flex-direction:column;padding:14px 18px 18px;box-sizing:border-box;max-width:1000px;margin:0 auto}
+  .pfhead{display:flex;align-items:center;gap:14px}
+  .pfic{font-size:54px;line-height:1;width:64px;text-align:center}.pfic .svgicon{width:58px;height:58px}
+  .pft{flex:1;font-size:clamp(26px,4vw,40px);font-weight:800}
+  .pfstage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding-top:10px}
+  .pfcam{position:relative;flex:1;min-height:0;width:100%;border-radius:26px;overflow:hidden;background:#000;border:5px solid var(--c);display:flex;align-items:center;justify-content:center}
+  .pfcam video,.pfcam .pfimg{width:100%;height:100%;object-fit:contain;display:block}
+  .pfcam.flash::after{content:'';position:absolute;inset:0;background:#fff;animation:pfflash .35s forwards}
+  @keyframes pfflash{to{opacity:0}}
+  .pfcount{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:min(40vw,240px);font-weight:800;color:#fff;text-shadow:0 0 30px rgba(0,0,0,.8)}
+  .pfcount.on{display:flex}
+  .pfrow{display:flex;gap:28px;justify-content:center;flex:none}
+  .pfshot{width:120px;height:120px;border-radius:50%;border:8px solid #fff;background:var(--c);cursor:pointer;font-size:48px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+  .pfshot:disabled{opacity:.5}
+  .pfbtn{width:150px;height:100px;border-radius:26px;border:none;font-size:52px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+  .pfbtn.keep{background:#2ecc71}.pfbtn.again{background:#3a4180}
+  .pfbig{font-size:min(30vw,170px);line-height:1}
+  .pfmsg{font-size:clamp(30px,5vw,52px);font-weight:800}
+  .pfhold{position:relative;overflow:hidden;width:min(560px,90vw);height:100px;border-radius:26px;border:4px solid var(--c);background:#0e1130;color:#fff;font-family:inherit;font-size:24px;font-weight:800;cursor:pointer;margin-top:20px;touch-action:none;user-select:none;-webkit-user-select:none}
+  .pfhold span{position:relative}
+  .pffill{position:absolute;inset:0;width:0;background:var(--c);transition:width .2s}
+  .pfhold.holding .pffill{width:100%;transition:width 2s linear}
+  .pfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .pfcell{background:#1a1e46;border:none;border-radius:16px;padding:0;overflow:hidden;color:#fff;font-family:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column}
+  .pfcell img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .pfno{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--muted);background:#232858}
+  .pfno.big{font-size:90px;width:300px;max-width:80vw;border-radius:16px}
+  .pfcap{padding:8px 10px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:2px}.pfcap b{color:#fff;font-size:14px}
+  .pflight{position:fixed;inset:0;z-index:90;background:rgba(8,10,30,.88);display:flex;align-items:center;justify-content:center;padding:16px}
+  .pflcard{background:#232858;border-radius:22px;padding:14px;max-width:min(900px,96vw);max-height:94vh;display:flex;flex-direction:column;align-items:center;overflow:auto}
+  .pflcard img{max-width:100%;max-height:68vh;border-radius:14px}
+  .pflcard .pfcap{font-size:16px;text-align:center}
+  @media (max-width:600px){.pfshot{width:96px;height:96px}.pfbtn{width:120px;height:84px}}
 </style>
 </head>
 <body>
@@ -446,6 +484,7 @@
     <button class="iconbtn" id="gearBtn" title="Settings">⚙️</button>
   </header>
   <div id="trophyOv"></div>
+  <div id="proofOv"></div>
   <div id="clockOv"><div class="clockbox"><div id="clockSvg"></div><div class="clockdig" id="clockDig"></div><div class="clockleave" id="clockLeave"></div></div></div>
   <div class="wx" id="wx" title="Tap to hear today's clothes">
     <div class="wx-badge" id="wxBadge"><span id="wxIcon">🌤️</span><span id="wxTemp">--°</span></div>
@@ -482,7 +521,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='13 Nov 2026 · trophy case';
+  var BOARD_VERSION='13 Nov 2026 · proof';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -696,6 +735,7 @@
     if(Array.isArray(prog.celebrated))prog.celebrated={am:prog.celebrated,pm:[]};
     var n=nKids();
     while(prog.done.length<n)prog.done.push([]);if(prog.done.length>n)prog.done.length=n;
+    if(!prog.proof)prog.proof=[];while(prog.proof.length<n)prog.proof.push({});if(prog.proof.length>n)prog.proof.length=n;
     ['am','pm'].forEach(function(p){var a=prog.celebrated[p];while(a.length<n)a.push(false);if(a.length>n)a.length=n;});
     save('qb_prog',prog);
   }
@@ -948,6 +988,7 @@
       var kd=cfg.kids[k];
       var rec={am:todaysSteps(k,'am').map(function(s){return s.id;}),pm:todaysSteps(k,'pm').map(function(s){return s.id;}),
         done:(prog.done[k]||[]).slice(),star:kd.stars.last===t,read:kd.reads.last===t};
+      var pf=prog.proof&&prog.proof[k];if(pf){var pk={};for(var pid in pf)if(rec.done.indexOf(pid)>-1)pk[pid]=pf[pid];if(Object.keys(pk).length)rec.proof=pk;}
       // when they started, and when the morning was finished (for Early Bird / Rocket badges)
       var prev=day[kd.id]||{},nowM=new Date().getHours()*60+new Date().getMinutes();
       if(prev.t0!=null)rec.t0=prev.t0;else if(rec.done.length===1&&!(prev.done&&prev.done.length))rec.t0=nowM;
@@ -1297,6 +1338,142 @@
   function closeTrophies(){var ov=document.getElementById('trophyOv');ov.classList.remove('show');ov.innerHTML='';trophKid=-1;stopSpeaking();bumpIdle();}
   setInterval(function(){if(trophKid>-1&&Date.now()-lastTouch>120000)closeTrophies();},15000);
 
+  // ================= Proof (photo or "show a grown-up") =================
+  // A quest can ask for proof. It still ticks straight away; grown-ups check later on the Progress tab.
+  // Photos are kept on this tablet only (IndexedDB) and deleted after 14 days.
+  var PHOTO_DAYS=14,pdb=null,proofRun=null;
+  function photoDB(cb){
+    if(pdb)return cb(pdb);if(!window.indexedDB)return cb(null);
+    try{var rq=indexedDB.open('qb_photos',1);
+      rq.onupgradeneeded=function(){rq.result.createObjectStore('p');};
+      rq.onsuccess=function(){pdb=rq.result;cb(pdb);};rq.onerror=function(){cb(null);};
+    }catch(e){cb(null);}
+  }
+  function photoKey(date,kid,step){return date+'|'+kid+'|'+step;}
+  function photoPut(key,url,cb){photoDB(function(db){if(!db)return cb(false);
+    try{var tx=db.transaction('p','readwrite');tx.objectStore('p').put({url:url,ts:Date.now()},key);
+      tx.oncomplete=function(){cb(true);};tx.onerror=function(){cb(false);};}catch(e){cb(false);}});}
+  function photoDel(key){photoDB(function(db){if(db)try{db.transaction('p','readwrite').objectStore('p').delete(key);}catch(e){}});}
+  function photoAll(cb){photoDB(function(db){if(!db)return cb({});var out={};
+    try{var rq=db.transaction('p','readonly').objectStore('p').openCursor();
+      rq.onsuccess=function(){var c=rq.result;if(c){out[c.key]=c.value.url;c.continue();}else cb(out);};rq.onerror=function(){cb(out);};}catch(e){cb(out);}});}
+  function photoPrune(){var cut=ymd(addDays(today0(),-PHOTO_DAYS));photoAll(function(m){for(var key in m)if(key.slice(0,10)<cut)photoDel(key);});}
+  setTimeout(photoPrune,6000);
+  function stopCam(){if(proofRun&&proofRun.stream){proofRun.stream.getTracks().forEach(function(t){t.stop();});proofRun.stream=null;}}
+  function closeProof(){stopCam();proofRun=null;var ov=document.getElementById('proofOv');ov.classList.remove('show');ov.innerHTML='';}
+  setInterval(function(){if(proofRun&&Date.now()-lastTouch>180000){closeProof();}},15000); // walked off? turn the camera off after 3 min
+  function openProof(k,s){
+    keepAwake();bumpIdle();
+    var ov=document.getElementById('proofOv');ov.innerHTML='';kidColour(ov,k);ov.classList.add('show');
+    proofRun={k:k,s:s,stream:null};
+    var box=el('div',{'class':'pfbox'});ov.appendChild(box);
+    var head=el('div',{'class':'pfhead'});head.appendChild(iconEl(s.emoji,'pfic'));head.appendChild(el('div',{'class':'pft'},s.label));
+    var x=el('button',{'class':'tclose',title:'Cancel'},'✕');x.addEventListener('click',function(){closeProof();stopSpeaking();});head.appendChild(x);
+    box.appendChild(head);
+    var stage=el('div',{'class':'pfstage'});box.appendChild(stage);
+    if(s.proof==='photo'&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)proofCamera(stage,k,s);
+    else proofParent(stage,k,s,s.proof==='photo'?'This tablet can\'t take photos, so':'');
+  }
+  function proofCamera(stage,k,s){
+    stopCam();stage.innerHTML='';
+    var wrap=el('div',{'class':'pfcam'}),vid=el('video',{autoplay:'',playsinline:''});vid.muted=true;
+    var cd=el('div',{'class':'pfcount'});wrap.appendChild(vid);wrap.appendChild(cd);stage.appendChild(wrap);
+    var row=el('div',{'class':'pfrow'}),shot=el('button',{'class':'pfshot',title:'Take the photo'});shot.appendChild(el('span',null,'📸'));row.appendChild(shot);stage.appendChild(row);
+    say('Show me! Point the tablet at it, then press the big button.');
+    var run=proofRun;
+    navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false}).then(function(st){
+      if(proofRun!==run){st.getTracks().forEach(function(t){t.stop();});return;}
+      run.stream=st;vid.srcObject=st;var p=vid.play();if(p&&p.catch)p.catch(function(){});
+    }).catch(function(){if(proofRun===run)proofParent(stage,k,s,'The camera isn\'t working, so');});
+    shot.addEventListener('click',function(){
+      if(shot.disabled||!vid.videoWidth)return;shot.disabled=true;bumpIdle();
+      var n=3;cd.textContent=n;cd.classList.add('on');tone(660,0,0.15);
+      var iv=setInterval(function(){n--;if(proofRun!==run){clearInterval(iv);return;}
+        if(n>0){cd.textContent=n;tone(660,0,0.15);}else{clearInterval(iv);cd.classList.remove('on');snap();}},800);
+    });
+    function snap(){
+      var w=vid.videoWidth,h=vid.videoHeight,sc=Math.min(1,800/Math.max(w,h));
+      var c=document.createElement('canvas');c.width=Math.round(w*sc);c.height=Math.round(h*sc);
+      c.getContext('2d').drawImage(vid,0,0,c.width,c.height);
+      var url=c.toDataURL('image/jpeg',0.72);
+      tone(1400,0,0.06);tone(900,0.06,0.08);wrap.classList.add('flash');
+      stopCam();review(url);
+    }
+    function review(url){
+      wrap.innerHTML='';wrap.appendChild(el('img',{src:url,'class':'pfimg',alt:'photo'}));
+      row.innerHTML='';
+      var again=el('button',{'class':'pfbtn again',title:'Take it again'},'🔄'),keep=el('button',{'class':'pfbtn keep',title:'Keep it'},'👍');
+      again.addEventListener('click',function(){bumpIdle();proofCamera(stage,k,s);});
+      keep.addEventListener('click',function(){
+        if(keep.disabled)return;keep.disabled=true;
+        photoPut(photoKey(today(),kidId(k),s.id),url,function(){closeProof();toggle(k,s,'photo');});
+      });
+      row.appendChild(again);row.appendChild(keep);
+      say('Great photo! Press the thumbs up to keep it.');
+    }
+  }
+  function proofParent(stage,k,s,why){
+    stopCam();stage.innerHTML='';
+    stage.appendChild(el('div',{'class':'pfbig'},'🙋'));
+    stage.appendChild(el('div',{'class':'pfmsg'},'Show a grown-up!'));
+    var hb=el('button',{'class':'pfhold'}),fill=el('div',{'class':'pffill'});hb.appendChild(fill);hb.appendChild(el('span',null,'Grown-up: hold to say OK'));
+    stage.appendChild(hb);
+    say((why?why+' g':'G')+'o and show a grown-up! Grown-up, hold the button to say OK.');
+    var t=null;
+    function stop(){if(t){clearTimeout(t);t=null;}hb.classList.remove('holding');}
+    hb.addEventListener('pointerdown',function(e){try{hb.setPointerCapture(e.pointerId);}catch(_){}bumpIdle();hb.classList.add('holding');
+      t=setTimeout(function(){t=null;closeProof();toggle(k,s,'parent');},2000);});
+    hb.addEventListener('pointerup',stop);hb.addEventListener('pointercancel',stop);
+    hb.addEventListener('contextmenu',function(e){e.preventDefault();});
+  }
+  // A grown-up says "not good enough": untick it (today), or take it off a past day.
+  function proofReject(date,k,stepId){
+    var kid=kidId(k),kd=cfg.kids[k];
+    if(date===today()){var s=stepByIdRaw(stepId);if(s&&prog.done[k].indexOf(stepId)>-1)toggle(k,s);}
+    else{
+      var r=histRec(date,kid);
+      if(r){var i=r.done.indexOf(stepId);if(i>-1)r.done.splice(i,1);if(r.proof)delete r.proof[stepId];
+        if(r.star){r.star=false;kd.stars.count=Math.max(0,(kd.stars.count||0)-1);}
+        if(stepId==='reading'&&r.read){r.read=false;kd.reads.count=Math.max(0,(kd.reads.count||0)-1);}
+        save('qb_hist',hist);sv();}
+    }
+    photoDel(photoKey(date,kid,stepId));render();
+  }
+  function proofCard(inner){
+    var c=sCard('📸 Proof check','Ticks with a photo or a grown-up OK from the last '+PHOTO_DAYS+' days. Not good enough? Tap it and untick it. Photos stay on this tablet only and delete themselves after '+PHOTO_DAYS+' days.');
+    var items=[],t0=today0();
+    for(var n=0;n<PHOTO_DAYS;n++){var ds=ymd(addDays(t0,-n));
+      for(var k=0;k<nKids();k++){var r=histRec(ds,kidId(k));if(r&&r.proof)for(var id in r.proof)if(r.done.indexOf(id)>-1)items.push({date:ds,k:k,id:id,type:r.proof[id]});}}
+    var any=cfg.steps.some(function(s){return s.proof;});
+    if(!items.length){c.appendChild(el('p',{'class':'muted'},any?'Nothing to check yet.':'No quests ask for proof yet. Turn it on for a quest in Quests → Edit quests → Proof.'));inner.appendChild(c);return;}
+    var grid=el('div',{'class':'pfgrid'});c.appendChild(grid);inner.appendChild(c);
+    photoAll(function(urls){
+      items.forEach(function(it){
+        var kd=cfg.kids[it.k],s=stepByIdRaw(it.id)||{emoji:'✅',label:it.id};
+        var cell=el('button',{'class':'pfcell'});
+        var url=urls[photoKey(it.date,kd.id,it.id)];
+        if(it.type==='photo'&&url)cell.appendChild(el('img',{src:url,alt:s.label}));
+        else cell.appendChild(el('div',{'class':'pfno'},it.type==='photo'?'📷 photo gone':'🙋 Grown-up OK'));
+        var cap=el('div',{'class':'pfcap'});cap.appendChild(el('b',null,kd.emoji+' '+kd.name));
+        cap.appendChild(el('span',null,s.label+' · '+(it.date===today()?'today':fmtDate(it.date))));cell.appendChild(cap);
+        cell.addEventListener('click',function(){proofLight(it,url,kd,s);});
+        grid.appendChild(cell);
+      });
+    });
+  }
+  function proofLight(it,url,kd,s){
+    var o=el('div',{'class':'pflight'});
+    var card=el('div',{'class':'pflcard'});
+    if(url)card.appendChild(el('img',{src:url,alt:s.label}));else card.appendChild(el('div',{'class':'pfno big'},it.type==='photo'?'📷':'🙋'));
+    card.appendChild(el('div',{'class':'pfcap'},kd.emoji+' '+kd.name+' · '+s.label+' · '+(it.date===today()?'today':fmtDate(it.date))));
+    var row=el('div',{'class':'row',style:'justify-content:center;margin-top:10px'});
+    row.appendChild(sConfirm('Not good enough: untick','Tap again to untick','btn danger',function(){proofReject(it.date,it.k,it.id);o.remove();renderSettings();}));
+    row.appendChild(sBtn('Looks good 👍','primary',function(){o.remove();}));
+    card.appendChild(row);o.appendChild(card);
+    o.addEventListener('click',function(e){if(e.target===o)o.remove();});
+    document.body.appendChild(o);
+  }
+
   // A quest tile. Tap to tick. Ticked tiles need a 1.5s hold to undo, so little fingers can't untick by accident.
   function makeTile(k,s,isDone,extra){
     var b=el('button',{'class':'tile'+(isDone?' done':'')+(extra?' '+extra:'')});
@@ -1304,6 +1481,7 @@
     if(extra!=='mini')b.appendChild(el('div',{'class':'lb'},s.label));
     b.appendChild(el('div',{'class':'tick'},'✅'));
     b.appendChild(el('div',{'class':'hold'}));
+    if(s.proof&&!isDone)b.appendChild(el('div',{'class':'pfbadge',title:s.proof==='photo'?'Needs a photo':'Show a grown-up'},s.proof==='photo'?'📸':'🙋'));
     if(!isDone){b.addEventListener('click',function(){toggle(k,s);});return b;}
     var t=null;
     b.addEventListener('pointerdown',function(e){
@@ -1376,12 +1554,14 @@
       for(var j=0;j<st.length;j++)if(prog.done[k].indexOf(st[j].id)<0)return false;}
     return any;
   }
-  function toggle(k,s){
+  function toggle(k,s,proofType){ // proofType: 'photo' | 'parent' once the proof screen has been passed
     keepAwake();bumpIdle();
     var kd=cfg.kids[k],done=prog.done[k],i=done.indexOf(s.id),t=today();
+    if(i<0&&s.proof&&!proofType){openProof(k,s);return;}
     var rwBefore=earnedRewardIds(k);
     if(i>-1){
       done.splice(i,1);undoSound();
+      if(prog.proof[k]&&prog.proof[k][s.id]){if(prog.proof[k][s.id]==='photo')photoDel(photoKey(t,kidId(k),s.id));delete prog.proof[k][s.id];}
       // undo today's reading day and star if they were just earned
       if(s.id==='reading'&&kd.reads.last===t){kd.reads.count=Math.max(0,kd.reads.count-1);kd.reads.last=kd.reads.prev||'';}
       if(kd.stars.last===t&&!allDoneToday(k)){kd.stars.count=Math.max(0,kd.stars.count-1);kd.stars.last=kd.stars.prev||'';}
@@ -1389,6 +1569,7 @@
     }
     else{
       done.push(s.id);
+      if(proofType)prog.proof[k][s.id]=proofType;
       var per=curPeriod(),lines=[],big=false,milestone=0;
       var steps=todaysSteps(k,per);
       var left=steps.filter(function(x){return done.indexOf(x.id)<0;}).length;
@@ -1509,7 +1690,7 @@
   function applyUpdate(){location.reload();}
   function idleUpdate(){
     if(!updateReady)return;
-    var busy=document.getElementById('settings').classList.contains('open')||document.getElementById('clockOv').classList.contains('show')||document.getElementById('gate').classList.contains('open')||trophKid>-1;
+    var busy=document.getElementById('settings').classList.contains('open')||document.getElementById('clockOv').classList.contains('show')||document.getElementById('gate').classList.contains('open')||trophKid>-1||!!proofRun;
     if(!busy&&view===-1&&Date.now()-lastTouch>90000)applyUpdate(); // quietly refresh after 1½ minutes untouched
   }
   setTimeout(checkUpdate,8000);
@@ -1862,7 +2043,7 @@
       list.forEach(function(s,li){
         var d=el('details',{'class':'item','data-id':s.id}),sm=el('summary');
         sm.appendChild(grip());sm.appendChild(iconEl(s.emoji,'iic'));sm.appendChild(el('span',{'class':'iname'},s.label));
-        sm.appendChild(el('span',{'class':'tag'},'🗣️ '+pastPhrase(s)));
+        sm.appendChild(el('span',{'class':'tag'},(s.proof==='photo'?'📸 ':s.proof==='parent'?'🙋 ':'')+'🗣️ '+pastPhrase(s)));
         d.appendChild(sm);var b=el('div',{'class':'body'});
         var e1=el('input',{type:'text','class':'emo',value:/^svg:/.test(s.emoji)?'':s.emoji,placeholder:/^svg:/.test(s.emoji)?'🖼️':'',maxlength:'4',title:/^svg:/.test(s.emoji)?'Uses a built-in picture. Type an emoji to replace it.':''});
         e1.addEventListener('input',function(){if(e1.value.trim()){s.emoji=e1.value;sv();}});
@@ -1872,6 +2053,7 @@
         var sy=el('input',{type:'text',value:s.say||'',placeholder:pastPhrase({id:s.id,label:s.label}),style:'flex:1;min-width:200px'});
         sy.addEventListener('input',function(){s.say=sy.value.replace(/,?\s*(superstar|champ|legend|great job|well done|nice work)!?$/i,'');sv();});
         b.appendChild(sField('What the voice says','Leave blank to use the suggestion. "Superstar!" etc. is added for you.',[sy,sBtn('▶','',function(){var v=cfg.voice;cfg.voice=true;say(praiseLine(s));cfg.voice=v;})]));
+        b.appendChild(sField('Proof','Photo: they take a picture to tick it, e.g. a made bed. Grown-up: a grown-up holds a button to OK it. Either way it ticks straight away; check later on the Progress tab.',[sSeg([['','None'],['photo','📸 Photo'],['parent','🙋 Show a grown-up']],s.proof||'',function(v){s.proof=v;sv();})]));
         var acts=el('div',{'class':'row',style:'margin-top:8px'});
         acts.appendChild(el('span',{style:'flex:1'}));
         acts.appendChild(sConfirm('Delete quest','Tap again to delete','linkbtn',function(){
@@ -2142,6 +2324,7 @@
     sHead(inner,'Progress','How each child is going over time. Tap a square for that day\'s details.');
     inner.appendChild(sSeg([['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days']],String(sRange),function(v){sRange=+v;renderSettings();}));
     inner.appendChild(el('div',{style:'height:12px'}));
+    proofCard(inner);
     var keys=Object.keys(hist).sort();
     if(keys.length<3)inner.appendChild(el('p',{'class':'status',style:'margin-bottom:14px'},'📈 Tracking started '+(keys[0]?fmtDate(keys[0]):'today')+'. The dashboard fills in as the days go by.'));
     var t=today0(),from=addDays(t,-(sRange-1));
