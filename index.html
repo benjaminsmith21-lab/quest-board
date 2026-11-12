@@ -23,7 +23,7 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
   html,body{margin:0;height:100%;background:radial-gradient(circle at 20% 0%,#2f3670 0%,var(--bg) 60%);color:var(--ink);font-family:'Baloo 2',system-ui,sans-serif;overflow:hidden}
   #app{display:flex;flex-direction:column;height:100%;padding:10px 14px 14px;gap:10px}
-  header{display:flex;align-items:center;gap:14px;position:relative;min-height:56px}
+  header{display:flex;align-items:center;gap:12px;position:relative;min-height:56px;--hb:clamp(48px,5.2vw,56px)}
   .brand{background:none;border:none;padding:0;cursor:pointer;flex:none;line-height:0}
   .brand svg{height:clamp(42px,5.4vw,60px);width:auto;display:block}
   .brand.wiggle svg{animation:wiggle .7s ease-in-out}
@@ -31,16 +31,24 @@
   header.centred .countdown{visibility:hidden}
   header.centred .dt{position:absolute;left:50%;transform:translateX(-50%);text-align:center;display:flex;align-items:baseline;gap:14px;white-space:nowrap}
   .day{font-size:clamp(20px,3.2vw,34px);font-weight:800;line-height:1}
+  header:not(.centred) .dt{display:flex;flex-direction:column;justify-content:center;gap:2px;flex:none;line-height:1}
+  @media (max-width:640px){header:not(.centred){flex-wrap:wrap;row-gap:10px}header:not(.centred) .countdown{order:5;flex:1 1 100%}header:not(.centred) .dt{flex:1}}
   .clock{font-size:clamp(16px,2.4vw,26px);color:var(--muted);font-weight:700}
-  .countdown{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
-  .cd-label{font-size:clamp(13px,1.6vw,17px);font-weight:700;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cd-label.big{font-size:clamp(20px,3vw,34px);font-weight:800;color:#fff}
-  .road{position:relative;height:clamp(40px,5.5vw,58px);border-radius:99px;background:#0e1130;overflow:visible}
+  .countdown{flex:1;display:flex;align-items:center;min-width:0}
+  .cd-label{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:0 6px;font-size:clamp(14px,1.8vw,19px);font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;pointer-events:none}
+  .cd-label span{overflow:hidden;text-overflow:ellipsis}
+  .cd-label.big{left:0!important;right:clamp(44px,5.4vw,60px)!important}
+  .cd-label.big{font-size:clamp(18px,2.6vw,28px);color:#1b1f3b;text-shadow:none}
+  .mover,.car{z-index:2}
+  .road{position:relative;flex:1;height:var(--hb);border-radius:99px;background:#0e1130;overflow:visible}
+  .road.go .road-fill{background:#ffd23f}
+  .road.go{animation:goPulse 1.2s ease-in-out infinite}
+  @keyframes goPulse{50%{box-shadow:0 0 0 5px rgba(255,210,63,.55)}}
   .road-fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#3b4a9e,#7d6bff);transition:width 1s linear}
   .mover{position:absolute;top:50%;transform:translateY(-50%);font-size:clamp(28px,4vw,44px);line-height:1;transition:left 1s linear}
   .car{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:clamp(30px,4.2vw,46px);line-height:1}
   .cd-fill{height:100%;width:100%;border-radius:99px;background:var(--good);transition:width 1s linear,background .5s}
-  .iconbtn{width:52px;height:52px;border-radius:16px;border:none;background:var(--bg2);color:#fff;font-size:26px;position:relative;flex:none;cursor:pointer}
+  .iconbtn{width:var(--hb,52px);height:var(--hb,52px);border-radius:16px;border:none;background:#2a3060;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;color:#fff;font-size:26px;position:relative;flex:none;cursor:pointer}
   .iconbtn svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
   .iconbtn svg.ring circle{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:151;stroke-dashoffset:151}
   .iconbtn.holding svg.ring circle{transition:stroke-dashoffset 1.5s linear;stroke-dashoffset:0}
@@ -489,8 +497,7 @@
       <div class="clock" id="clock">7:30</div>
     </div>
     <div class="countdown" id="countdown">
-      <div class="road" id="road"><div class="road-fill" id="cdFill"></div><div class="mover" id="mover">🏃</div><div class="car" id="dest">🚗</div></div>
-      <div class="cd-label" id="cdLabel"></div>
+      <div class="road" id="road"><div class="road-fill" id="cdFill"></div><div class="cd-label" id="cdLabel"></div><div class="mover" id="mover">🏃</div><div class="car" id="dest">🚗</div></div>
     </div>
     <button class="iconbtn" id="fsBtn" title="Full screen">⛶</button>
     <button class="iconbtn" id="gearBtn" title="Settings">⚙️</button>
@@ -533,7 +540,7 @@
 
 <script>
 (function(){
-  var BOARD_VERSION='13 Nov 2026 · Medo';
+  var BOARD_VERSION='13 Nov 2026 · tidy header';
   var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var AVATARS=['🦊','🐢','🦁','🐼','🐸','🦄','🐯','🐵','🐶','🐱','🦖','🐙','🚀','🦕','🐨','🐧'];
@@ -1662,21 +1669,26 @@
       road.style.display='';
       fill.style.width=pct+'%';
       mover.style.left='calc('+pct+'% * 0.86)';
+      // keep the words clear of the runner: in the empty part of the road early on, inside the filled part later
+      var rp=(pct*0.86).toFixed(1);
+      if(pct<50){lbl.style.left='calc('+rp+'% + clamp(40px,5vw,54px))';lbl.style.right='clamp(44px,5.4vw,60px)';}
+      else{lbl.style.left='8px';lbl.style.right='calc('+(100-rp)+'% + 4px)';}
       var fig=cfg.runner.fig==='kids'?cfg.kids.map(function(x){return x.emoji;}).join(''):cfg.runner.fig;
       if(mover.textContent!==fig)mover.textContent=fig;
       mover.style.transform='translateY(-50%)'+(cfg.runner.flip?' scaleX(-1)':'');
     }
     var hdr=document.querySelector('header');
-    lbl.classList.remove('big');hdr.classList.remove('centred');
+    lbl.classList.remove('big');hdr.classList.remove('centred');road.classList.remove('go');
+    function setLbl(t){if(lbl.textContent!==t){lbl.innerHTML='';lbl.appendChild(el('span',null,t));}}
     if(!leave){hdr.classList.add('centred');return;}
     var parts=leave.split(':');
     var lt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+parts[0],+parts[1]);
     var mins=Math.ceil((lt-now)/60000);
     var window_=cfg.leave.window||60; // the runner travels to the destination over this many minutes
     var destEl=document.getElementById('dest');if(destEl.textContent!==cfg.leave.dest)destEl.textContent=cfg.leave.dest;
-    if(mins>window_){setRoad(0);lbl.textContent='Leave at '+fmt(leave);}
-    else if(mins>0){setRoad((window_-mins)/window_*100);lbl.textContent='Leave at '+fmt(leave)+' · '+mins+' min';}
-    else if(mins>-90){setRoad(100);lbl.classList.add('big');lbl.textContent='Time to go! 🚗';}
+    if(mins>window_){setRoad(0);setLbl('Leave at '+fmt(leave));}
+    else if(mins>0){setRoad((window_-mins)/window_*100);setLbl('Leave '+fmt(leave)+' · '+(mins>=60?Math.floor(mins/60)+' h '+(mins%60)+' min':mins+' min'));}
+    else if(mins>-90){setRoad(100);lbl.classList.add('big');road.classList.add('go');setLbl('Time to go!');}
     else hdr.classList.add('centred'); // after the morning rush: just the day and time, centred
   }
   var lastDay=today();
