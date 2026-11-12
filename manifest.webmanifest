@@ -1,6 +1,6 @@
 {
-  "name": "Quest Board",
-  "short_name": "Quests",
+  "name": "Medo",
+  "short_name": "Medo",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
@@ -25,7 +25,7 @@
     }
   ],
   "id": "./",
-  "description": "Morning and afternoon routines for kids, with weather, reading days and a star jar.",
+  "description": "I did it myself. Morning and afternoon routines kids run on their own, with weather, reading days, rewards and a trophy case.",
   "orientation": "any",
   "categories": [
     "kids",
